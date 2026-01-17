@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
@@ -76,8 +77,8 @@ def index():
     pericias = query.order_by(Pericia.created_at.desc()).all()
 
     # Totais Financeiros
-    total_recebido = sum(p.valor_honorarios for p in pericias if p.status_pagamento == 'Pago')
-    total_pendente = sum(p.valor_honorarios for p in pericias if p.status_pagamento == 'Pendente')
+    total_recebido = query.filter(Pericia.status_pagamento == 'Pago').with_entities(func.sum(Pericia.valor_honorarios)).scalar() or 0.0
+    total_pendente = query.filter(Pericia.status_pagamento == 'Pendente').with_entities(func.sum(Pericia.valor_honorarios)).scalar() or 0.0
 
     return render_template('index.html', pericias=pericias, search=search, status_filter=status_filter, total_recebido=total_recebido, total_pendente=total_pendente)
 
