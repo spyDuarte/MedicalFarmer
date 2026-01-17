@@ -4,6 +4,7 @@ const App = {
     editors: {}, // Quill instances
     currentPericiaId: null,
     statusChart: null,
+    autoSaveTimeout: null,
 
     init() {
         this.bindEvents();
@@ -74,12 +75,9 @@ const App = {
 
     // --- Tabs Logic ---
     switchTab(tabId) {
-        // Hide all contents
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        // Show target
         document.getElementById(tabId).classList.remove('hidden');
 
-        // Update buttons
         document.querySelectorAll('.tab-btn').forEach(el => {
             el.classList.remove('active');
             el.classList.add('inactive');
@@ -177,47 +175,140 @@ const App = {
         });
     },
 
+    // --- Toast Notification System ---
+    showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+        const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+
+        toast.className = `flex items-center gap-2 px-4 py-3 rounded shadow-lg text-white ${bgColor} toast-enter pointer-events-auto`;
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span class="text-sm font-medium">${message}</span>`;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove('toast-enter');
+            toast.classList.add('toast-exit');
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 3000);
+    },
+
+    // --- Data Collection Helper ---
+    collectFormData() {
+        return {
+            id: this.currentPericiaId,
+            numero_processo: document.getElementById('f-numero_processo').value,
+            vara: document.getElementById('f-vara').value,
+            nome_autor: document.getElementById('f-nome_autor').value,
+
+            data_nascimento: document.getElementById('f-data_nascimento').value,
+            cpf: document.getElementById('f-cpf').value,
+            rg: document.getElementById('f-rg').value,
+            escolaridade: document.getElementById('f-escolaridade').value,
+
+            profissao: document.getElementById('f-profissao').value,
+            tempo_funcao: document.getElementById('f-tempo_funcao').value,
+            desc_atividades: document.getElementById('f-desc_atividades').value,
+            antecedentes: document.getElementById('f-antecedentes').value,
+
+            exames_complementares: document.getElementById('f-exames_complementares').value,
+            discussao: document.getElementById('f-discussao').value,
+            cid: document.getElementById('f-cid').value,
+            nexo: document.getElementById('f-nexo').value,
+            did: document.getElementById('f-did').value,
+            dii: document.getElementById('f-dii').value,
+            parecer: document.getElementById('f-parecer').value,
+
+            data_pericia: document.getElementById('f-data_pericia').value,
+            valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
+            status_pagamento: document.getElementById('f-status_pagamento').value,
+
+            anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
+            exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
+            conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
+            quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
+
+            documents: this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : []
+        };
+    },
+
     renderForm(id) {
         this.currentPericiaId = id;
         const pericia = id ? Storage.getPericia(id) : {};
 
-        // Reset Tabs
         this.switchTab('tab-identificacao');
 
-        // Populate inputs (Admin)
-        document.getElementById('f-numero_processo').value = pericia.numero_processo || '';
-        document.getElementById('f-vara').value = pericia.vara || '';
-        document.getElementById('f-nome_autor').value = pericia.nome_autor || '';
-        document.getElementById('f-data_nascimento').value = pericia.data_nascimento || '';
-        document.getElementById('f-cpf').value = pericia.cpf || '';
-        document.getElementById('f-rg').value = pericia.rg || '';
-        document.getElementById('f-escolaridade').value = pericia.escolaridade || '';
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if(el) el.value = val || '';
+        };
+
+        // Populate fields
+        setVal('f-numero_processo', pericia.numero_processo);
+        setVal('f-vara', pericia.vara);
+        setVal('f-nome_autor', pericia.nome_autor);
+        setVal('f-data_nascimento', pericia.data_nascimento);
+        setVal('f-cpf', pericia.cpf);
+        setVal('f-rg', pericia.rg);
+        setVal('f-escolaridade', pericia.escolaridade);
         this.calcAge();
 
-        document.getElementById('f-data_pericia').value = pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '';
-        document.getElementById('f-valor_honorarios').value = pericia.valor_honorarios || 0;
-        document.getElementById('f-status_pagamento').value = pericia.status_pagamento || 'Pendente';
+        setVal('f-data_pericia', pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '');
+        setVal('f-valor_honorarios', pericia.valor_honorarios || 0);
+        setVal('f-status_pagamento', pericia.status_pagamento || 'Pendente');
 
-        // History
-        document.getElementById('f-profissao').value = pericia.profissao || '';
-        document.getElementById('f-tempo_funcao').value = pericia.tempo_funcao || '';
-        document.getElementById('f-desc_atividades').value = pericia.desc_atividades || '';
-        document.getElementById('f-antecedentes').value = pericia.antecedentes || '';
+        setVal('f-profissao', pericia.profissao);
+        setVal('f-tempo_funcao', pericia.tempo_funcao);
+        setVal('f-desc_atividades', pericia.desc_atividades);
+        setVal('f-antecedentes', pericia.antecedentes);
 
-        // Clinical & Exams
-        document.getElementById('f-exames_complementares').value = pericia.exames_complementares || '';
+        setVal('f-exames_complementares', pericia.exames_complementares);
 
-        // Conclusion
-        document.getElementById('f-discussao').value = pericia.discussao || '';
-        document.getElementById('f-cid').value = pericia.cid || '';
-        document.getElementById('f-nexo').value = pericia.nexo || 'Não há nexo';
-        document.getElementById('f-did').value = pericia.did || '';
-        document.getElementById('f-dii').value = pericia.dii || '';
-        document.getElementById('f-parecer').value = pericia.parecer || 'Capto';
+        setVal('f-discussao', pericia.discussao);
+        setVal('f-cid', pericia.cid);
+        setVal('f-nexo', pericia.nexo || 'Não há nexo');
+        setVal('f-did', pericia.did);
+        setVal('f-dii', pericia.dii);
+        setVal('f-parecer', pericia.parecer || 'Capto');
 
-        // Initialize Quill and Documents List (Always active now, controlled by tabs)
+        // Check for Auto-Save
+        const draft = localStorage.getItem('pericia_draft');
+        if (!id && draft) {
+            if(confirm('Existe um rascunho não salvo. Deseja recuperar?')) {
+                const draftData = JSON.parse(draft);
+                // Apply draft values to fields
+                Object.keys(draftData).forEach(key => {
+                    const el = document.getElementById(`f-${key}`);
+                    if(el) el.value = draftData[key] || '';
+                });
+                pericia.anamnese = draftData.anamnese;
+                pericia.exame_fisico = draftData.exame_fisico;
+                pericia.conclusao = draftData.conclusao;
+                pericia.quesitos = draftData.quesitos;
+            } else {
+                localStorage.removeItem('pericia_draft');
+            }
+        }
+
         this.initQuill(pericia);
         this.renderDocumentsList(pericia.documents || []);
+
+        // Add Listeners (Auto-Save + Masks)
+        document.querySelectorAll('#view-form input, #view-form select, #view-form textarea').forEach(el => {
+            const newEl = el.cloneNode(true);
+            newEl.value = el.value; // Restore dynamic value lost by cloneNode
+            el.parentNode.replaceChild(newEl, el);
+
+            newEl.addEventListener('input', () => this.autoSave());
+            newEl.addEventListener('change', () => this.autoSave());
+
+            if(newEl.id === 'f-cpf') {
+                newEl.addEventListener('input', (e) => e.target.value = Mask.cpf(e.target.value));
+            }
+        });
     },
 
     renderSettings() {
@@ -226,6 +317,17 @@ const App = {
         document.getElementById('s-crm').value = s.crm || '';
         document.getElementById('s-endereco').value = s.endereco || '';
         document.getElementById('s-telefone').value = s.telefone || '';
+
+        // Add Listeners to Settings
+        document.querySelectorAll('#view-settings input').forEach(el => {
+            const newEl = el.cloneNode(true);
+            newEl.value = el.value; // Restore dynamic value
+            el.parentNode.replaceChild(newEl, el);
+
+            if(newEl.id === 's-telefone') {
+                newEl.addEventListener('input', (e) => e.target.value = Mask.phone(e.target.value));
+            }
+        });
     },
 
     renderMacros() {
@@ -270,7 +372,6 @@ const App = {
         document.getElementById('p-processo').innerText = pericia.numero_processo;
         document.getElementById('p-data').innerText = pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____';
 
-        // 1. Identificação Detalhada
         let idDetails = `
             <strong>Nome:</strong> ${pericia.nome_autor}<br>
             <strong>Nascimento:</strong> ${pericia.data_nascimento ? new Date(pericia.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
@@ -280,7 +381,6 @@ const App = {
         `;
         document.getElementById('p-identificacao-detalhada').innerHTML = idDetails;
 
-        // 2. Histórico
         let histOcup = `
             <strong>Profissão:</strong> ${pericia.profissao || '-'}<br>
             <strong>Tempo na Função:</strong> ${pericia.tempo_funcao || '-'}<br>
@@ -290,13 +390,10 @@ const App = {
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
         document.getElementById('p-antecedentes').innerText = pericia.antecedentes || 'Nada digno de nota.';
 
-        // 3. Exame
         document.getElementById('p-exame').innerHTML = pericia.exame_fisico || 'Não informado.';
 
-        // 4. Documentos
         document.getElementById('p-exames-comp').innerText = pericia.exames_complementares || 'Não apresentados.';
 
-        // 5. Conclusão
         document.getElementById('p-discussao').innerText = pericia.discussao || '';
         document.getElementById('p-cid').innerText = pericia.cid || '-';
         document.getElementById('p-nexo').innerText = pericia.nexo || '-';
@@ -305,10 +402,8 @@ const App = {
         document.getElementById('p-parecer').innerText = pericia.parecer || '-';
         document.getElementById('p-conclusao').innerHTML = pericia.conclusao || '';
 
-        // 6. Quesitos
         document.getElementById('p-quesitos').innerHTML = pericia.quesitos || 'Vide corpo do laudo.';
 
-        // Footer
         document.getElementById('print-footer-name').innerText = s.nome || 'Dr. Perito Judicial';
         document.getElementById('print-footer-crm').innerText = s.crm || 'CRM-XX 00000';
     },
@@ -348,24 +443,22 @@ const App = {
     initQuill(pericia) {
         const opts = { theme: 'snow', modules: { toolbar: [['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['clean']] } };
 
-        // Destroy old if exists
         document.querySelectorAll('.ql-toolbar').forEach(e => e.remove());
 
-        // Main Editors
         this.editors['anamnese'] = new Quill('#q-anamnese', opts);
         this.editors['exame_fisico'] = new Quill('#q-exame_fisico', opts);
         this.editors['conclusao'] = new Quill('#q-conclusao', opts);
-
-        // New Editor for Quesitos
         this.editors['quesitos'] = new Quill('#q-quesitos', opts);
 
-        // Set Content
         this.editors['anamnese'].root.innerHTML = pericia.anamnese || '';
         this.editors['exame_fisico'].root.innerHTML = pericia.exame_fisico || '';
         this.editors['conclusao'].root.innerHTML = pericia.conclusao || '';
         this.editors['quesitos'].root.innerHTML = pericia.quesitos || '';
 
-        // Init Macro Selects
+        Object.values(this.editors).forEach(editor => {
+            editor.on('text-change', () => this.autoSave());
+        });
+
         this.populateMacroSelects();
     },
 
@@ -403,48 +496,31 @@ const App = {
 
     // --- Actions ---
 
+    // Auto-Save Implementation
+    autoSave() {
+        if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
+        this.autoSaveTimeout = setTimeout(() => {
+            const data = this.collectFormData();
+            // Don't auto-save if we are editing an existing finalized one?
+            // Or just save to draft key regardless.
+            localStorage.setItem('pericia_draft', JSON.stringify(data));
+            // Optional: minimal feedback toast
+            // this.showToast('Rascunho salvo', 'info');
+        }, 2000);
+    },
+
     saveForm(finalize = false) {
-        const data = {
-            id: this.currentPericiaId,
-            numero_processo: document.getElementById('f-numero_processo').value,
-            vara: document.getElementById('f-vara').value,
-            nome_autor: document.getElementById('f-nome_autor').value,
+        const data = this.collectFormData();
 
-            // Extended Data
-            data_nascimento: document.getElementById('f-data_nascimento').value,
-            cpf: document.getElementById('f-cpf').value,
-            rg: document.getElementById('f-rg').value,
-            escolaridade: document.getElementById('f-escolaridade').value,
+        // Validation
+        if (data.cpf && !Validator.cpf(data.cpf)) {
+            this.showToast('CPF inválido!', 'error');
+            document.getElementById('f-cpf').classList.add('border-red-500');
+            return; // Stop save
+        } else {
+            document.getElementById('f-cpf').classList.remove('border-red-500');
+        }
 
-            // History
-            profissao: document.getElementById('f-profissao').value,
-            tempo_funcao: document.getElementById('f-tempo_funcao').value,
-            desc_atividades: document.getElementById('f-desc_atividades').value,
-            antecedentes: document.getElementById('f-antecedentes').value,
-
-            // Exams & Conclusion
-            exames_complementares: document.getElementById('f-exames_complementares').value,
-            discussao: document.getElementById('f-discussao').value,
-            cid: document.getElementById('f-cid').value,
-            nexo: document.getElementById('f-nexo').value,
-            did: document.getElementById('f-did').value,
-            dii: document.getElementById('f-dii').value,
-            parecer: document.getElementById('f-parecer').value,
-
-            data_pericia: document.getElementById('f-data_pericia').value,
-            valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value),
-            status_pagamento: document.getElementById('f-status_pagamento').value,
-
-            // Rich Text
-            anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
-            exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
-            conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
-            quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
-
-            documents: this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : []
-        };
-
-        // Determine Status
         if (finalize) data.status = 'Concluido';
         else if (!data.status) {
              if (data.data_pericia) data.status = 'Agendado';
@@ -459,7 +535,9 @@ const App = {
              }
         }
 
-        const saved = Storage.savePericia(data);
+        Storage.savePericia(data);
+        localStorage.removeItem('pericia_draft');
+        this.showToast(finalize ? 'Perícia finalizada com sucesso!' : 'Rascunho salvo com sucesso!', 'success');
         window.location.hash = '#dashboard';
     },
 
@@ -471,7 +549,7 @@ const App = {
             telefone: document.getElementById('s-telefone').value
         };
         Storage.saveSettings(settings);
-        alert('Configurações salvas!');
+        this.showToast('Configurações salvas!', 'success');
     },
 
     saveMacro() {
@@ -484,6 +562,9 @@ const App = {
             document.getElementById('m-titulo').value = '';
             document.getElementById('m-conteudo').value = '';
             this.renderMacros();
+            this.showToast('Modelo adicionado!', 'success');
+        } else {
+            this.showToast('Preencha todos os campos.', 'error');
         }
     },
 
@@ -491,6 +572,7 @@ const App = {
         if(confirm('Excluir modelo?')) {
             Storage.deleteMacro(id);
             this.renderMacros();
+            this.showToast('Modelo removido.', 'info');
         }
     },
 
@@ -499,10 +581,13 @@ const App = {
     handleFileUpload() {
         const input = document.getElementById('upload_document');
         const file = input.files[0];
-        if(!file || !this.currentPericiaId) return;
+        if(!file || !this.currentPericiaId) {
+            this.showToast('Selecione um arquivo e salve a perícia antes.', 'error');
+            return;
+        }
 
         if (file.size > 2 * 1024 * 1024) {
-            alert("Arquivo muito grande para versão Web. Máximo 2MB.");
+            this.showToast('Arquivo muito grande. Máximo 2MB.', 'error');
             return;
         }
 
@@ -520,6 +605,7 @@ const App = {
             Storage.savePericia(pericia);
             this.renderDocumentsList(pericia.documents);
             input.value = "";
+            this.showToast('Documento anexado!', 'success');
         };
         reader.readAsDataURL(file);
     },
@@ -559,6 +645,7 @@ const App = {
         pericia.documents = pericia.documents.filter(d => d.id != docId);
         Storage.savePericia(pericia);
         this.renderDocumentsList(pericia.documents);
+        this.showToast('Documento removido.', 'info');
     }
 };
 
