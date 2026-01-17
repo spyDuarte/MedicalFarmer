@@ -94,6 +94,9 @@ const App = {
         } else if (path === 'settings') {
             this.renderSettings();
             document.getElementById('view-settings').classList.remove('hidden');
+        } else if (path === 'calendar') {
+            document.getElementById('view-calendar').classList.remove('hidden');
+            this.renderCalendar();
         }
     },
 
@@ -111,6 +114,78 @@ const App = {
     },
 
     // --- Views ---
+
+    // --- Calendar ---
+    renderCalendar: function() {
+        if (!this.calendar) {
+            const calendarEl = document.getElementById('calendar-container');
+            this.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Hoje',
+                    month: 'Mês',
+                    week: 'Semana',
+                    day: 'Dia',
+                    list: 'Lista'
+                },
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    const history = Storage.getPericias();
+                    const events = history
+                        .filter(item => item.data_pericia) // Only items with a date
+                        .map(item => ({
+                            title: item.nome_autor || 'Sem Nome',
+                            start: item.data_pericia,
+                            url: '#editar/' + item.id,
+                            color: item.status === 'Concluido' ? '#10B981' : (item.status === 'Agendado' ? '#3B82F6' : '#F59E0B')
+                        }));
+                    successCallback(events);
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault(); // don't let the browser navigate
+                    if (info.event.url) {
+                        window.location.hash = info.event.url;
+                    }
+                }
+            });
+            this.calendar.render();
+        } else {
+            this.calendar.refetchEvents(); // Refresh data
+            this.calendar.render(); // Ensure proper sizing
+        }
+    },
+
+    // --- PDF Export ---
+    exportPDF: function() {
+        const element = document.getElementById('view-print');
+
+        // Options for html2pdf
+        const opt = {
+          margin:       [10, 10, 10, 10], // top, left, bottom, right in mm
+          filename:     `Laudo_${new Date().toISOString().slice(0,10)}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true }, // Higher scale for better quality
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Hide buttons during generation
+        const btnContainer = element.querySelector('.fixed.bottom-4.right-4');
+        if(btnContainer) btnContainer.style.display = 'none';
+
+        html2pdf().set(opt).from(element).save().then(() => {
+             // Restore buttons
+             if(btnContainer) btnContainer.style.display = 'flex';
+        }).catch(err => {
+            console.error(err);
+            alert("Erro ao gerar PDF: " + err.message);
+            if(btnContainer) btnContainer.style.display = 'flex';
+        });
+    },
 
     renderDashboard() {
         const pericias = Storage.getPericias();
@@ -380,7 +455,36 @@ const App = {
             if(newEl.id === 'f-cpf') {
                 newEl.addEventListener('input', (e) => e.target.value = Mask.cpf(e.target.value));
             }
+            if(newEl.id === 'f-cid') {
+                newEl.addEventListener('input', (e) => this.handleCIDSearch(e));
+                newEl.addEventListener('blur', () => setTimeout(() => document.getElementById('cid-suggestions').classList.add('hidden'), 200));
+            }
         });
+    },
+
+    handleCIDSearch(e) {
+        const query = e.target.value;
+        const results = CID10.search(query);
+        const ul = document.getElementById('cid-suggestions');
+
+        ul.innerHTML = '';
+        if (results.length === 0) {
+            ul.classList.add('hidden');
+            return;
+        }
+
+        results.forEach(item => {
+            const li = document.createElement('li');
+            li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-sm";
+            li.innerText = `${item.code} - ${item.desc}`;
+            li.onmousedown = () => { // mousedown fires before blur
+                document.getElementById('f-cid').value = `${item.code} - ${item.desc}`;
+                ul.classList.add('hidden');
+                this.autoSave();
+            };
+            ul.appendChild(li);
+        });
+        ul.classList.remove('hidden');
     },
 
     renderSettings() {
@@ -564,14 +668,42 @@ const App = {
     },
 
     initQuill(pericia) {
-        const opts = { theme: 'snow', modules: { toolbar: [['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['clean']] } };
+        // Custom Toolbar with Mic
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']
+        ];
+
+        const opts = { theme: 'snow', modules: { toolbar: toolbarOptions } };
 
         document.querySelectorAll('.ql-toolbar').forEach(e => e.remove());
 
+        // Helper to add Mic button
+        const addMic = (quill, id) => {
+            const container = quill.getModule('toolbar').container;
+            const btn = document.createElement('button');
+            btn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+            btn.classList.add('ql-mic');
+            btn.title = "Ditado de Voz";
+            btn.onclick = (e) => {
+                e.preventDefault();
+                this.toggleSpeech(quill, btn);
+            };
+            container.appendChild(btn);
+        };
+
         this.editors['anamnese'] = new Quill('#q-anamnese', opts);
+        addMic(this.editors['anamnese'], 'anamnese');
+
         this.editors['exame_fisico'] = new Quill('#q-exame_fisico', opts);
+        addMic(this.editors['exame_fisico'], 'exame_fisico');
+
         this.editors['conclusao'] = new Quill('#q-conclusao', opts);
+        addMic(this.editors['conclusao'], 'conclusao');
+
         this.editors['quesitos'] = new Quill('#q-quesitos', opts);
+        addMic(this.editors['quesitos'], 'quesitos');
 
         this.editors['anamnese'].root.innerHTML = pericia.anamnese || '';
         this.editors['exame_fisico'].root.innerHTML = pericia.exame_fisico || '';
@@ -636,12 +768,38 @@ const App = {
         const data = this.collectFormData();
 
         // Validation
+        let errors = [];
+
+        if (finalize) {
+            // Mandatory fields for finalization
+            if (!data.numero_processo) errors.push("Número do Processo é obrigatório.");
+            if (!data.nome_autor) errors.push("Nome do Autor é obrigatório.");
+            if (!data.cid) errors.push("Diagnóstico (CID) é obrigatório.");
+            if (!data.conclusao || data.conclusao === '<p><br></p>') errors.push("Conclusão é obrigatória.");
+        }
+
         if (data.cpf && !Validator.cpf(data.cpf)) {
-            this.showToast('CPF inválido!', 'error');
+            errors.push("CPF inválido.");
             document.getElementById('f-cpf').classList.add('border-red-500');
-            return; // Stop save
         } else {
             document.getElementById('f-cpf').classList.remove('border-red-500');
+        }
+
+        if (errors.length > 0) {
+            this.showModal("Atenção", "Corrija os erros antes de continuar:\n" + errors.join('\n'), () => {});
+            // Hide cancel button for alert-style modal
+            document.getElementById('modal-cancel').classList.add('hidden');
+            // Restore functionality of confirm button to just close
+            const btn = document.getElementById('modal-confirm');
+            btn.innerText = "OK";
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.onclick = () => {
+                document.getElementById('custom-modal').classList.add('hidden');
+                document.getElementById('modal-cancel').classList.remove('hidden'); // Reset
+                newBtn.innerText = "Confirmar";
+            };
+            return;
         }
 
         const proceedSave = () => {
@@ -917,6 +1075,52 @@ const App = {
                 this.showToast('Erro ao excluir.', 'error');
             }
         });
+    },
+
+    // --- Speech to Text ---
+    toggleSpeech(quill, btn) {
+        if (!('webkitSpeechRecognition' in window)) {
+            this.showToast("Navegador não suporta reconhecimento de voz.", "error");
+            return;
+        }
+
+        if (this.recognition && this.recognition.started) {
+            this.recognition.stop();
+            this.recognition.started = false;
+            btn.classList.remove('text-red-600', 'animate-pulse');
+            return;
+        }
+
+        this.recognition = new webkitSpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+
+        this.recognition.onstart = () => {
+            this.recognition.started = true;
+            btn.classList.add('text-red-600', 'animate-pulse');
+            this.showToast("Gravando... Fale agora.", "info");
+        };
+
+        this.recognition.onend = () => {
+            this.recognition.started = false;
+            btn.classList.remove('text-red-600', 'animate-pulse');
+        };
+
+        this.recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    transcript += event.results[i][0].transcript + ' ';
+                }
+            }
+            if (transcript) {
+                const range = quill.getSelection(true);
+                quill.insertText(range.index, transcript);
+            }
+        };
+
+        this.recognition.start();
     },
 
     // --- Annotation Tool ---
