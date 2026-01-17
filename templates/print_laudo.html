@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Laudo Pericial - {{ pericia.numero_processo }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 font-serif p-8 max-w-4xl mx-auto">
+
+    <div class="mb-8 border-b-2 border-gray-800 pb-4 flex justify-between items-end">
+        <div>
+            <h1 class="text-2xl font-bold uppercase">Laudo Médico Pericial</h1>
+            <p class="text-sm text-gray-600 mt-1">Excelentíssimo Juízo da Vara Competente</p>
+        </div>
+        <div class="text-right">
+            <p class="font-bold">Processo Nº: {{ pericia.numero_processo }}</p>
+            <p>Data: {{ pericia.data_pericia.strftime('%d/%m/%Y') if pericia.data_pericia else '___/___/_____' }}</p>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <p><strong>Autor (Periciado):</strong> {{ pericia.nome_autor }}</p>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">1. Anamnese</h2>
+        <div class="whitespace-pre-wrap text-justify">{{ pericia.anamnese or "Não informado." }}</div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">2. Exame Físico</h2>
+        <div class="whitespace-pre-wrap text-justify">{{ pericia.exame_fisico or "Não informado." }}</div>
+    </div>
+
+    <div class="mb-12">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">3. Conclusão</h2>
+        <div class="whitespace-pre-wrap text-justify bg-gray-50 p-4 border border-gray-200 rounded">{{ pericia.conclusao or "Não informado." }}</div>
+    </div>
+
+    <div class="mt-20 text-center">
+        <div class="border-t border-black w-1/2 mx-auto pt-2">
+            <p class="font-bold">Dr. Perito Judicial</p>
+            <p class="text-sm">CRM-XX 00000</p>
+        </div>
+    </div>
+
+    <div class="fixed bottom-4 right-4 no-print flex gap-2">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 font-sans">
+            Imprimir / Salvar PDF
+        </button>
+        <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 font-sans">
+            Fechar
+        </button>
+    </div>
+
+</body>
+</html>
