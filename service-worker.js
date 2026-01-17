@@ -3,7 +3,8 @@ const CACHE_NAME = 'pericia-web-v2';
 const ASSETS = [
     './',
     './index.html',
-    './static/js/main.js',
+    './static/js/app.js',
+    './static/css/styles.css',
     './static/js/modules/storage.js',
     './static/js/modules/db.js',
     './static/js/modules/utils.js',
