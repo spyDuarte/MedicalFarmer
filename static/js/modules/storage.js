@@ -1,44 +1,60 @@
 import { FileDB } from './db.js';
 import { DEFAULT_MACROS } from './default_data.js';
+import { DB_KEYS } from './constants.js';
 
-const DB_KEY = 'pericia_sys_data';
-const MACROS_KEY = 'pericia_sys_macros';
-const SETTINGS_KEY = 'pericia_sys_settings';
-const TEMPLATES_KEY = 'pericia_sys_templates';
-
+/**
+ * Storage module for handling LocalStorage and IndexedDB interactions.
+ */
 export const Storage = {
-    // --- Data Initialization ---
+    /**
+     * Initializes the storage with default data if empty.
+     */
     init() {
-        if (!localStorage.getItem(DB_KEY)) {
-            localStorage.setItem(DB_KEY, JSON.stringify([]));
+        if (!localStorage.getItem(DB_KEYS.PERICIAS)) {
+            localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify([]));
         }
-        if (!localStorage.getItem(TEMPLATES_KEY)) {
-            localStorage.setItem(TEMPLATES_KEY, JSON.stringify([]));
+        if (!localStorage.getItem(DB_KEYS.TEMPLATES)) {
+            localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify([]));
         }
-        if (!localStorage.getItem(MACROS_KEY)) {
-            localStorage.setItem(MACROS_KEY, JSON.stringify(DEFAULT_MACROS));
+        if (!localStorage.getItem(DB_KEYS.MACROS)) {
+            localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(DEFAULT_MACROS));
         }
-        if (!localStorage.getItem(SETTINGS_KEY)) {
+        if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
             const defaultSettings = {
                 nome: "Dr. Perito Judicial",
                 crm: "CRM-XX 00000",
                 endereco: "",
                 telefone: ""
             };
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
+            localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(defaultSettings));
         }
     },
 
     // --- Pericias ---
+
+    /**
+     * Retrieves all pericias from storage.
+     * @returns {Array} List of pericias.
+     */
     getPericias() {
-        return JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        return JSON.parse(localStorage.getItem(DB_KEYS.PERICIAS) || '[]');
     },
 
+    /**
+     * Retrieves a single pericia by ID.
+     * @param {number|string} id - The ID of the pericia.
+     * @returns {Object|undefined} The pericia object or undefined.
+     */
     getPericia(id) {
         const pericias = this.getPericias();
         return pericias.find(p => p.id == id);
     },
 
+    /**
+     * Saves or updates a pericia.
+     * @param {Object} pericia - The pericia object.
+     * @returns {Object} The saved pericia.
+     */
     savePericia(pericia) {
         const pericias = this.getPericias();
         if (pericia.id) {
@@ -52,7 +68,7 @@ export const Storage = {
             pericias.push(pericia);
         }
         try {
-            localStorage.setItem(DB_KEY, JSON.stringify(pericias));
+            localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
                 throw new Error('Limite de armazenamento excedido! Tente remover arquivos anexados.');
@@ -62,58 +78,103 @@ export const Storage = {
         return pericia;
     },
 
+    /**
+     * Deletes a pericia by ID.
+     * @param {number|string} id - The ID of the pericia.
+     */
     deletePericia(id) {
         let pericias = this.getPericias();
         pericias = pericias.filter(p => p.id != id);
-        localStorage.setItem(DB_KEY, JSON.stringify(pericias));
+        localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
     },
 
     // --- Macros ---
+
+    /**
+     * Retrieves all macros.
+     * @returns {Array} List of macros.
+     */
     getMacros() {
-        return JSON.parse(localStorage.getItem(MACROS_KEY) || '[]');
+        return JSON.parse(localStorage.getItem(DB_KEYS.MACROS) || '[]');
     },
 
+    /**
+     * Adds a new macro.
+     * @param {Object} macro - The macro object.
+     */
     addMacro(macro) {
         const macros = this.getMacros();
         macro.id = Date.now();
         macros.push(macro);
-        localStorage.setItem(MACROS_KEY, JSON.stringify(macros));
+        localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(macros));
     },
 
+    /**
+     * Deletes a macro by ID.
+     * @param {number|string} id - The ID of the macro.
+     */
     deleteMacro(id) {
          let macros = this.getMacros();
          macros = macros.filter(m => m.id != id);
-         localStorage.setItem(MACROS_KEY, JSON.stringify(macros));
+         localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(macros));
     },
 
     // --- Settings ---
+
+    /**
+     * Retrieves application settings.
+     * @returns {Object} Settings object.
+     */
     getSettings() {
-        return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        return JSON.parse(localStorage.getItem(DB_KEYS.SETTINGS) || '{}');
     },
 
+    /**
+     * Saves application settings.
+     * @param {Object} settings - The settings object.
+     */
     saveSettings(settings) {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settings));
     },
 
     // --- Templates ---
+
+    /**
+     * Retrieves all templates.
+     * @returns {Array} List of templates.
+     */
     getTemplates() {
-        return JSON.parse(localStorage.getItem(TEMPLATES_KEY) || '[]');
+        return JSON.parse(localStorage.getItem(DB_KEYS.TEMPLATES) || '[]');
     },
 
+    /**
+     * Adds a new template.
+     * @param {Object} template - The template object.
+     */
     addTemplate(template) {
         const templates = this.getTemplates();
         template.id = Date.now();
         templates.push(template);
-        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+        localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(templates));
     },
 
+    /**
+     * Deletes a template by ID.
+     * @param {number|string} id - The ID of the template.
+     */
     deleteTemplate(id) {
         let templates = this.getTemplates();
         templates = templates.filter(t => t.id != id);
-        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+        localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(templates));
     },
 
     // --- Backup & Restore ---
+
+    /**
+     * Generates a backup object containing all data.
+     * @param {string|null} password - Optional password for encryption.
+     * @returns {Promise<{filename: string, content: string}>} The backup data.
+     */
     async getExportData(password = null) {
         // Collect local storage data
         let data = {
@@ -149,13 +210,14 @@ export const Storage = {
         return { filename, content: jsonString };
     },
 
+    /**
+     * Restores data from a backup string.
+     * @param {string} content - The JSON string (or encrypted string).
+     * @param {string|null} password - Password for decryption.
+     * @returns {Promise<boolean>} True if successful.
+     */
     async processImportData(content, password = null) {
         let data;
-
-        // Check if potentially encrypted
-        // Naive check: if it doesn't start with '{', it's likely not plain JSON
-        // Or check file extension in caller.
-        // Here we just try to parse or decrypt.
 
         try {
             // First try JSON parse
@@ -181,10 +243,10 @@ export const Storage = {
         if (!data.pericias && !data.settings) throw new Error("Arquivo de backup inválido.");
 
         // Restore LocalStorage
-        if(data.pericias) localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
-        if(data.macros) localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
-        if(data.templates) localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
-        if(data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+        if(data.pericias) localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(data.pericias));
+        if(data.macros) localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(data.macros));
+        if(data.templates) localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(data.templates));
+        if(data.settings) localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(data.settings));
 
         // Restore IndexedDB
         if(data.files && Array.isArray(data.files)) {

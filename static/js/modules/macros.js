@@ -1,12 +1,21 @@
 import { Storage } from './storage.js';
 import { UI } from './ui.js';
 
+/**
+ * Controller for Macros Management.
+ */
 export const MacrosController = {
+    /**
+     * Binds macro events.
+     */
     bindEvents() {
         const btnSave = document.getElementById('btn-save-macro');
         if (btnSave) btnSave.addEventListener('click', () => this.saveMacro());
     },
 
+    /**
+     * Renders the macros list.
+     */
     render() {
         const macros = Storage.getMacros();
         const container = document.getElementById('macros-list');
@@ -46,6 +55,9 @@ export const MacrosController = {
         });
     },
 
+    /**
+     * Saves a new macro.
+     */
     saveMacro() {
         const titleEl = document.getElementById('m-titulo');
         const catEl = document.getElementById('m-categoria');
