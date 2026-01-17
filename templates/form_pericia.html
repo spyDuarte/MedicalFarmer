@@ -1,99 +1,250 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-gray-800">
+<div class="flex gap-6 items-start">
+
+    <!-- Main Form Area -->
+    <div class="flex-grow bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">
+                {% if pericia %}
+                    Editar Perícia
+                {% else %}
+                    Nova Nomeação / Perícia
+                {% endif %}
+            </h2>
             {% if pericia %}
-                Editar Perícia / Laudo Médico
-            {% else %}
-                Nova Nomeação / Perícia
+                <span class="text-sm text-gray-500">ID: {{ pericia.id }}</span>
             {% endif %}
-        </h2>
-        {% if pericia %}
-            <span class="text-sm text-gray-500">ID: {{ pericia.id }}</span>
-        {% endif %}
+        </div>
+
+        <form method="POST" class="p-6">
+
+            <!-- Dados Administrativos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_processo">
+                        Número do Processo
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="numero_processo" name="numero_processo" type="text" placeholder="0000000-00.2024.8.00.0000"
+                        value="{{ pericia.numero_processo if pericia else '' }}" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="nome_autor">
+                        Nome do Autor (Paciente)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="nome_autor" name="nome_autor" type="text" placeholder="Nome completo"
+                        value="{{ pericia.nome_autor if pericia else '' }}" required>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="data_pericia">
+                    Data da Perícia (Agendamento)
+                </label>
+                <input class="shadow appearance-none border rounded w-full md:w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="data_pericia" name="data_pericia" type="date"
+                    value="{{ pericia.data_pericia.strftime('%Y-%m-%d') if pericia and pericia.data_pericia else '' }}">
+            </div>
+
+            {% if pericia %}
+            <hr class="border-t-2 border-gray-200 my-8">
+            <h3 class="text-lg font-bold text-blue-800 mb-4"><i class="fa-solid fa-stethoscope"></i> Exame Pericial</h3>
+
+            <!-- Helper function for macro dropdown -->
+            {% macro macro_select(target_id, category) %}
+            <div class="flex justify-end mb-1">
+                 <select onchange="insertMacro(this, '{{ target_id }}')" class="text-xs border rounded bg-gray-50 text-gray-600 p-1">
+                    <option value="">Inserir modelo de texto...</option>
+                    {% for m in macros %}
+                        {% if m.categoria == category %}
+                            <option value="{{ m.id }}">{{ m.titulo }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            {% endmacro %}
+
+            <!-- Anamnese -->
+            <div class="mb-6">
+                <div class="flex justify-between items-end">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="anamnese">
+                        1. Anamnese
+                    </label>
+                    {{ macro_select('anamnese', 'anamnese') }}
+                </div>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
+                    id="anamnese" name="anamnese" placeholder="Histórico clínico...">{{ pericia.anamnese if pericia.anamnese else '' }}</textarea>
+            </div>
+
+            <!-- Exame Físico -->
+            <div class="mb-6">
+                 <div class="flex justify-between items-end">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="exame_fisico">
+                        2. Exame Físico
+                    </label>
+                     {{ macro_select('exame_fisico', 'exame_fisico') }}
+                </div>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
+                    id="exame_fisico" name="exame_fisico" placeholder="Achados do exame físico...">{{ pericia.exame_fisico if pericia.exame_fisico else '' }}</textarea>
+            </div>
+
+            <!-- Conclusão -->
+            <div class="mb-8">
+                <div class="flex justify-between items-end">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="conclusao">
+                        3. Conclusão
+                    </label>
+                     {{ macro_select('conclusao', 'conclusao') }}
+                </div>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 bg-blue-50 border-blue-200"
+                    id="conclusao" name="conclusao" placeholder="Conclusão final...">{{ pericia.conclusao if pericia.conclusao else '' }}</textarea>
+            </div>
+            {% endif %}
+
+            <div class="flex items-center justify-end gap-4">
+                <a href="/" class="text-gray-500 hover:text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Cancelar
+                </a>
+
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition" type="submit">
+                    <i class="fa-solid fa-save"></i> Salvar {% if pericia %}Rascunho{% endif %}
+                </button>
+
+                {% if pericia %}
+                <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition"
+                    type="submit" name="finalizar" value="true" onclick="return confirm('Tem certeza? Isso marcará a perícia como CONCLUÍDA.')">
+                    <i class="fa-solid fa-check-circle"></i> Finalizar
+                </button>
+                {% endif %}
+            </div>
+        </form>
     </div>
 
-    <form method="POST" class="p-6">
+    <!-- Sidebar (Documents) -->
+    {% if pericia %}
+    <div class="w-full md:w-1/3 flex flex-col gap-6">
 
-        <!-- Dados Administrativos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_processo">
-                    Número do Processo
-                </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="numero_processo" name="numero_processo" type="text" placeholder="0000000-00.2024.8.00.0000"
-                    value="{{ pericia.numero_processo if pericia else '' }}" required>
-            </div>
-            <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="nome_autor">
-                    Nome do Autor (Paciente)
-                </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="nome_autor" name="nome_autor" type="text" placeholder="Nome completo"
-                    value="{{ pericia.nome_autor if pericia else '' }}" required>
-            </div>
+        <!-- Document Upload Card -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-yellow-500"></i> Documentos
+            </h3>
+
+            <form id="uploadForm" class="mb-4">
+                <div class="flex flex-col gap-2">
+                    <input type="file" name="upload_document" id="upload_document" class="text-sm text-gray-600 border rounded p-1" required>
+                    <button type="button" onclick="uploadFile()" class="bg-gray-700 hover:bg-gray-800 text-white text-sm py-1 px-2 rounded transition flex items-center justify-center gap-2">
+                         <span id="btnText">Anexar</span>
+                         <i id="btnIcon" class="fa-solid fa-upload"></i>
+                         <i id="btnSpinner" class="fa-solid fa-spinner fa-spin hidden"></i>
+                    </button>
+                </div>
+            </form>
+
+            <ul id="documentsList" class="space-y-2">
+                {% for doc in pericia.documents %}
+                <li class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200 text-sm">
+                    <a href="{{ url_for('uploaded_file', filename=doc.filename) }}" target="_blank" class="text-blue-600 truncate hover:underline" title="{{ doc.original_name }}">
+                        {{ doc.original_name }}
+                    </a>
+                    <a href="{{ url_for('deletar_documento', pericia_id=pericia.id, doc_id=doc.id) }}" class="text-red-500 hover:text-red-700" onclick="return confirm('Excluir documento?')">
+                        <i class="fa-solid fa-trash"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li id="noDocsMsg" class="text-gray-400 text-sm italic">Nenhum documento anexado.</li>
+                {% endfor %}
+            </ul>
         </div>
 
-        <div class="mb-8">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="data_pericia">
-                Data da Perícia (Agendamento)
-            </label>
-            <input class="shadow appearance-none border rounded w-full md:w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="data_pericia" name="data_pericia" type="date"
-                value="{{ pericia.data_pericia.strftime('%Y-%m-%d') if pericia and pericia.data_pericia else '' }}">
-        </div>
+    </div>
+    {% endif %}
 
-        {% if pericia %}
-        <hr class="border-t-2 border-gray-200 my-8">
-        <h3 class="text-lg font-bold text-blue-800 mb-4"><i class="fa-solid fa-stethoscope"></i> Exame Pericial</h3>
-
-        <!-- Anamnese -->
-        <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="anamnese">
-                1. Anamnese (Histórico da Moléstia Atual, Antecedentes, Queixas)
-            </label>
-            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
-                id="anamnese" name="anamnese" placeholder="Descreva a história clínica do periciado...">{{ pericia.anamnese if pericia.anamnese else '' }}</textarea>
-        </div>
-
-        <!-- Exame Físico -->
-        <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="exame_fisico">
-                2. Exame Físico (Ectoscopia, Exame Segmentar, Testes Especiais)
-            </label>
-            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
-                id="exame_fisico" name="exame_fisico" placeholder="Descreva os achados objetivos do exame físico...">{{ pericia.exame_fisico if pericia.exame_fisico else '' }}</textarea>
-        </div>
-
-        <!-- Conclusão -->
-        <div class="mb-8">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="conclusao">
-                3. Conclusão e Discussão (Nexo Causal, Capacidade Laborativa)
-            </label>
-            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 bg-blue-50 border-blue-200"
-                id="conclusao" name="conclusao" placeholder="Conclusão final do perito...">{{ pericia.conclusao if pericia.conclusao else '' }}</textarea>
-        </div>
-        {% endif %}
-
-        <div class="flex items-center justify-end gap-4">
-            <a href="/" class="text-gray-500 hover:text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                Cancelar
-            </a>
-
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition" type="submit">
-                <i class="fa-solid fa-save"></i> Salvar {% if pericia %}Rascunho{% endif %}
-            </button>
-
-            {% if pericia %}
-            <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition"
-                type="submit" name="finalizar" value="true" onclick="return confirm('Tem certeza? Isso marcará a perícia como CONCLUÍDA.')">
-                <i class="fa-solid fa-check-circle"></i> Finalizar Perícia
-            </button>
-            {% endif %}
-        </div>
-    </form>
 </div>
+
+<script>
+    // Macros Data
+    const macros = {
+        {% for m in macros %}
+        "{{ m.id }}": `{{ m.conteudo | replace('`', '\`') | safe }}`,
+        {% endfor %}
+    };
+
+    function insertMacro(selectElement, targetId) {
+        const macroId = selectElement.value;
+        if (!macroId) return;
+
+        const textarea = document.getElementById(targetId);
+        if (textarea) {
+            const textToInsert = macros[macroId];
+            textarea.value += (textarea.value ? "\n" : "") + textToInsert;
+        }
+        selectElement.value = "";
+    }
+
+    // AJAX File Upload
+    async function uploadFile() {
+        const fileInput = document.getElementById('upload_document');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Selecione um arquivo primeiro.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('upload_document', file);
+
+        // UI Loading State
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        btnText.textContent = "Enviando...";
+        btnIcon.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+
+        try {
+            const response = await fetch("{{ url_for('upload_documento_api', id=pericia.id) }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Add to list dynamically
+                const list = document.getElementById('documentsList');
+                const noDocsMsg = document.getElementById('noDocsMsg');
+                if (noDocsMsg) noDocsMsg.remove();
+
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200 text-sm";
+                li.innerHTML = `
+                    <a href="${data.url}" target="_blank" class="text-blue-600 truncate hover:underline" title="${data.original_name}">
+                        ${data.original_name}
+                    </a>
+                    <a href="${data.delete_url}" class="text-red-500 hover:text-red-700" onclick="return confirm('Excluir documento?')">
+                        <i class="fa-solid fa-trash"></i>
+                    </a>
+                `;
+                list.appendChild(li);
+
+                fileInput.value = ""; // Clear input
+            } else {
+                alert("Erro ao enviar arquivo.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Erro de conexão.");
+        } finally {
+            // Restore UI
+            btnText.textContent = "Anexar";
+            btnIcon.classList.remove('hidden');
+            btnSpinner.classList.add('hidden');
+        }
+    }
+</script>
 {% endblock %}
