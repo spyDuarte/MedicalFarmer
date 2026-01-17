@@ -22,7 +22,7 @@ class Pericia(db.Model):
     numero_processo = db.Column(db.String(50), nullable=False)
     nome_autor = db.Column(db.String(100), nullable=False)
     data_pericia = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default='Aguardando') # Aguardando, Agendado, Em Andamento, Concluido
+    status = db.Column(db.String(20), default='Aguardando', index=True) # Aguardando, Agendado, Em Andamento, Concluido
 
     # Dados do Laudo
     anamnese = db.Column(db.Text, nullable=True)
@@ -31,9 +31,9 @@ class Pericia(db.Model):
 
     # Financeiro
     valor_honorarios = db.Column(db.Float, default=0.0)
-    status_pagamento = db.Column(db.String(20), default='Pendente') # Pendente, Pago
+    status_pagamento = db.Column(db.String(20), default='Pendente', index=True) # Pendente, Pago
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     documents = db.relationship('Documento', backref='pericia', lazy=True, cascade="all, delete-orphan")
 
