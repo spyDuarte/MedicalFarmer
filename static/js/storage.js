@@ -2,12 +2,16 @@
 const DB_KEY = 'pericia_sys_data';
 const MACROS_KEY = 'pericia_sys_macros';
 const SETTINGS_KEY = 'pericia_sys_settings';
+const TEMPLATES_KEY = 'pericia_sys_templates';
 
 const Storage = {
     // --- Data Initialization ---
     init() {
         if (!localStorage.getItem(DB_KEY)) {
             localStorage.setItem(DB_KEY, JSON.stringify([]));
+        }
+        if (!localStorage.getItem(TEMPLATES_KEY)) {
+            localStorage.setItem(TEMPLATES_KEY, JSON.stringify([]));
         }
         if (!localStorage.getItem(MACROS_KEY)) {
             // Default Macros
@@ -95,12 +99,31 @@ const Storage = {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     },
 
+    // --- Templates ---
+    getTemplates() {
+        return JSON.parse(localStorage.getItem(TEMPLATES_KEY) || '[]');
+    },
+
+    addTemplate(template) {
+        const templates = this.getTemplates();
+        template.id = Date.now();
+        templates.push(template);
+        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+    },
+
+    deleteTemplate(id) {
+        let templates = this.getTemplates();
+        templates = templates.filter(t => t.id != id);
+        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+    },
+
     // --- Backup & Restore ---
     exportData() {
         const data = {
             pericias: this.getPericias(),
             macros: this.getMacros(),
             settings: this.getSettings(),
+            templates: this.getTemplates(),
             exportDate: new Date().toISOString()
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
@@ -130,6 +153,9 @@ const Storage = {
                 }
                 if(data.macros && Array.isArray(data.macros)) {
                     localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
+                }
+                if(data.templates && Array.isArray(data.templates)) {
+                    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
                 }
                 if(data.settings) {
                     localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));

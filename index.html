@@ -38,6 +38,46 @@
     <!-- Toast Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-96 transform transition-all scale-100">
+            <h3 id="modal-title" class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
+            <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6">Tem certeza?</p>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Cancelar</button>
+                <button id="modal-confirm" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- Image Annotation Modal -->
+    <div id="annotation-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-90">
+        <div class="bg-white p-4 rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Anotar Imagem</h3>
+                <div class="flex gap-2">
+                    <button onclick="App.setAnnotationTool('pen')" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300 active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="App.setAnnotationTool('text')" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300" title="Texto"><i class="fa-solid fa-font"></i></button>
+                    <button onclick="App.clearAnnotation()" class="bg-red-200 p-2 rounded hover:bg-red-300" title="Limpar"><i class="fa-solid fa-trash"></i></button>
+                    <input type="color" id="annotation-color" value="#ff0000" class="h-10 w-10 p-1 border rounded cursor-pointer">
+                </div>
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times fa-lg"></i></button>
+            </div>
+            <div class="flex-grow bg-gray-100 overflow-hidden relative border border-gray-300 rounded flex justify-center items-center">
+                <canvas id="annotation-canvas"></canvas>
+            </div>
+            <div class="mt-4 flex justify-end gap-3">
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
+                <button onclick="App.saveAnnotation()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Anotação</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav class="bg-blue-800 dark:bg-blue-900 text-white shadow-lg no-print">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -90,7 +130,7 @@
             </div>
 
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
-                <div class="flex gap-2 w-full md:w-auto">
+                <div class="flex flex-wrap gap-2 w-full md:w-auto items-center">
                     <select id="status-filter" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
                         <option value="">Todos os Status</option>
                         <option value="Aguardando">Aguardando</option>
@@ -98,6 +138,9 @@
                         <option value="Em Andamento">Em Andamento</option>
                         <option value="Concluido">Concluído</option>
                     </select>
+                    <input type="date" id="date-start" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Inicial">
+                    <span class="text-gray-500">-</span>
+                    <input type="date" id="date-end" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Final">
                     <input type="text" id="search-input" onkeyup="App.renderDashboard()" placeholder="Buscar..." class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 md:w-64">
                 </div>
 
@@ -110,6 +153,14 @@
                         <input type="file" onchange="Storage.importData(this)" class="hidden" accept=".json">
                     </label>
                 </div>
+            </div>
+
+            <!-- Templates Section (New) -->
+            <div class="mb-6 flex justify-end">
+                 <button onclick="document.getElementById('new-pericia-template-modal').classList.remove('hidden')" class="text-blue-600 hover:text-blue-800 text-sm font-bold">
+                    <i class="fa-solid fa-file-medical"></i> Gerenciar Templates
+                 </button>
+            </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-x-auto">
@@ -134,7 +185,12 @@
                 <!-- Header -->
                 <div class="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
                     <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Editor de Perícia</h2>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 items-center">
+                        <select id="template-selector" onchange="App.loadTemplate(this.value)" class="text-xs border rounded p-1 dark:bg-gray-600 dark:text-white mr-2">
+                            <option value="">Carregar Template...</option>
+                        </select>
+                        <button onclick="App.saveAsTemplate()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+
                         <button onclick="App.saveForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold">Salvar</button>
                         <button onclick="App.saveForm(true)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-bold">Finalizar</button>
                         <a href="#dashboard" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1 rounded text-sm font-bold">Voltar</a>
