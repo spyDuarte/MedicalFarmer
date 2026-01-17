@@ -34,7 +34,7 @@ def test_refactor_features():
             page.wait_for_selector("#view-finance:not(.hidden)")
 
             print("Finance view loaded.")
-            page.screenshot(path="verification_refactor/finance_view.png")
+            page.screenshot(path="tests/screenshots/finance_view.png")
 
             # 3. Macro Loading
             print("Checking Macros...")
@@ -43,7 +43,7 @@ def test_refactor_features():
 
             page.wait_for_selector("text=Anamnese - Dor Lombar")
             print("Default macros confirmed.")
-            page.screenshot(path="verification_refactor/macros_view.png")
+            page.screenshot(path="tests/screenshots/macros_view.png")
 
             # 4. Form & PDF
             print("Checking Form...")
