@@ -67,6 +67,51 @@ const Storage = {
          let macros = this.getMacros();
          macros = macros.filter(m => m.id != id);
          localStorage.setItem(MACROS_KEY, JSON.stringify(macros));
+    },
+
+    // --- Backup & Restore ---
+    exportData() {
+        const data = {
+            pericias: this.getPericias(),
+            macros: this.getMacros(),
+            exportDate: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `backup_pericias_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+
+    importData(input) {
+        const file = input.files[0];
+        if(!file) return;
+
+        if(!confirm("ATENÇÃO: Isso irá substituir todos os dados atuais pelos do backup. Deseja continuar?")) {
+            input.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if(data.pericias && Array.isArray(data.pericias)) {
+                    localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
+                }
+                if(data.macros && Array.isArray(data.macros)) {
+                    localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
+                }
+                alert("Dados restaurados com sucesso!");
+                location.reload();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao ler arquivo de backup.");
+            }
+        };
+        reader.readAsText(file);
     }
 };
 

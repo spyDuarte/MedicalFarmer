@@ -7,11 +7,40 @@ const App = {
     init() {
         this.bindEvents();
         this.route();
+        this.initTheme();
         window.addEventListener('hashchange', () => this.route());
     },
 
     bindEvents() {
         // Global clicks for delegation if needed
+    },
+
+    initTheme() {
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+            document.getElementById('theme-icon').classList.remove('fa-moon');
+            document.getElementById('theme-icon').classList.add('fa-sun');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+    },
+
+    toggleTheme() {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+            localStorage.theme = 'light';
+            document.getElementById('theme-icon').classList.remove('fa-sun');
+            document.getElementById('theme-icon').classList.add('fa-moon');
+        } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+            localStorage.theme = 'dark';
+            document.getElementById('theme-icon').classList.remove('fa-moon');
+            document.getElementById('theme-icon').classList.add('fa-sun');
+        }
     },
 
     route() {
@@ -68,25 +97,25 @@ const App = {
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
                     ${this.getStatusBadge(p.status)}
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <p class="text-gray-900 font-bold">${p.numero_processo}</p>
-                    <p class="text-gray-600 text-xs">${p.nome_autor}</p>
+                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                    <p class="text-gray-900 dark:text-gray-100 font-bold">${p.numero_processo}</p>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nome_autor}</p>
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200">
                      ${p.data_pericia ? new Date(p.data_pericia).toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <p class="font-mono">R$ ${parseFloat(p.valor_honorarios || 0).toFixed(2)}</p>
+                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                    <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valor_honorarios || 0).toFixed(2)}</p>
                     ${p.status_pagamento === 'Pago'
-                        ? '<span class="text-xs text-green-600"><i class="fa-solid fa-check"></i> Pago</span>'
-                        : '<span class="text-xs text-yellow-600"><i class="fa-solid fa-clock"></i> Pendente</span>'}
+                        ? '<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> Pago</span>'
+                        : '<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> Pendente</span>'}
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm flex gap-2">
-                    <a href="#editar/${p.id}" class="text-blue-600 hover:text-blue-900"><i class="fa-solid fa-pen-to-square fa-lg"></i></a>
-                    ${p.status === 'Concluido' ? `<a href="#print/${p.id}" target="_blank" class="text-green-600 hover:text-green-900"><i class="fa-solid fa-file-pdf fa-lg"></i></a>` : ''}
+                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm flex gap-2">
+                    <a href="#editar/${p.id}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"><i class="fa-solid fa-pen-to-square fa-lg"></i></a>
+                    ${p.status === 'Concluido' ? `<a href="#print/${p.id}" target="_blank" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"><i class="fa-solid fa-file-pdf fa-lg"></i></a>` : ''}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -134,16 +163,16 @@ const App = {
 
         macros.forEach(m => {
             const div = document.createElement('div');
-            div.className = "bg-white shadow border-l-4 border-blue-500 rounded p-4 flex justify-between items-start mb-4";
+            div.className = "bg-white dark:bg-gray-800 shadow border-l-4 border-blue-500 rounded p-4 flex justify-between items-start mb-4";
             div.innerHTML = `
                 <div>
                      <div class="flex items-center gap-2 mb-1">
                         <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200">
                             ${m.categoria.replace('_', ' ')}
                         </span>
-                        <h3 class="text-lg font-bold">${m.titulo}</h3>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">${m.titulo}</h3>
                     </div>
-                    <p class="text-gray-600 text-sm whitespace-pre-line mt-2">${m.conteudo}</p>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line mt-2">${m.conteudo}</p>
                 </div>
                 <button onclick="App.deleteMacro(${m.id})" class="text-red-500 hover:text-red-700 ml-4"><i class="fa-solid fa-trash"></i></button>
             `;
@@ -324,10 +353,10 @@ const App = {
         }
         docs.forEach(doc => {
             const li = document.createElement('li');
-            li.className = "flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200 text-sm mb-1";
+            li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-1";
             li.innerHTML = `
-                <a href="#" onclick="App.downloadFile(${doc.id})" class="text-blue-600 truncate hover:underline">${doc.original_name}</a>
-                <button onclick="App.deleteFile(${doc.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                <a href="#" onclick="App.downloadFile(${doc.id})" class="text-blue-600 dark:text-blue-400 truncate hover:underline">${doc.original_name}</a>
+                <button onclick="App.deleteFile(${doc.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
             `;
             ul.appendChild(li);
         });
