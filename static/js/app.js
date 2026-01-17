@@ -72,6 +72,22 @@ const App = {
         }
     },
 
+    // --- Tabs Logic ---
+    switchTab(tabId) {
+        // Hide all contents
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        // Show target
+        document.getElementById(tabId).classList.remove('hidden');
+
+        // Update buttons
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('active');
+            el.classList.add('inactive');
+        });
+        document.getElementById(`btn-${tabId}`).classList.remove('inactive');
+        document.getElementById(`btn-${tabId}`).classList.add('active');
+    },
+
     // --- Views ---
 
     renderDashboard() {
@@ -79,11 +95,9 @@ const App = {
         const tbody = document.getElementById('dashboard-table-body');
         tbody.innerHTML = '';
 
-        // Financials
         let totalRecebido = 0;
         let totalPendente = 0;
 
-        // Filtering
         const search = document.getElementById('search-input').value.toLowerCase();
         const statusFilter = document.getElementById('status-filter').value;
 
@@ -95,7 +109,6 @@ const App = {
              return matchesSearch && matchesStatus;
         }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        // Stats Logic
         const stats = { 'Aguardando': 0, 'Agendado': 0, 'Em Andamento': 0, 'Concluido': 0 };
 
         filtered.forEach(p => {
@@ -114,7 +127,7 @@ const App = {
                     <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nome_autor}</p>
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200">
-                     ${p.data_pericia ? new Date(p.data_pericia).toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
+                     ${p.data_pericia ? new Date(p.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
                     <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valor_honorarios || 0).toFixed(2)}</p>
@@ -139,13 +152,8 @@ const App = {
     renderCharts(stats) {
         const ctx = document.getElementById('chart-status');
         if (!ctx) return;
+        if (this.statusChart) this.statusChart.destroy();
 
-        // Destroy old chart
-        if (this.statusChart) {
-            this.statusChart.destroy();
-        }
-
-        // Check if dark mode is active to adjust text colors
         const isDark = document.documentElement.classList.contains('dark');
         const textColor = isDark ? '#e5e7eb' : '#374151';
 
@@ -163,10 +171,7 @@ const App = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: { color: textColor }
-                    }
+                    legend: { position: 'right', labels: { color: textColor } }
                 }
             }
         });
@@ -176,34 +181,43 @@ const App = {
         this.currentPericiaId = id;
         const pericia = id ? Storage.getPericia(id) : {};
 
-        // Populate inputs
-        document.getElementById('f-numero_processo').value = pericia.numero_processo || '';
-        document.getElementById('f-nome_autor').value = pericia.nome_autor || '';
+        // Reset Tabs
+        this.switchTab('tab-identificacao');
 
-        // Extended Patient Data
+        // Populate inputs (Admin)
+        document.getElementById('f-numero_processo').value = pericia.numero_processo || '';
+        document.getElementById('f-vara').value = pericia.vara || '';
+        document.getElementById('f-nome_autor').value = pericia.nome_autor || '';
         document.getElementById('f-data_nascimento').value = pericia.data_nascimento || '';
         document.getElementById('f-cpf').value = pericia.cpf || '';
         document.getElementById('f-rg').value = pericia.rg || '';
-        document.getElementById('f-profissao').value = pericia.profissao || '';
-        this.calcAge(); // Update age display
+        document.getElementById('f-escolaridade').value = pericia.escolaridade || '';
+        this.calcAge();
 
         document.getElementById('f-data_pericia').value = pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '';
         document.getElementById('f-valor_honorarios').value = pericia.valor_honorarios || 0;
         document.getElementById('f-status_pagamento').value = pericia.status_pagamento || 'Pendente';
 
-        // Clinical Section Visibility
-        const clinicalSection = document.getElementById('clinical-section');
-        const documentsSection = document.getElementById('documents-section');
+        // History
+        document.getElementById('f-profissao').value = pericia.profissao || '';
+        document.getElementById('f-tempo_funcao').value = pericia.tempo_funcao || '';
+        document.getElementById('f-desc_atividades').value = pericia.desc_atividades || '';
+        document.getElementById('f-antecedentes').value = pericia.antecedentes || '';
 
-        if (id) {
-            clinicalSection.classList.remove('hidden');
-            documentsSection.classList.remove('hidden');
-            this.initQuill(pericia);
-            this.renderDocumentsList(pericia.documents || []);
-        } else {
-            clinicalSection.classList.add('hidden');
-            documentsSection.classList.add('hidden');
-        }
+        // Clinical & Exams
+        document.getElementById('f-exames_complementares').value = pericia.exames_complementares || '';
+
+        // Conclusion
+        document.getElementById('f-discussao').value = pericia.discussao || '';
+        document.getElementById('f-cid').value = pericia.cid || '';
+        document.getElementById('f-nexo').value = pericia.nexo || 'Não há nexo';
+        document.getElementById('f-did').value = pericia.did || '';
+        document.getElementById('f-dii').value = pericia.dii || '';
+        document.getElementById('f-parecer').value = pericia.parecer || 'Capto';
+
+        // Initialize Quill and Documents List (Always active now, controlled by tabs)
+        this.initQuill(pericia);
+        this.renderDocumentsList(pericia.documents || []);
     },
 
     renderSettings() {
@@ -248,31 +262,51 @@ const App = {
         const s = Storage.getSettings();
         if(!pericia) return;
 
-        // Header (Professional Info)
+        // Header
         document.getElementById('print-header-name').innerText = s.nome || 'Dr. Perito Judicial';
         document.getElementById('print-header-crm').innerText = s.crm || 'CRM-XX 00000';
-        document.getElementById('print-header-details').innerText = `${s.endereco ? s.endereco + ' | ' : ''}${s.telefone || ''}`;
+        document.getElementById('print-header-contact').innerText = `${s.endereco ? s.endereco : ''} ${s.telefone ? ' | ' + s.telefone : ''}`;
 
         document.getElementById('p-processo').innerText = pericia.numero_processo;
-        document.getElementById('p-data').innerText = pericia.data_pericia ? new Date(pericia.data_pericia).toLocaleDateString('pt-BR') : '___/___/____';
+        document.getElementById('p-data').innerText = pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____';
 
-        // Extended Patient Data
-        document.getElementById('p-autor').innerText = pericia.nome_autor;
+        // 1. Identificação Detalhada
+        let idDetails = `
+            <strong>Nome:</strong> ${pericia.nome_autor}<br>
+            <strong>Nascimento:</strong> ${pericia.data_nascimento ? new Date(pericia.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+            (${this.calculateAgeValue(pericia.data_nascimento) || '-'} anos)<br>
+            <strong>RG:</strong> ${pericia.rg || '-'} | <strong>CPF:</strong> ${pericia.cpf || '-'}<br>
+            <strong>Escolaridade:</strong> ${pericia.escolaridade || '-'}
+        `;
+        document.getElementById('p-identificacao-detalhada').innerHTML = idDetails;
 
-        let details = [];
-        if(pericia.data_nascimento) {
-            const age = this.calculateAgeValue(pericia.data_nascimento);
-            details.push(`Nascimento: ${new Date(pericia.data_nascimento).toLocaleDateString('pt-BR')} (${age} anos)`);
-        }
-        if(pericia.rg) details.push(`RG: ${pericia.rg}`);
-        if(pericia.cpf) details.push(`CPF: ${pericia.cpf}`);
-        if(pericia.profissao) details.push(`Profissão: ${pericia.profissao}`);
-
-        document.getElementById('p-autor-details').innerText = details.join(' | ');
-
+        // 2. Histórico
+        let histOcup = `
+            <strong>Profissão:</strong> ${pericia.profissao || '-'}<br>
+            <strong>Tempo na Função:</strong> ${pericia.tempo_funcao || '-'}<br>
+            <strong>Atividades/Riscos:</strong> ${pericia.desc_atividades || '-'}
+        `;
+        document.getElementById('p-ocupacional').innerHTML = histOcup;
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
+        document.getElementById('p-antecedentes').innerText = pericia.antecedentes || 'Nada digno de nota.';
+
+        // 3. Exame
         document.getElementById('p-exame').innerHTML = pericia.exame_fisico || 'Não informado.';
-        document.getElementById('p-conclusao').innerHTML = pericia.conclusao || 'Não informado.';
+
+        // 4. Documentos
+        document.getElementById('p-exames-comp').innerText = pericia.exames_complementares || 'Não apresentados.';
+
+        // 5. Conclusão
+        document.getElementById('p-discussao').innerText = pericia.discussao || '';
+        document.getElementById('p-cid').innerText = pericia.cid || '-';
+        document.getElementById('p-nexo').innerText = pericia.nexo || '-';
+        document.getElementById('p-did').innerText = pericia.did || '-';
+        document.getElementById('p-dii').innerText = pericia.dii || '-';
+        document.getElementById('p-parecer').innerText = pericia.parecer || '-';
+        document.getElementById('p-conclusao').innerHTML = pericia.conclusao || '';
+
+        // 6. Quesitos
+        document.getElementById('p-quesitos').innerHTML = pericia.quesitos || 'Vide corpo do laudo.';
 
         // Footer
         document.getElementById('print-footer-name').innerText = s.nome || 'Dr. Perito Judicial';
@@ -304,6 +338,7 @@ const App = {
     },
 
     calculateAgeValue(dobStr) {
+        if(!dobStr) return null;
         const dob = new Date(dobStr);
         const diff_ms = Date.now() - dob.getTime();
         const age_dt = new Date(diff_ms);
@@ -313,17 +348,22 @@ const App = {
     initQuill(pericia) {
         const opts = { theme: 'snow', modules: { toolbar: [['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['clean']] } };
 
-        // Destroy old if exists to avoid dupes
+        // Destroy old if exists
         document.querySelectorAll('.ql-toolbar').forEach(e => e.remove());
 
+        // Main Editors
         this.editors['anamnese'] = new Quill('#q-anamnese', opts);
         this.editors['exame_fisico'] = new Quill('#q-exame_fisico', opts);
         this.editors['conclusao'] = new Quill('#q-conclusao', opts);
+
+        // New Editor for Quesitos
+        this.editors['quesitos'] = new Quill('#q-quesitos', opts);
 
         // Set Content
         this.editors['anamnese'].root.innerHTML = pericia.anamnese || '';
         this.editors['exame_fisico'].root.innerHTML = pericia.exame_fisico || '';
         this.editors['conclusao'].root.innerHTML = pericia.conclusao || '';
+        this.editors['quesitos'].root.innerHTML = pericia.quesitos || '';
 
         // Init Macro Selects
         this.populateMacroSelects();
@@ -331,8 +371,11 @@ const App = {
 
     populateMacroSelects() {
         const macros = Storage.getMacros();
+        // Updated categories list? Ideally add macros for quesitos too, but sticking to existing
         ['anamnese', 'exame_fisico', 'conclusao'].forEach(cat => {
             const sel = document.getElementById(`macro-sel-${cat}`);
+            if(!sel) return;
+
             sel.innerHTML = '<option value="">Inserir modelo...</option>';
             macros.filter(m => m.categoria === cat).forEach(m => {
                 const opt = document.createElement('option');
@@ -341,7 +384,6 @@ const App = {
                 sel.appendChild(opt);
             });
 
-            // Remove old listener
             const newSel = sel.cloneNode(true);
             sel.parentNode.replaceChild(newSel, sel);
 
@@ -365,21 +407,39 @@ const App = {
         const data = {
             id: this.currentPericiaId,
             numero_processo: document.getElementById('f-numero_processo').value,
+            vara: document.getElementById('f-vara').value,
             nome_autor: document.getElementById('f-nome_autor').value,
 
             // Extended Data
             data_nascimento: document.getElementById('f-data_nascimento').value,
             cpf: document.getElementById('f-cpf').value,
             rg: document.getElementById('f-rg').value,
+            escolaridade: document.getElementById('f-escolaridade').value,
+
+            // History
             profissao: document.getElementById('f-profissao').value,
+            tempo_funcao: document.getElementById('f-tempo_funcao').value,
+            desc_atividades: document.getElementById('f-desc_atividades').value,
+            antecedentes: document.getElementById('f-antecedentes').value,
+
+            // Exams & Conclusion
+            exames_complementares: document.getElementById('f-exames_complementares').value,
+            discussao: document.getElementById('f-discussao').value,
+            cid: document.getElementById('f-cid').value,
+            nexo: document.getElementById('f-nexo').value,
+            did: document.getElementById('f-did').value,
+            dii: document.getElementById('f-dii').value,
+            parecer: document.getElementById('f-parecer').value,
 
             data_pericia: document.getElementById('f-data_pericia').value,
             valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value),
             status_pagamento: document.getElementById('f-status_pagamento').value,
 
+            // Rich Text
             anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
             exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
             conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
+            quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
 
             documents: this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : []
         };
@@ -387,11 +447,9 @@ const App = {
         // Determine Status
         if (finalize) data.status = 'Concluido';
         else if (!data.status) {
-             // Logic for new/update
              if (data.data_pericia) data.status = 'Agendado';
              else data.status = 'Aguardando';
 
-             // If existing was In Progress, keep it unless finalized
              if (this.currentPericiaId) {
                  const old = Storage.getPericia(this.currentPericiaId);
                  if (old.status === 'Em Andamento' || old.status === 'Concluido') data.status = old.status;
@@ -443,7 +501,6 @@ const App = {
         const file = input.files[0];
         if(!file || !this.currentPericiaId) return;
 
-        // Limit size for LocalStorage (e.g., 2MB)
         if (file.size > 2 * 1024 * 1024) {
             alert("Arquivo muito grande para versão Web. Máximo 2MB.");
             return;
@@ -457,7 +514,7 @@ const App = {
             pericia.documents.push({
                 id: Date.now(),
                 original_name: file.name,
-                content: e.target.result // Data URL
+                content: e.target.result
             });
 
             Storage.savePericia(pericia);
