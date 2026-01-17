@@ -1,6 +1,21 @@
 import { Storage } from './storage.js';
+import { UI } from './ui.js';
 
 export const PrintController = {
+    bindEvents() {
+        const btnPrint = document.getElementById('btn-print-native');
+        if(btnPrint) btnPrint.addEventListener('click', () => window.print());
+
+        const btnPdf = document.getElementById('btn-export-pdf');
+        if(btnPdf) btnPdf.addEventListener('click', () => this.exportPDF());
+
+        const btnClose = document.getElementById('btn-close-print');
+        if(btnClose) btnClose.addEventListener('click', () => {
+             window.close(); // Only works if opened by script, but here it's SPA view
+             window.location.hash = '#dashboard';
+        });
+    },
+
     render(id) {
         const pericia = Storage.getPericia(id);
         const s = Storage.getSettings();
@@ -81,12 +96,15 @@ export const PrintController = {
         const btnContainer = element.querySelector('.fixed.bottom-4.right-4');
         if(btnContainer) btnContainer.style.display = 'none';
 
+        UI.Loading.show();
         html2pdf().set(opt).from(element).save().then(() => {
              if(btnContainer) btnContainer.style.display = 'flex';
+             UI.Loading.hide();
         }).catch(err => {
             console.error(err);
-            alert("Erro ao gerar PDF: " + err.message);
+            UI.Toast.show("Erro ao gerar PDF: " + err.message, 'error');
             if(btnContainer) btnContainer.style.display = 'flex';
+            UI.Loading.hide();
         });
     }
 };

@@ -5,6 +5,8 @@ import { CalendarController } from './calendar.js';
 import { PrintController } from './print.js';
 import { SettingsController } from './settings.js';
 import { FinanceController } from './finance.js';
+import { MacrosController } from './macros.js';
+import { UI } from './ui.js';
 
 export const Router = {
     init() {
@@ -48,11 +50,8 @@ export const Router = {
             document.getElementById('view-form').classList.remove('hidden');
             FormController.renderForm(id);
         } else if (path === 'macros') {
-            // Reusing Macros logic which was simple enough to keep in main or separate?
-            // Let's implement Macros logic in main.js for simplicity or add a controller.
-            // For now, let's keep it simple in Main or a Micro Controller.
             document.getElementById('view-macros').classList.remove('hidden');
-            window.App.renderMacros(); // Bridging to global App for legacy or simple logic
+            MacrosController.render();
         } else if (path === 'print') {
             document.getElementById('view-print').classList.remove('hidden');
             PrintController.render(id);

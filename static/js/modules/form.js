@@ -2,6 +2,7 @@ import { Storage } from './storage.js';
 import { Mask, Validator } from './utils.js';
 import { FileDB } from './db.js';
 import { CID10 } from '../cid_data.js';
+import { UI } from './ui.js';
 
 export const FormController = {
     editors: {},
@@ -11,13 +12,27 @@ export const FormController = {
     // Annotation
     canvas: null,
     ctx: null,
-    isDrawing: false,
     currentTool: 'pen',
     currentImage: null,
-    originalDocId: null,
 
     init(id) {
         this.renderForm(id);
+    },
+
+    bindEvents() {
+        // Bind Buttons that are static in HTML
+        const btnSave = document.getElementById('btn-save-form'); // We need to add this ID
+        const btnFinalize = document.getElementById('btn-finalize-form'); // We need to add this ID
+        const btnUpload = document.getElementById('btn-upload'); // We need to add this ID
+        const btnSaveTemplate = document.getElementById('btn-save-template'); // We need to add this ID
+
+        // Dynamic listeners are handled in renderForm by re-attaching or delegation
+        // Ideally we delegate, but for now we'll stick to attaching on render but remove the cloneNode hack
+
+        // Listen to Tab Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.switchTab(e.target.id.replace('btn-', '')));
+        });
     },
 
     // --- Core Form Rendering ---
@@ -65,7 +80,7 @@ export const FormController = {
         // Check for Auto-Save
         const draft = localStorage.getItem('pericia_draft');
         if (!id && draft) {
-            if(confirm('Existe um rascunho não salvo. Deseja recuperar?')) {
+            UI.Modal.confirm('Existe um rascunho não salvo. Deseja recuperar?', () => {
                 const draftData = JSON.parse(draft);
                 // Apply draft values to fields
                 Object.keys(draftData).forEach(key => {
@@ -76,47 +91,57 @@ export const FormController = {
                 pericia.exame_fisico = draftData.exame_fisico;
                 pericia.conclusao = draftData.conclusao;
                 pericia.quesitos = draftData.quesitos;
-            } else {
-                localStorage.removeItem('pericia_draft');
-            }
+
+                // Re-init editors with draft data
+                this.initQuill(pericia);
+            });
+            // If user cancels, we should probably clear draft?
+            // In Modal.confirm, cancellation just hides modal.
+            // We might want to clear draft if they say no, but current Modal impl doesn't support 'Cancel' callback easily.
+            // Let's assume they might want to recover later or we manually clear if they start typing new stuff.
         }
 
         this.initQuill(pericia);
         this.renderDocumentsList(pericia.documents || []);
 
-        // Add Listeners (Auto-Save + Masks)
+        // Attach listeners (without cloning)
+        // We use a flag or named handler to avoid duplicates if possible,
+        // but since renderForm might be called multiple times, we need to be careful.
+        // The simplest way without cloning is to assign `oninput` directly, which overrides previous.
+        // It's not "addEventListener" but it prevents stacking.
+
         document.querySelectorAll('#view-form input, #view-form select, #view-form textarea').forEach(el => {
-            const newEl = el.cloneNode(true);
-            newEl.value = el.value; // Restore dynamic value
-            el.parentNode.replaceChild(newEl, el);
-
-            newEl.addEventListener('input', () => this.autoSave());
-            newEl.addEventListener('change', () => this.autoSave());
-
-            if(newEl.id === 'f-cpf') {
-                newEl.addEventListener('input', (e) => e.target.value = Mask.cpf(e.target.value));
-            }
-            if(newEl.id === 'f-cid') {
-                newEl.addEventListener('input', (e) => this.handleCIDSearch(e));
-                newEl.addEventListener('blur', () => setTimeout(() => document.getElementById('cid-suggestions').classList.add('hidden'), 200));
-            }
-             if(newEl.id === 'f-data_nascimento') {
-                newEl.addEventListener('change', () => this.calcAge());
+            el.oninput = (e) => {
+                this.autoSave();
+                if(el.id === 'f-cpf') e.target.value = Mask.cpf(e.target.value);
+                if(el.id === 'f-cid') this.handleCIDSearch(e);
+            };
+            el.onchange = (e) => {
+                this.autoSave();
+                if(el.id === 'f-data_nascimento') this.calcAge();
+            };
+            if(el.id === 'f-cid') {
+                el.onblur = () => setTimeout(() => document.getElementById('cid-suggestions').classList.add('hidden'), 200);
             }
         });
     },
 
     // --- Logic Helpers ---
     switchTab(tabId) {
+        if(!tabId) return;
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById(tabId).classList.remove('hidden');
+        const target = document.getElementById(tabId);
+        if(target) target.classList.remove('hidden');
 
         document.querySelectorAll('.tab-btn').forEach(el => {
             el.classList.remove('active');
             el.classList.add('inactive');
         });
-        document.getElementById(`btn-${tabId}`).classList.remove('inactive');
-        document.getElementById(`btn-${tabId}`).classList.add('active');
+        const btn = document.getElementById(`btn-${tabId}`);
+        if(btn) {
+            btn.classList.remove('inactive');
+            btn.classList.add('active');
+        }
     },
 
     calcAge() {
@@ -166,15 +191,29 @@ export const FormController = {
         ];
         const opts = { theme: 'snow', modules: { toolbar: toolbarOptions } };
 
-        // Cleanup old
-        document.querySelectorAll('.ql-toolbar').forEach(e => e.remove());
+        // Cleanup old toolbars to prevent duplication
+        // Quill attaches toolbar before the container usually if theme is snow and we passed selector?
+        // Actually, if we init on same ID, Quill might double up.
+        // We should clear the container INNER HTML first (which we do in renderForm logic below?)
+
+        ['q-anamnese', 'q-exame_fisico', 'q-conclusao', 'q-quesitos'].forEach(id => {
+             const container = document.getElementById(id);
+             if(container) {
+                 // Check if already has quill instance? Hard to check without ref.
+                 // We clear innerHTML.
+                 // Note: This removes the toolbar if it was inside? No, toolbar is usually sibling or top.
+                 // Quill 1.3.6: if we pass selector, it appends toolbar.
+                 // We need to remove previous toolbars.
+                 const prevToolbar = container.previousElementSibling;
+                 if(prevToolbar && prevToolbar.classList.contains('ql-toolbar')) {
+                     prevToolbar.remove();
+                 }
+                 container.innerHTML = '';
+             }
+        });
 
         const createEditor = (id, key) => {
-            // Check if container exists
             if(!document.getElementById(id)) return;
-            // Clear content
-            document.getElementById(id).innerHTML = '';
-
             const quill = new Quill('#' + id, opts);
 
             // Add Mic
@@ -213,10 +252,8 @@ export const FormController = {
                 sel.appendChild(opt);
             });
 
-            const newSel = sel.cloneNode(true);
-            sel.parentNode.replaceChild(newSel, sel);
-
-            newSel.addEventListener('change', (e) => {
+            // Use onchange directly to avoid stacking listeners
+            sel.onchange = (e) => {
                 const id = e.target.value;
                 if(!id) return;
                 const m = macros.find(x => x.id == id);
@@ -226,7 +263,7 @@ export const FormController = {
                     else this.editors[cat].insertText(this.editors[cat].getLength(), m.conteudo + '\n');
                 }
                 e.target.value = "";
-            });
+            };
         });
     },
 
@@ -295,7 +332,7 @@ export const FormController = {
         }
 
         if (errors.length > 0) {
-            alert("Corrija os erros:\n" + errors.join('\n'));
+            UI.Toast.show("Corrija os erros:\n" + errors.join('\n'), 'error');
             return;
         }
 
@@ -306,21 +343,21 @@ export const FormController = {
 
              if (this.currentPericiaId) {
                  const old = Storage.getPericia(this.currentPericiaId);
-                 if (old.status === 'Em Andamento' || old.status === 'Concluido') data.status = old.status;
+                 if (old && (old.status === 'Em Andamento' || old.status === 'Concluido')) data.status = old.status;
              }
              if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== 'Concluido') {
                  data.status = 'Em Andamento';
              }
         }
 
-        Storage.savePericia(data);
-        localStorage.removeItem('pericia_draft');
-
-        // Using a global Toast or alert here? Let's use alert for simplicity in this module context or we need to import a UI service
-        // Ideally we pass a callback or return promise.
-        // For now, let's assume the router handles the transition, but we need to notify user.
-        alert(finalize ? 'Perícia finalizada!' : 'Salvo com sucesso!');
-        window.location.hash = '#dashboard';
+        try {
+            Storage.savePericia(data);
+            localStorage.removeItem('pericia_draft');
+            UI.Toast.show(finalize ? 'Perícia finalizada!' : 'Salvo com sucesso!', 'success');
+            window.location.hash = '#dashboard';
+        } catch (e) {
+            UI.Toast.show(e.message, 'error');
+        }
     },
 
     // --- Files ---
@@ -328,10 +365,11 @@ export const FormController = {
         const input = document.getElementById('upload_document');
         const file = input.files[0];
         if(!file || !this.currentPericiaId) {
-            alert('Salve a perícia antes de anexar arquivos.');
+            UI.Toast.show('Salve a perícia antes de anexar arquivos.', 'warning');
             return;
         }
 
+        UI.Loading.show();
         if (file.type.startsWith('image/')) {
             this.compressImage(file, (compressedBlob) => {
                 this._saveFileToDB(compressedBlob, file.name);
@@ -387,9 +425,12 @@ export const FormController = {
                 Storage.savePericia(pericia);
                 this.renderDocumentsList(pericia.documents);
                 document.getElementById('upload_document').value = "";
+                UI.Toast.show('Arquivo anexado!', 'success');
             } catch (err) {
                 console.error(err);
-                alert('Erro ao salvar arquivo.');
+                UI.Toast.show('Erro ao salvar arquivo.', 'error');
+            } finally {
+                UI.Loading.hide();
             }
         };
         reader.readAsDataURL(blob);
@@ -439,22 +480,24 @@ export const FormController = {
                 a.download = name;
                 a.click();
             } else {
-                alert('Arquivo não encontrado.');
+                UI.Toast.show('Arquivo não encontrado.', 'error');
             }
         } catch (e) {
             console.error(e);
+            UI.Toast.show('Erro ao baixar arquivo.', 'error');
         }
     },
 
     deleteFile(docId) {
-        if(confirm('Excluir arquivo?')) {
+        UI.Modal.confirm('Excluir arquivo?', () => {
             FileDB.deleteFile(parseInt(docId)).then(() => {
                 const pericia = Storage.getPericia(this.currentPericiaId);
                 pericia.documents = pericia.documents.filter(d => d.id != docId);
                 Storage.savePericia(pericia);
                 this.renderDocumentsList(pericia.documents);
+                UI.Toast.show('Arquivo excluído.', 'info');
             });
-        }
+        });
     },
 
     // --- Templates ---
@@ -469,49 +512,45 @@ export const FormController = {
             selector.appendChild(opt);
         });
 
-        // Remove old listener if any (cloning trick)
-        const newSel = selector.cloneNode(true);
-        selector.parentNode.replaceChild(newSel, selector);
-
-        newSel.onchange = (e) => this.loadTemplate(e.target.value);
+        // Use onchange directly
+        selector.onchange = (e) => this.loadTemplate(e.target.value);
     },
 
     saveAsTemplate() {
-        const title = prompt("Nome do Template:");
+        // Native prompt is okay for now as UI.prompt is just native prompt wrapper in my implementation
+        const title = UI.Modal.prompt("Nome do Template:");
         if(!title) return;
         const data = this.collectFormData();
         delete data.id; delete data.numero_processo; delete data.nome_autor;
         delete data.cpf; delete data.rg; delete data.data_nascimento; delete data.documents;
         Storage.addTemplate({ title, data });
         this.populateTemplateSelector();
-        alert('Template salvo!');
+        UI.Toast.show('Template salvo!', 'success');
     },
 
     loadTemplate(id) {
         if(!id) return;
-        if(!confirm("Carregar template? Isso substituirá os dados atuais.")) {
-            document.getElementById('template-selector').value = "";
-            return;
-        }
-        const t = Storage.getTemplates().find(x => x.id == id);
-        if(t) {
-            const data = t.data;
-            Object.keys(data).forEach(key => {
-                const el = document.getElementById(`f-${key}`);
-                if(el) el.value = data[key] || '';
-            });
-            this.editors['anamnese'].root.innerHTML = data.anamnese || '';
-            this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
-            this.editors['conclusao'].root.innerHTML = data.conclusao || '';
-            this.editors['quesitos'].root.innerHTML = data.quesitos || '';
-        }
+        UI.Modal.confirm("Carregar template? Isso substituirá os dados atuais.", () => {
+            const t = Storage.getTemplates().find(x => x.id == id);
+            if(t) {
+                const data = t.data;
+                Object.keys(data).forEach(key => {
+                    const el = document.getElementById(`f-${key}`);
+                    if(el) el.value = data[key] || '';
+                });
+                this.editors['anamnese'].root.innerHTML = data.anamnese || '';
+                this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
+                this.editors['conclusao'].root.innerHTML = data.conclusao || '';
+                this.editors['quesitos'].root.innerHTML = data.quesitos || '';
+            }
+        });
         document.getElementById('template-selector').value = "";
     },
 
     // --- Speech ---
     toggleSpeech(quill, btn) {
         if (!('webkitSpeechRecognition' in window)) {
-            alert("Navegador não suporta reconhecimento de voz.");
+            UI.Modal.alert("Navegador não suporta reconhecimento de voz.");
             return;
         }
         if (this.recognition && this.recognition.started) {
@@ -608,14 +647,12 @@ export const FormController = {
             id: Date.now(),
             original_name: `Anotação_${new Date().toLocaleTimeString().replace(/:/g, '')}.jpg`
         });
-        // We need to save the file content to DB too!
-        // The original app code had a bug here, it saved content to DB in memory but pushed to documents list.
-        // Let's fix:
         const fileId = pericia.documents[pericia.documents.length-1].id;
         FileDB.saveFile(fileId, dataUrl).then(() => {
             Storage.savePericia(pericia);
             this.renderDocumentsList(pericia.documents);
             document.getElementById('annotation-modal').classList.add('hidden');
+            UI.Toast.show('Anotação salva.', 'success');
         });
     }
 };

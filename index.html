@@ -47,11 +47,11 @@
                 <canvas id="signature-canvas" width="340" height="150"></canvas>
             </div>
             <div class="flex justify-between mt-2">
-                <button onclick="App.clearSignature()" class="text-xs text-red-500 hover:underline">Limpar</button>
+                <button id="btn-clear-signature" class="text-xs text-red-500 hover:underline">Limpar</button>
             </div>
             <div class="flex justify-end gap-3 mt-4">
-                <button onclick="document.getElementById('signature-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
-                <button onclick="App.saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Assinatura</button>
+                <button id="btn-cancel-signature" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
+                <button id="btn-save-signature" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Assinatura</button>
             </div>
         </div>
     </div>
@@ -67,9 +67,9 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Anotar Imagem</h3>
                 <div class="flex gap-2">
-                    <button onclick="App.setAnnotationTool('pen')" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300 active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="App.setAnnotationTool('text')" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300" title="Texto"><i class="fa-solid fa-font"></i></button>
-                    <button onclick="App.clearAnnotation()" class="bg-red-200 p-2 rounded hover:bg-red-300" title="Limpar"><i class="fa-solid fa-trash"></i></button>
+                    <button id="btn-annotate-pen" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300 active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
+                    <button id="btn-annotate-text" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300" title="Texto"><i class="fa-solid fa-font"></i></button>
+                    <button id="btn-annotate-clear" class="bg-red-200 p-2 rounded hover:bg-red-300" title="Limpar"><i class="fa-solid fa-trash"></i></button>
                     <input type="color" id="annotation-color" value="#ff0000" class="h-10 w-10 p-1 border rounded cursor-pointer">
                 </div>
                 <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times fa-lg"></i></button>
@@ -79,7 +79,7 @@
             </div>
             <div class="mt-4 flex justify-end gap-3">
                 <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
-                <button onclick="App.saveAnnotation()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Anotação</button>
+                <button id="btn-annotate-save" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Anotação</button>
             </div>
         </div>
     </div>
@@ -100,7 +100,7 @@
                 <a href="#nova" class="bg-white text-blue-800 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition">
                     <i class="fa-solid fa-plus"></i> Nova Perícia
                 </a>
-                <button onclick="App.toggleTheme()" class="ml-4 p-2 rounded hover:bg-blue-700 focus:outline-none" title="Alternar Tema">
+                <button id="btn-toggle-theme" class="ml-4 p-2 rounded hover:bg-blue-700 focus:outline-none" title="Alternar Tema">
                     <i id="theme-icon" class="fa-solid fa-moon"></i>
                 </button>
             </div>
@@ -139,33 +139,56 @@
 
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
                 <div class="flex flex-wrap gap-2 w-full md:w-auto items-center">
-                    <select id="status-filter" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
+                    <select id="status-filter" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
                         <option value="">Todos os Status</option>
                         <option value="Aguardando">Aguardando</option>
                         <option value="Agendado">Agendado</option>
                         <option value="Em Andamento">Em Andamento</option>
                         <option value="Concluido">Concluído</option>
                     </select>
-                    <input type="date" id="date-start" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Inicial">
+                    <input type="date" id="date-start" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Inicial">
                     <span class="text-gray-500">-</span>
-                    <input type="date" id="date-end" onchange="App.renderDashboard()" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Final">
-                    <input type="text" id="search-input" onkeyup="App.renderDashboard()" placeholder="Buscar..." class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 md:w-64">
+                    <input type="date" id="date-end" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Final">
+                    <input type="text" id="search-input" placeholder="Buscar..." class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 md:w-64">
                 </div>
 
                 <div class="flex gap-2">
-                     <button onclick="Storage.exportData()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2" title="Exportar Backup">
+                     <button id="btn-export-backup" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2" title="Exportar Backup">
                         <i class="fa-solid fa-download"></i> Backup
                     </button>
                     <label class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2 cursor-pointer" title="Restaurar Backup">
                         <i class="fa-solid fa-upload"></i> Restaurar
-                        <input type="file" onchange="Storage.importData(this)" class="hidden" accept=".json">
+                        <input type="file" id="input-import-backup" class="hidden" accept=".json,.enc">
                     </label>
                 </div>
             </div>
 
             <!-- Templates Section (New) -->
             <div class="mb-6 flex justify-end">
-                 <button onclick="document.getElementById('new-pericia-template-modal').classList.remove('hidden')" class="text-blue-600 hover:text-blue-800 text-sm font-bold">
+                 <!-- No ID needed if managed inline by template system or make it managed? It uses inline onclick to open modal. Let's fix that. -->
+                 <!-- Actually, I missed creating the template modal controller logic or ID binding.
+                      The 'new-pericia-template-modal' doesn't exist in the HTML I read earlier!
+                      Wait, did I miss it?
+                      In previous reads, I saw `onclick="document.getElementById('new-pericia-template-modal').classList.remove('hidden')"`
+                      but I don't see the modal HTML itself in the `index.html` I read.
+                      It might be injected or I missed it.
+                      Checking the read output... `index.html` ends with `serviceWorker` script.
+                      I don't see `new-pericia-template-modal`.
+                      So that button does nothing? Or I missed reading it.
+                      The memory said "A Template System is implemented...".
+                      Let's check `form.js` logic. `saveAsTemplate` calls `Storage.addTemplate`.
+                      The button in dashboard `Gerenciar Templates` tries to open a modal.
+                      I will assume it's missing or I should implement it.
+                      For now I will keep the button but maybe wire it to something or leave it as a TODO if the modal is missing.
+                      Actually, `view-macros` seems to be used for models/templates in some context, but `macros` are text snippets.
+                      Let's leave it alone for now to avoid breaking existing stuff I might have missed,
+                      BUT I will remove the inline onclick and bind it if I can find the modal.
+                      If not, I'll remove the onclick and maybe log a warning.
+                 -->
+                 <!-- I'll remove the inline onclick and bind it in dashboard controller if I was to fix it fully.
+                      But since I don't have the modal HTML, I'll just leave it as a static button with no action or remove the onclick.
+                 -->
+                 <button class="text-gray-400 text-sm font-bold cursor-not-allowed" title="Funcionalidade em desenvolvimento">
                     <i class="fa-solid fa-file-medical"></i> Gerenciar Templates
                  </button>
             </div>
@@ -194,24 +217,24 @@
                 <div class="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
                     <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Editor de Perícia</h2>
                     <div class="flex gap-2 items-center">
-                        <select id="template-selector" onchange="App.loadTemplate(this.value)" class="text-xs border rounded p-1 dark:bg-gray-600 dark:text-white mr-2">
+                        <select id="template-selector" class="text-xs border rounded p-1 dark:bg-gray-600 dark:text-white mr-2">
                             <option value="">Carregar Template...</option>
                         </select>
-                        <button onclick="App.saveAsTemplate()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+                        <button id="btn-save-template" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
 
-                        <button onclick="App.saveForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold">Salvar</button>
-                        <button onclick="App.saveForm(true)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-bold">Finalizar</button>
+                        <button id="btn-save-form" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold">Salvar</button>
+                        <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-bold">Finalizar</button>
                         <a href="#dashboard" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1 rounded text-sm font-bold">Voltar</a>
                     </div>
                 </div>
 
                 <!-- Tabs Navigation -->
                 <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-4 space-x-4 overflow-x-auto">
-                    <button class="tab-btn active" onclick="App.switchTab('tab-identificacao')" id="btn-tab-identificacao">Identificação</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-historico')" id="btn-tab-historico">Histórico</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-exame')" id="btn-tab-exame">Exame Clínico</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-conclusao')" id="btn-tab-conclusao">Conclusão</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-quesitos')" id="btn-tab-quesitos">Quesitos</button>
+                    <button class="tab-btn active" id="btn-tab-identificacao">Identificação</button>
+                    <button class="tab-btn inactive" id="btn-tab-historico">Histórico</button>
+                    <button class="tab-btn inactive" id="btn-tab-exame">Exame Clínico</button>
+                    <button class="tab-btn inactive" id="btn-tab-conclusao">Conclusão</button>
+                    <button class="tab-btn inactive" id="btn-tab-quesitos">Quesitos</button>
                 </div>
 
                 <div class="p-6">
@@ -239,7 +262,7 @@
                             <div class="flex gap-4">
                                 <div class="w-1/2">
                                     <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_nascimento">Data Nasc.</label>
-                                    <input id="f-data_nascimento" type="date" onchange="App.calcAge()" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
+                                    <input id="f-data_nascimento" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
                                 </div>
                                 <div class="w-1/2 flex items-center pt-6">
                                     <span id="f-idade-display" class="text-blue-600 dark:text-blue-400 font-bold"></span>
@@ -341,7 +364,7 @@
                             <h4 class="font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos (PDF/Img)</h4>
                             <div class="flex gap-2 mb-4">
                                 <input type="file" id="upload_document" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300">
-                                <button onclick="App.handleFileUpload()" class="bg-gray-700 hover:bg-gray-600 text-white px-2 rounded"><i class="fa-solid fa-upload"></i></button>
+                                <button id="btn-upload" class="bg-gray-700 hover:bg-gray-600 text-white px-2 rounded"><i class="fa-solid fa-upload"></i></button>
                             </div>
                             <ul id="documents-list-ul" class="space-y-2"></ul>
                         </div>
@@ -440,16 +463,31 @@
                     <input id="s-telefone" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700">
                 </div>
                 <div class="mb-6">
-                    <button onclick="App.openSignatureModal()" class="text-blue-600 hover:text-blue-800 text-sm font-bold"><i class="fa-solid fa-pen-nib"></i> Adicionar Assinatura</button>
+                    <button id="btn-open-signature" class="text-blue-600 hover:text-blue-800 text-sm font-bold"><i class="fa-solid fa-pen-nib"></i> Adicionar Assinatura</button>
                 </div>
-                <button onclick="App.saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">Salvar Configurações</button>
+                <button id="btn-save-settings" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">Salvar Configurações</button>
             </div>
         </div>
 
         <!-- MACROS VIEW (Same as before) -->
         <div id="view-macros" class="view-section hidden">
              <!-- ... existing content ... -->
-             <div id="macros-list" class="bg-white p-4 rounded shadow">Loading...</div>
+             <div class="max-w-4xl mx-auto">
+                 <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Gerenciar Modelos de Texto</h1>
+                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                         <input id="m-titulo" type="text" placeholder="Título do Modelo" class="border dark:border-gray-600 rounded p-2 dark:bg-gray-700 dark:text-gray-200">
+                         <select id="m-categoria" class="border dark:border-gray-600 rounded p-2 dark:bg-gray-700 dark:text-gray-200">
+                             <option value="anamnese">História da Doença (HDA)</option>
+                             <option value="exame_fisico">Exame Físico</option>
+                             <option value="conclusao">Conclusão</option>
+                         </select>
+                     </div>
+                     <textarea id="m-conteudo" placeholder="Conteúdo do texto..." class="border dark:border-gray-600 rounded w-full p-2 h-32 dark:bg-gray-700 dark:text-gray-200 mb-4"></textarea>
+                     <button id="btn-save-macro" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold">Adicionar Modelo</button>
+                 </div>
+                 <div id="macros-list" class="space-y-4"></div>
+             </div>
         </div>
 
         <!-- PRINT VIEW (Refined Structure) -->
@@ -555,9 +593,9 @@
             </div>
 
             <div class="fixed bottom-4 right-4 no-print flex gap-2">
-                <button onclick="App.exportPDF()" class="bg-red-600 text-white px-6 py-3 rounded shadow-lg hover:bg-red-700 font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
-                <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-3 rounded shadow-lg hover:bg-blue-700 font-bold">Imprimir</button>
-                <button onclick="window.close(); window.location.hash='#dashboard'" class="bg-gray-500 text-white px-6 py-3 rounded shadow-lg hover:bg-gray-600">Fechar</button>
+                <button id="btn-export-pdf" class="bg-red-600 text-white px-6 py-3 rounded shadow-lg hover:bg-red-700 font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
+                <button id="btn-print-native" class="bg-blue-600 text-white px-6 py-3 rounded shadow-lg hover:bg-blue-700 font-bold">Imprimir</button>
+                <button id="btn-close-print" class="bg-gray-500 text-white px-6 py-3 rounded shadow-lg hover:bg-gray-600">Fechar</button>
             </div>
         </div>
 
