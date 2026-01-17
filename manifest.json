@@ -1,0 +1,17 @@
+{
+  "name": "Sistema de Perícias Médicas",
+  "short_name": "PeritoWeb",
+  "description": "Ferramenta para gestão de perícias médicas judiciais.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/svgs/solid/user-doctor.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

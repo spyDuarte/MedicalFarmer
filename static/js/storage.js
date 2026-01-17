@@ -51,7 +51,14 @@ const Storage = {
             pericia.created_at = new Date().toISOString();
             pericias.push(pericia);
         }
-        localStorage.setItem(DB_KEY, JSON.stringify(pericias));
+        try {
+            localStorage.setItem(DB_KEY, JSON.stringify(pericias));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                alert('Limite de armazenamento excedido! Tente remover arquivos anexados.');
+                throw e; // Propagate to caller
+            }
+        }
         return pericia;
     },
 
