@@ -400,6 +400,57 @@ const App = {
                 newEl.addEventListener('input', (e) => e.target.value = Mask.phone(e.target.value));
             }
         });
+
+        // Render existing signature preview if available
+        const sigPreview = document.getElementById('signature-preview');
+        if(sigPreview) sigPreview.remove(); // clear old
+
+        if (s.signature) {
+            const img = document.createElement('img');
+            img.src = s.signature;
+            img.id = 'signature-preview';
+            img.className = 'mt-4 border rounded max-h-24';
+            document.querySelector('#view-settings .max-w-2xl').appendChild(img);
+        }
+    },
+
+    openSignatureModal() {
+        const modal = document.getElementById('signature-modal');
+        const canvas = document.getElementById('signature-canvas');
+        this.sigCanvas = canvas;
+        this.sigCtx = canvas.getContext('2d');
+
+        // Reset canvas
+        this.sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+        this.sigCtx.lineWidth = 2;
+        this.sigCtx.strokeStyle = '#000';
+
+        // Events
+        let drawing = false;
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        };
+
+        canvas.onmousedown = (e) => { drawing = true; this.sigCtx.beginPath(); this.sigCtx.moveTo(getPos(e).x, getPos(e).y); };
+        canvas.onmousemove = (e) => { if(drawing) { this.sigCtx.lineTo(getPos(e).x, getPos(e).y); this.sigCtx.stroke(); } };
+        canvas.onmouseup = () => { drawing = false; };
+
+        modal.classList.remove('hidden');
+    },
+
+    clearSignature() {
+        this.sigCtx.clearRect(0, 0, this.sigCanvas.width, this.sigCanvas.height);
+    },
+
+    saveSignature() {
+        const dataUrl = this.sigCanvas.toDataURL('image/png');
+        const s = Storage.getSettings();
+        s.signature = dataUrl;
+        Storage.saveSettings(s);
+        document.getElementById('signature-modal').classList.add('hidden');
+        this.renderSettings(); // Re-render to show preview
+        this.showToast('Assinatura salva!', 'success');
     },
 
     renderMacros() {
@@ -720,7 +771,7 @@ const App = {
         });
     },
 
-    // --- Files ---
+    // --- Files (IndexedDB) ---
 
     handleFileUpload() {
         const input = document.getElementById('upload_document');
@@ -730,28 +781,85 @@ const App = {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            this.showToast('Arquivo muito grande. Máximo 2MB.', 'error');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const pericia = Storage.getPericia(this.currentPericiaId);
-            if(!pericia.documents) pericia.documents = [];
-
-            pericia.documents.push({
-                id: Date.now(),
-                original_name: file.name,
-                content: e.target.result
+        // Compress image before saving if it's an image
+        if (file.type.startsWith('image/')) {
+            this.compressImage(file, (compressedBlob) => {
+                this._saveFileToDB(compressedBlob, file.name);
             });
+        } else {
+            this._saveFileToDB(file, file.name);
+        }
+    },
 
-            Storage.savePericia(pericia);
-            this.renderDocumentsList(pericia.documents);
-            input.value = "";
-            this.showToast('Documento anexado!', 'success');
-        };
+    compressImage(file, callback) {
+        const reader = new FileReader();
         reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Max dimensions
+                const MAX_WIDTH = 1200;
+                const MAX_HEIGHT = 1200;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Compress to JPEG 0.7 quality
+                canvas.toBlob((blob) => {
+                    callback(blob);
+                }, 'image/jpeg', 0.7);
+            };
+        };
+    },
+
+    _saveFileToDB(blob, originalName) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const content = e.target.result; // Base64 for IndexedDB simplicity with current structure
+            const fileId = Date.now();
+
+            try {
+                await FileDB.saveFile(fileId, content);
+
+                const pericia = Storage.getPericia(this.currentPericiaId);
+                if(!pericia.documents) pericia.documents = [];
+
+                // Store reference in LocalStorage
+                pericia.documents.push({
+                    id: fileId,
+                    original_name: originalName,
+                    // content: null // Don't store content in LS
+                });
+
+                Storage.savePericia(pericia);
+                this.renderDocumentsList(pericia.documents);
+                document.getElementById('upload_document').value = "";
+                this.showToast('Documento salvo!', 'success');
+            } catch (err) {
+                console.error(err);
+                this.showToast('Erro ao salvar arquivo.', 'error');
+            }
+        };
+        reader.readAsDataURL(blob);
     },
 
     renderDocumentsList(docs) {
@@ -769,7 +877,7 @@ const App = {
 
             li.innerHTML = `
                 <div class="flex items-center gap-2 truncate">
-                    <a href="#" onclick="App.downloadFile(${doc.id})" class="text-blue-600 dark:text-blue-400 hover:underline truncate">${doc.original_name}</a>
+                    <a href="#" onclick="App.downloadFile(${doc.id}, '${doc.original_name}')" class="text-blue-600 dark:text-blue-400 hover:underline truncate">${doc.original_name}</a>
                     ${isImage ? `<button onclick="App.openAnnotation(${doc.id})" class="text-gray-500 hover:text-blue-500" title="Anotar"><i class="fa-solid fa-paintbrush"></i></button>` : ''}
                 </div>
                 <button onclick="App.deleteFile(${doc.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
@@ -778,32 +886,50 @@ const App = {
         });
     },
 
-    downloadFile(docId) {
-        const pericia = Storage.getPericia(this.currentPericiaId);
-        const doc = pericia.documents.find(d => d.id == docId);
-        if(doc) {
-            const a = document.createElement('a');
-            a.href = doc.content;
-            a.download = doc.original_name;
-            a.click();
+    async downloadFile(docId, name) {
+        try {
+            const content = await FileDB.getFile(docId);
+            if(content) {
+                const a = document.createElement('a');
+                a.href = content;
+                a.download = name;
+                a.click();
+            } else {
+                this.showToast('Arquivo não encontrado.', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            this.showToast('Erro ao abrir arquivo.', 'error');
         }
     },
 
     deleteFile(docId) {
-        this.showModal('Excluir Documento', 'Tem certeza que deseja excluir este documento?', () => {
-            const pericia = Storage.getPericia(this.currentPericiaId);
-            pericia.documents = pericia.documents.filter(d => d.id != docId);
-            Storage.savePericia(pericia);
-            this.renderDocumentsList(pericia.documents);
-            this.showToast('Documento removido.', 'info');
+        this.showModal('Excluir Documento', 'Tem certeza que deseja excluir este documento?', async () => {
+            try {
+                await FileDB.deleteFile(docId);
+                const pericia = Storage.getPericia(this.currentPericiaId);
+                pericia.documents = pericia.documents.filter(d => d.id != docId);
+                Storage.savePericia(pericia);
+                this.renderDocumentsList(pericia.documents);
+                this.showToast('Documento removido.', 'info');
+            } catch (e) {
+                console.error(e);
+                this.showToast('Erro ao excluir.', 'error');
+            }
         });
     },
 
     // --- Annotation Tool ---
-    openAnnotation(docId) {
+    async openAnnotation(docId) {
         this.originalDocId = docId;
         const pericia = Storage.getPericia(this.currentPericiaId);
-        const doc = pericia.documents.find(d => d.id == docId);
+        // We get ID from doc list, content from DB
+        const content = await FileDB.getFile(docId);
+
+        if (!content) {
+            this.showToast('Erro ao carregar imagem.', 'error');
+            return;
+        }
 
         const modal = document.getElementById('annotation-modal');
         const canvas = document.getElementById('annotation-canvas');
@@ -836,7 +962,7 @@ const App = {
             modal.classList.remove('hidden');
             this.initCanvasEvents();
         };
-        img.src = doc.content;
+        img.src = content;
     },
 
     initCanvasEvents() {

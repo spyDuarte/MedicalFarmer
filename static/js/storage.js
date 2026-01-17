@@ -118,7 +118,8 @@ const Storage = {
     },
 
     // --- Backup & Restore ---
-    exportData() {
+    async exportData() {
+        // Collect local storage data
         const data = {
             pericias: this.getPericias(),
             macros: this.getMacros(),
@@ -126,6 +127,16 @@ const Storage = {
             templates: this.getTemplates(),
             exportDate: new Date().toISOString()
         };
+
+        // Collect IndexedDB files
+        try {
+            const files = await FileDB.getAllFiles();
+            data.files = files; // Array of {id, content}
+        } catch (e) {
+            console.error("Error exporting files:", e);
+            alert("Aviso: Não foi possível exportar os anexos.");
+        }
+
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -145,26 +156,29 @@ const Storage = {
         }
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                if(data.pericias && Array.isArray(data.pericias)) {
-                    localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
+
+                // Restore LocalStorage
+                if(data.pericias) localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
+                if(data.macros) localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
+                if(data.templates) localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
+                if(data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+
+                // Restore IndexedDB
+                if(data.files && Array.isArray(data.files)) {
+                    await FileDB.clear();
+                    for(const file of data.files) {
+                        await FileDB.saveFile(file.id, file.content);
+                    }
                 }
-                if(data.macros && Array.isArray(data.macros)) {
-                    localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
-                }
-                if(data.templates && Array.isArray(data.templates)) {
-                    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
-                }
-                if(data.settings) {
-                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
-                }
+
                 alert("Dados restaurados com sucesso!");
                 location.reload();
             } catch (err) {
                 console.error(err);
-                alert("Erro ao ler arquivo de backup.");
+                alert("Erro ao restaurar backup. Verifique o arquivo.");
             }
         };
         reader.readAsText(file);
