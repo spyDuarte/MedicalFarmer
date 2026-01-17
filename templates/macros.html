@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Gerenciar Modelos de Texto (Macros)</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Form to Create New Macro -->
+    <div class="md:col-span-1 bg-white shadow-md rounded-lg p-6 h-fit">
+        <h2 class="text-xl font-bold mb-4 text-gray-700">Novo Modelo</h2>
+        <form action="{{ url_for('nova_macro') }}" method="POST">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Título</label>
+                <input type="text" name="titulo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Ex: Anamnese Padrão Coluna">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Categoria</label>
+                <select name="categoria" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="anamnese">Anamnese</option>
+                    <option value="exame_fisico">Exame Físico</option>
+                    <option value="conclusao">Conclusão</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Conteúdo</label>
+                <textarea name="conteudo" rows="6" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Texto a ser inserido..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <i class="fa-solid fa-plus"></i> Criar Modelo
+            </button>
+        </form>
+    </div>
+
+    <!-- List of Macros -->
+    <div class="md:col-span-2 space-y-4">
+        {% for macro in macros %}
+        <div class="bg-white shadow border-l-4 border-blue-500 rounded p-4 flex justify-between items-start">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 last:mr-0 mr-1">
+                        {{ macro.categoria.replace('_', ' ') }}
+                    </span>
+                    <h3 class="text-lg font-bold">{{ macro.titulo }}</h3>
+                </div>
+                <p class="text-gray-600 text-sm whitespace-pre-line mt-2">{{ macro.conteudo }}</p>
+            </div>
+            <a href="{{ url_for('deletar_macro', id=macro.id) }}" class="text-red-500 hover:text-red-700 ml-4" onclick="return confirm('Excluir este modelo?')">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+        </div>
+        {% else %}
+        <div class="bg-white p-8 text-center text-gray-500 rounded shadow">
+            <p>Nenhum modelo de texto cadastrado.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

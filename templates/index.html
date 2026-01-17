@@ -1,14 +1,28 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
     <h1 class="text-3xl font-bold text-gray-800">Painel de Perícias</h1>
 
-    <div class="flex gap-2">
-        <span class="flex items-center gap-1 text-sm text-gray-600"><div class="w-3 h-3 rounded-full bg-yellow-400"></div> Aguardando</span>
-        <span class="flex items-center gap-1 text-sm text-gray-600"><div class="w-3 h-3 rounded-full bg-blue-500"></div> Em Andamento</span>
-        <span class="flex items-center gap-1 text-sm text-gray-600"><div class="w-3 h-3 rounded-full bg-green-500"></div> Concluído</span>
-    </div>
+    <form action="/" method="GET" class="flex gap-2 w-full md:w-auto">
+        <select name="status" class="border rounded px-3 py-2 text-gray-700">
+            <option value="">Todos os Status</option>
+            <option value="Aguardando" {% if status_filter == 'Aguardando' %}selected{% endif %}>Aguardando</option>
+            <option value="Agendado" {% if status_filter == 'Agendado' %}selected{% endif %}>Agendado</option>
+            <option value="Em Andamento" {% if status_filter == 'Em Andamento' %}selected{% endif %}>Em Andamento</option>
+            <option value="Concluido" {% if status_filter == 'Concluido' %}selected{% endif %}>Concluído</option>
+        </select>
+        <input type="text" name="search" placeholder="Buscar nome ou processo..." value="{{ search or '' }}"
+               class="border rounded px-3 py-2 text-gray-700 md:w-64">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <i class="fa-solid fa-search"></i>
+        </button>
+        {% if search or status_filter %}
+        <a href="/" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" title="Limpar Filtros">
+             <i class="fa-solid fa-times"></i>
+        </a>
+        {% endif %}
+    </form>
 </div>
 
 <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -82,7 +96,7 @@
             {% else %}
             <tr>
                 <td colspan="5" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">
-                    Nenhuma perícia cadastrada. Clique em "Nova Perícia" para começar.
+                    Nenhuma perícia encontrada.
                 </td>
             </tr>
             {% endfor %}
