@@ -26,7 +26,7 @@ def test_refactor_features():
         page.wait_for_selector("#fin-total-paid")
 
         print("Finance view loaded.")
-        page.screenshot(path="verification_refactor/finance_view.png")
+        page.screenshot(path="tests/screenshots/finance_view.png")
 
         # 3. Macro Loading (Default Data Module)
         print("Checking Macros...")
@@ -38,7 +38,7 @@ def test_refactor_features():
         page.wait_for_selector("text=Exame Físico - Coluna Lombar")
 
         print("Default macros confirmed.")
-        page.screenshot(path="verification_refactor/macros_view.png")
+        page.screenshot(path="tests/screenshots/macros_view.png")
 
         # 4. Form & PDF (Existing features regression test)
         print("Checking Form & PDF...")
