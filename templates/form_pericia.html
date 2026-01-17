@@ -18,7 +18,7 @@
             {% endif %}
         </div>
 
-        <form method="POST" class="p-6">
+        <form method="POST" class="p-6" id="periciaForm">
 
             <!-- Dados Administrativos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -40,14 +40,36 @@
                 </div>
             </div>
 
-            <div class="mb-8">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="data_pericia">
-                    Data da Perícia (Agendamento)
-                </label>
-                <input class="shadow appearance-none border rounded w-full md:w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="data_pericia" name="data_pericia" type="date"
-                    value="{{ pericia.data_pericia.strftime('%Y-%m-%d') if pericia and pericia.data_pericia else '' }}">
-            </div>
+            <!-- Data e Financeiro -->
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="data_pericia">
+                        Data da Perícia (Agendamento)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="data_pericia" name="data_pericia" type="date"
+                        value="{{ pericia.data_pericia.strftime('%Y-%m-%d') if pericia and pericia.data_pericia else '' }}">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="valor_honorarios">
+                        Honorários Estimados (R$)
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="valor_honorarios" name="valor_honorarios" type="number" step="0.01"
+                        value="{{ pericia.valor_honorarios if pericia else '0.00' }}">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status_pagamento">
+                        Status Pagamento
+                    </label>
+                    <select class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="status_pagamento" name="status_pagamento">
+                        <option value="Pendente" {% if pericia and pericia.status_pagamento == 'Pendente' %}selected{% endif %}>Pendente</option>
+                        <option value="Pago" {% if pericia and pericia.status_pagamento == 'Pago' %}selected{% endif %}>Pago</option>
+                    </select>
+                </div>
+             </div>
+
 
             {% if pericia %}
             <hr class="border-t-2 border-gray-200 my-8">
@@ -67,40 +89,41 @@
             </div>
             {% endmacro %}
 
+            <!-- Include Quill Styles -->
+            <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
             <!-- Anamnese -->
             <div class="mb-6">
                 <div class="flex justify-between items-end">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="anamnese">
-                        1. Anamnese
-                    </label>
-                    {{ macro_select('anamnese', 'anamnese') }}
+                    <label class="block text-gray-700 text-sm font-bold mb-2">1. Anamnese</label>
+                    {{ macro_select('quill-anamnese', 'anamnese') }}
                 </div>
-                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
-                    id="anamnese" name="anamnese" placeholder="Histórico clínico...">{{ pericia.anamnese if pericia.anamnese else '' }}</textarea>
+                <div id="quill-anamnese" class="bg-white h-48">{{ pericia.anamnese | safe if pericia.anamnese else '' }}</div>
+                <input type="hidden" name="anamnese" id="anamnese">
             </div>
 
             <!-- Exame Físico -->
             <div class="mb-6">
                  <div class="flex justify-between items-end">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="exame_fisico">
-                        2. Exame Físico
-                    </label>
-                     {{ macro_select('exame_fisico', 'exame_fisico') }}
+                    <label class="block text-gray-700 text-sm font-bold mb-2">2. Exame Físico</label>
+                     {{ macro_select('quill-exame_fisico', 'exame_fisico') }}
                 </div>
-                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
-                    id="exame_fisico" name="exame_fisico" placeholder="Achados do exame físico...">{{ pericia.exame_fisico if pericia.exame_fisico else '' }}</textarea>
+                <div id="quill-exame_fisico" class="bg-white h-48">{{ pericia.exame_fisico | safe if pericia.exame_fisico else '' }}</div>
+                <input type="hidden" name="exame_fisico" id="exame_fisico">
             </div>
 
             <!-- Conclusão -->
             <div class="mb-8">
                 <div class="flex justify-between items-end">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="conclusao">
-                        3. Conclusão
-                    </label>
-                     {{ macro_select('conclusao', 'conclusao') }}
+                    <label class="block text-gray-700 text-sm font-bold mb-2">3. Conclusão</label>
+                     {{ macro_select('quill-conclusao', 'conclusao') }}
                 </div>
-                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 bg-blue-50 border-blue-200"
-                    id="conclusao" name="conclusao" placeholder="Conclusão final...">{{ pericia.conclusao if pericia.conclusao else '' }}</textarea>
+                <div id="quill-conclusao" class="bg-white h-40 bg-blue-50">{{ pericia.conclusao | safe if pericia.conclusao else '' }}</div>
+                <input type="hidden" name="conclusao" id="conclusao">
+            </div>
+            {% else %}
+            <div class="bg-blue-50 p-4 rounded text-blue-700 text-sm">
+                <p><i class="fa-solid fa-info-circle"></i> O exame pericial e o upload de documentos serão habilitados após salvar os dados iniciais.</p>
             </div>
             {% endif %}
 
@@ -165,8 +188,40 @@
 
 </div>
 
+{% if pericia %}
+<!-- Quill Library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
 <script>
-    // Macros Data
+    // --- Quill Editors Initialization ---
+    var quillOptions = {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    };
+
+    var editors = {};
+    if (document.getElementById('quill-anamnese')) {
+        editors['quill-anamnese'] = new Quill('#quill-anamnese', quillOptions);
+        editors['quill-exame_fisico'] = new Quill('#quill-exame_fisico', quillOptions);
+        editors['quill-conclusao'] = new Quill('#quill-conclusao', quillOptions);
+    }
+
+    // Sync HTML to hidden inputs before submit
+    document.getElementById('periciaForm').onsubmit = function() {
+        if (editors['quill-anamnese']) {
+            document.querySelector('input[name=anamnese]').value = editors['quill-anamnese'].root.innerHTML;
+            document.querySelector('input[name=exame_fisico]').value = editors['quill-exame_fisico'].root.innerHTML;
+            document.querySelector('input[name=conclusao]').value = editors['quill-conclusao'].root.innerHTML;
+        }
+    };
+
+    // --- Macros Logic ---
     const macros = {
         {% for m in macros %}
         "{{ m.id }}": `{{ m.conteudo | replace('`', '\`') | safe }}`,
@@ -177,15 +232,23 @@
         const macroId = selectElement.value;
         if (!macroId) return;
 
-        const textarea = document.getElementById(targetId);
-        if (textarea) {
+        const editor = editors[targetId];
+        if (editor) {
             const textToInsert = macros[macroId];
-            textarea.value += (textarea.value ? "\n" : "") + textToInsert;
+            // Insert text at current cursor position or end
+            const range = editor.getSelection(true);
+            if (range) {
+                 editor.insertText(range.index, textToInsert + '\n');
+            } else {
+                 // Append to end if no selection
+                 const length = editor.getLength();
+                 editor.insertText(length, textToInsert + '\n');
+            }
         }
         selectElement.value = "";
     }
 
-    // AJAX File Upload
+    // --- AJAX File Upload ---
     async function uploadFile() {
         const fileInput = document.getElementById('upload_document');
         const file = fileInput.files[0];
@@ -197,7 +260,6 @@
         const formData = new FormData();
         formData.append('upload_document', file);
 
-        // UI Loading State
         const btnText = document.getElementById('btnText');
         const btnIcon = document.getElementById('btnIcon');
         const btnSpinner = document.getElementById('btnSpinner');
@@ -215,7 +277,6 @@
             if (response.ok) {
                 const data = await response.json();
 
-                // Add to list dynamically
                 const list = document.getElementById('documentsList');
                 const noDocsMsg = document.getElementById('noDocsMsg');
                 if (noDocsMsg) noDocsMsg.remove();
@@ -232,7 +293,7 @@
                 `;
                 list.appendChild(li);
 
-                fileInput.value = ""; // Clear input
+                fileInput.value = "";
             } else {
                 alert("Erro ao enviar arquivo.");
             }
@@ -240,11 +301,11 @@
             console.error(error);
             alert("Erro de conexão.");
         } finally {
-            // Restore UI
             btnText.textContent = "Anexar";
             btnIcon.classList.remove('hidden');
             btnSpinner.classList.add('hidden');
         }
     }
 </script>
+{% endif %}
 {% endblock %}

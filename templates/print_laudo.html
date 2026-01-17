@@ -9,6 +9,10 @@
             body { -webkit-print-color-adjust: exact; }
             .no-print { display: none; }
         }
+        /* Restore basic list styles that Tailwind reset might strip or Quill uses */
+        .ql-editor ul { padding-left: 1.5em; list-style-type: disc; }
+        .ql-editor ol { padding-left: 1.5em; list-style-type: decimal; }
+        .ql-editor p { margin-bottom: 0.5em; }
     </style>
 </head>
 <body class="bg-white text-gray-900 font-serif p-8 max-w-4xl mx-auto">
@@ -28,19 +32,20 @@
         <p><strong>Autor (Periciado):</strong> {{ pericia.nome_autor }}</p>
     </div>
 
-    <div class="mb-8">
-        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">1. Anamnese</h2>
-        <div class="whitespace-pre-wrap text-justify">{{ pericia.anamnese or "Não informado." }}</div>
+    <!-- We add ql-editor class to match Quill styling defaults -->
+    <div class="mb-8 ql-editor">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase font-serif">1. Anamnese</h2>
+        <div class="text-justify">{{ pericia.anamnese | safe or "Não informado." }}</div>
     </div>
 
-    <div class="mb-8">
-        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">2. Exame Físico</h2>
-        <div class="whitespace-pre-wrap text-justify">{{ pericia.exame_fisico or "Não informado." }}</div>
+    <div class="mb-8 ql-editor">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase font-serif">2. Exame Físico</h2>
+        <div class="text-justify">{{ pericia.exame_fisico | safe or "Não informado." }}</div>
     </div>
 
-    <div class="mb-12">
-        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase">3. Conclusão</h2>
-        <div class="whitespace-pre-wrap text-justify bg-gray-50 p-4 border border-gray-200 rounded">{{ pericia.conclusao or "Não informado." }}</div>
+    <div class="mb-12 ql-editor">
+        <h2 class="text-lg font-bold border-b border-gray-400 mb-2 uppercase font-serif">3. Conclusão</h2>
+        <div class="text-justify bg-gray-50 p-4 border border-gray-200 rounded">{{ pericia.conclusao | safe or "Não informado." }}</div>
     </div>
 
     <div class="mt-20 text-center">
