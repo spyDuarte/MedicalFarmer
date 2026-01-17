@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'pericia-web-v2';
+const CACHE_NAME = 'pericia-web-v3';
 const ASSETS = [
     './',
     './index.html',
@@ -15,6 +14,7 @@ const ASSETS = [
     './static/js/modules/settings.js',
     './static/js/modules/finance.js',
     './static/js/modules/default_data.js',
+    './static/js/components/modals.js',
     './static/js/cid_data.js',
     './static/css/toast.css',
     'https://cdn.tailwindcss.com',
@@ -49,4 +49,11 @@ self.addEventListener('activate', (event) => {
             })
         ))
     );
+});
+
+// Listen for message to skip waiting
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
