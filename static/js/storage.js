@@ -34,17 +34,22 @@ const Storage = {
     },
 
     // --- Pericias ---
-    getPericias() {
-        return JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+    getPericias(full = false) {
+        const pericias = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        if (full) {
+            return pericias;
+        }
+        // By default, exclude large fields for list views to improve performance
+        return pericias.map(({ anamnese, exame_fisico, conclusao, quesitos, documents, ...rest }) => rest);
     },
 
     getPericia(id) {
-        const pericias = this.getPericias();
+        const pericias = this.getPericias(true); // Must get full data
         return pericias.find(p => p.id == id);
     },
 
     savePericia(pericia) {
-        const pericias = this.getPericias();
+        const pericias = this.getPericias(true); // Must get full data
         if (pericia.id) {
             const index = pericias.findIndex(p => p.id == pericia.id);
             if (index !== -1) {
@@ -67,7 +72,7 @@ const Storage = {
     },
 
     deletePericia(id) {
-        let pericias = this.getPericias();
+        let pericias = this.getPericias(true); // Must get full data
         pericias = pericias.filter(p => p.id != id);
         localStorage.setItem(DB_KEY, JSON.stringify(pericias));
     },
