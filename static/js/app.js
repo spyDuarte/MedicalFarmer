@@ -6,6 +6,14 @@ const App = {
     statusChart: null,
     autoSaveTimeout: null,
 
+    // Annotation State
+    canvas: null,
+    ctx: null,
+    isDrawing: false,
+    currentTool: 'pen',
+    currentImage: null,
+    originalDocId: null,
+
     init() {
         this.bindEvents();
         this.route();
@@ -14,7 +22,23 @@ const App = {
     },
 
     bindEvents() {
-        // Global clicks for delegation if needed
+        // Global shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                // Only save if in editing view
+                if (!document.getElementById('view-form').classList.contains('hidden')) {
+                    this.saveForm();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                // If in print view, trigger print. Else if in dashboard... maybe nothing
+                if (!document.getElementById('view-print').classList.contains('hidden')) {
+                    window.print();
+                }
+            }
+        });
     },
 
     initTheme() {
@@ -98,13 +122,27 @@ const App = {
 
         const search = document.getElementById('search-input').value.toLowerCase();
         const statusFilter = document.getElementById('status-filter').value;
+        const dateStart = document.getElementById('date-start').value;
+        const dateEnd = document.getElementById('date-end').value;
 
         const filtered = pericias.filter(p => {
              const matchesSearch = !search ||
                  (p.numero_processo && p.numero_processo.toLowerCase().includes(search)) ||
                  (p.nome_autor && p.nome_autor.toLowerCase().includes(search));
+
              const matchesStatus = !statusFilter || p.status === statusFilter;
-             return matchesSearch && matchesStatus;
+
+             let matchesDate = true;
+             if (dateStart || dateEnd) {
+                 const pDate = p.data_pericia ? new Date(p.data_pericia) : null;
+                 if (!pDate) matchesDate = false;
+                 else {
+                     if (dateStart && pDate < new Date(dateStart)) matchesDate = false;
+                     if (dateEnd && pDate > new Date(dateEnd)) matchesDate = false;
+                 }
+             }
+
+             return matchesSearch && matchesStatus && matchesDate;
         }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         const stats = { 'Aguardando': 0, 'Agendado': 0, 'Em Andamento': 0, 'Concluido': 0 };
@@ -175,7 +213,7 @@ const App = {
         });
     },
 
-    // --- Toast Notification System ---
+    // --- UI Components (Toast, Modal, Loading) ---
     showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -194,6 +232,39 @@ const App = {
             toast.classList.add('toast-exit');
             toast.addEventListener('animationend', () => toast.remove());
         }, 3000);
+    },
+
+    showModal(title, message, onConfirm) {
+        const modal = document.getElementById('custom-modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-message').innerText = message;
+
+        const confirmBtn = document.getElementById('modal-confirm');
+        const cancelBtn = document.getElementById('modal-cancel');
+
+        // Clone buttons to strip old listeners
+        const newConfirm = confirmBtn.cloneNode(true);
+        const newCancel = cancelBtn.cloneNode(true);
+
+        confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+        newConfirm.onclick = () => {
+            onConfirm();
+            modal.classList.add('hidden');
+        };
+
+        newCancel.onclick = () => {
+            modal.classList.add('hidden');
+        };
+
+        modal.classList.remove('hidden');
+    },
+
+    showLoading(show = true) {
+        const overlay = document.getElementById('loading-overlay');
+        if (show) overlay.classList.remove('hidden');
+        else overlay.classList.add('hidden');
     },
 
     // --- Data Collection Helper ---
@@ -240,6 +311,7 @@ const App = {
         const pericia = id ? Storage.getPericia(id) : {};
 
         this.switchTab('tab-identificacao');
+        this.populateTemplateSelector(); // Refresh template list
 
         const setVal = (id, val) => {
             const el = document.getElementById(id);
@@ -521,24 +593,36 @@ const App = {
             document.getElementById('f-cpf').classList.remove('border-red-500');
         }
 
-        if (finalize) data.status = 'Concluido';
-        else if (!data.status) {
-             if (data.data_pericia) data.status = 'Agendado';
-             else data.status = 'Aguardando';
+        const proceedSave = () => {
+            this.showLoading(true);
+            setTimeout(() => { // Simulate delay for UX
+                if (finalize) data.status = 'Concluido';
+                else if (!data.status) {
+                     if (data.data_pericia) data.status = 'Agendado';
+                     else data.status = 'Aguardando';
 
-             if (this.currentPericiaId) {
-                 const old = Storage.getPericia(this.currentPericiaId);
-                 if (old.status === 'Em Andamento' || old.status === 'Concluido') data.status = old.status;
-             }
-             if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== 'Concluido') {
-                 data.status = 'Em Andamento';
-             }
+                     if (this.currentPericiaId) {
+                         const old = Storage.getPericia(this.currentPericiaId);
+                         if (old.status === 'Em Andamento' || old.status === 'Concluido') data.status = old.status;
+                     }
+                     if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== 'Concluido') {
+                         data.status = 'Em Andamento';
+                     }
+                }
+
+                Storage.savePericia(data);
+                localStorage.removeItem('pericia_draft');
+                this.showLoading(false);
+                this.showToast(finalize ? 'Perícia finalizada com sucesso!' : 'Rascunho salvo com sucesso!', 'success');
+                window.location.hash = '#dashboard';
+            }, 500);
+        };
+
+        if (finalize) {
+            this.showModal('Finalizar Perícia', 'Deseja realmente finalizar? O status será alterado para Concluído.', proceedSave);
+        } else {
+            proceedSave();
         }
-
-        Storage.savePericia(data);
-        localStorage.removeItem('pericia_draft');
-        this.showToast(finalize ? 'Perícia finalizada com sucesso!' : 'Rascunho salvo com sucesso!', 'success');
-        window.location.hash = '#dashboard';
     },
 
     saveSettings() {
@@ -550,6 +634,66 @@ const App = {
         };
         Storage.saveSettings(settings);
         this.showToast('Configurações salvas!', 'success');
+    },
+
+    // --- Templates ---
+    saveAsTemplate() {
+        const title = prompt("Nome do Template:");
+        if(!title) return;
+
+        const data = this.collectFormData();
+        // Remove IDs and specific fields
+        delete data.id;
+        delete data.numero_processo;
+        delete data.nome_autor;
+        delete data.cpf;
+        delete data.rg;
+        delete data.data_nascimento;
+        delete data.documents;
+
+        const template = { title, data };
+        Storage.addTemplate(template);
+        this.populateTemplateSelector();
+        this.showToast('Template salvo!', 'success');
+    },
+
+    populateTemplateSelector() {
+        const selector = document.getElementById('template-selector');
+        if(!selector) return;
+        selector.innerHTML = '<option value="">Carregar Template...</option>';
+        Storage.getTemplates().forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.innerText = t.title;
+            selector.appendChild(opt);
+        });
+    },
+
+    loadTemplate(templateId) {
+        if(!templateId) return;
+        if(!confirm("Carregar template? Isso substituirá os dados atuais.")) {
+            document.getElementById('template-selector').value = "";
+            return;
+        }
+
+        const templates = Storage.getTemplates();
+        const template = templates.find(t => t.id == templateId);
+        if(template) {
+            // Populate fields similar to renderForm but skipping ID-bound logic
+            const data = template.data;
+            Object.keys(data).forEach(key => {
+                const el = document.getElementById(`f-${key}`);
+                if(el) el.value = data[key] || '';
+            });
+            // Rich text
+            this.editors['anamnese'].root.innerHTML = data.anamnese || '';
+            this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
+            this.editors['conclusao'].root.innerHTML = data.conclusao || '';
+            this.editors['quesitos'].root.innerHTML = data.quesitos || '';
+
+            this.showToast('Template carregado!', 'success');
+        }
+        document.getElementById('template-selector').value = "";
     },
 
     saveMacro() {
@@ -569,11 +713,11 @@ const App = {
     },
 
     deleteMacro(id) {
-        if(confirm('Excluir modelo?')) {
+        this.showModal('Excluir Modelo', 'Tem certeza que deseja excluir este modelo?', () => {
             Storage.deleteMacro(id);
             this.renderMacros();
             this.showToast('Modelo removido.', 'info');
-        }
+        });
     },
 
     // --- Files ---
@@ -620,8 +764,14 @@ const App = {
         docs.forEach(doc => {
             const li = document.createElement('li');
             li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-1";
+
+            const isImage = doc.original_name.match(/\.(jpg|jpeg|png|webp)$/i);
+
             li.innerHTML = `
-                <a href="#" onclick="App.downloadFile(${doc.id})" class="text-blue-600 dark:text-blue-400 truncate hover:underline">${doc.original_name}</a>
+                <div class="flex items-center gap-2 truncate">
+                    <a href="#" onclick="App.downloadFile(${doc.id})" class="text-blue-600 dark:text-blue-400 hover:underline truncate">${doc.original_name}</a>
+                    ${isImage ? `<button onclick="App.openAnnotation(${doc.id})" class="text-gray-500 hover:text-blue-500" title="Anotar"><i class="fa-solid fa-paintbrush"></i></button>` : ''}
+                </div>
                 <button onclick="App.deleteFile(${doc.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
             `;
             ul.appendChild(li);
@@ -640,12 +790,121 @@ const App = {
     },
 
     deleteFile(docId) {
-        if(!confirm("Excluir?")) return;
+        this.showModal('Excluir Documento', 'Tem certeza que deseja excluir este documento?', () => {
+            const pericia = Storage.getPericia(this.currentPericiaId);
+            pericia.documents = pericia.documents.filter(d => d.id != docId);
+            Storage.savePericia(pericia);
+            this.renderDocumentsList(pericia.documents);
+            this.showToast('Documento removido.', 'info');
+        });
+    },
+
+    // --- Annotation Tool ---
+    openAnnotation(docId) {
+        this.originalDocId = docId;
         const pericia = Storage.getPericia(this.currentPericiaId);
-        pericia.documents = pericia.documents.filter(d => d.id != docId);
+        const doc = pericia.documents.find(d => d.id == docId);
+
+        const modal = document.getElementById('annotation-modal');
+        const canvas = document.getElementById('annotation-canvas');
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        // Load Image
+        const img = new Image();
+        img.onload = () => {
+            // Resize logic
+            const container = canvas.parentElement;
+            const aspect = img.width / img.height;
+
+            // Fit to container (max 800x600 for example, or based on container size)
+            let width = container.clientWidth;
+            let height = width / aspect;
+
+            if (height > container.clientHeight) {
+                height = container.clientHeight;
+                width = height * aspect;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw image
+            this.ctx.drawImage(img, 0, 0, width, height);
+            this.currentImage = img; // Keep ref for redrawing if needed
+
+            modal.classList.remove('hidden');
+            this.initCanvasEvents();
+        };
+        img.src = doc.content;
+    },
+
+    initCanvasEvents() {
+        if(this.canvas.getAttribute('data-init')) return;
+
+        const getPos = (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        };
+
+        this.canvas.addEventListener('mousedown', (e) => {
+            this.isDrawing = true;
+            this.ctx.beginPath();
+            const pos = getPos(e);
+            this.ctx.moveTo(pos.x, pos.y);
+        });
+
+        this.canvas.addEventListener('mousemove', (e) => {
+            if (!this.isDrawing) return;
+            const pos = getPos(e);
+            const color = document.getElementById('annotation-color').value;
+
+            this.ctx.strokeStyle = color;
+            this.ctx.lineWidth = 3;
+            this.ctx.lineCap = 'round';
+
+            this.ctx.lineTo(pos.x, pos.y);
+            this.ctx.stroke();
+        });
+
+        this.canvas.addEventListener('mouseup', () => {
+            this.isDrawing = false;
+            this.ctx.closePath();
+        });
+
+        this.canvas.addEventListener('mouseleave', () => this.isDrawing = false);
+        this.canvas.setAttribute('data-init', 'true');
+    },
+
+    setAnnotationTool(tool) {
+        this.currentTool = tool;
+        // Visual feedback for buttons could be added here
+    },
+
+    clearAnnotation() {
+        if(confirm('Limpar todas as anotações?')) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.drawImage(this.currentImage, 0, 0, this.canvas.width, this.canvas.height);
+        }
+    },
+
+    saveAnnotation() {
+        const dataUrl = this.canvas.toDataURL('image/jpeg', 0.8);
+        const pericia = Storage.getPericia(this.currentPericiaId);
+
+        pericia.documents.push({
+            id: Date.now(),
+            original_name: `Anotação_${new Date().toLocaleTimeString().replace(/:/g, '')}.jpg`,
+            content: dataUrl
+        });
+
         Storage.savePericia(pericia);
         this.renderDocumentsList(pericia.documents);
-        this.showToast('Documento removido.', 'info');
+        document.getElementById('annotation-modal').classList.add('hidden');
+        this.showToast('Anotação salva!', 'success');
     }
 };
 
