@@ -1,0 +1,85 @@
+.hidden { display: none; }
+
+/* Quill Dark Mode Overrides */
+.dark .ql-toolbar { background-color: #d1d5db; }
+.dark .ql-container { background-color: #f3f4f6; color: black; }
+
+@media print {
+    body { background-color: white !important; color: black !important; }
+    .no-print { display: none !important; }
+    .print-break { page-break-before: always; }
+}
+
+/* Custom Tab Styling - Converted from Tailwind @apply */
+.tab-btn {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom-width: 2px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    outline: none;
+    transition-property: color, background-color, border-color;
+    transition-duration: 200ms;
+    white-space: nowrap;
+    background: transparent;
+    border-style: solid;
+    cursor: pointer;
+}
+
+.tab-btn:focus {
+    outline: none;
+}
+
+/* Active State */
+.tab-btn.active {
+    border-color: rgb(37 99 235); /* blue-600 */
+    color: rgb(37 99 235);
+}
+
+.dark .tab-btn.active {
+    color: rgb(96 165 250); /* blue-400 */
+    border-color: rgb(96 165 250);
+}
+
+/* Inactive State */
+.tab-btn.inactive {
+    border-color: transparent;
+    color: rgb(107 114 128); /* gray-500 */
+}
+
+.tab-btn.inactive:hover {
+    color: rgb(55 65 81); /* gray-700 */
+}
+
+.dark .tab-btn.inactive {
+    color: rgb(156 163 175); /* gray-400 */
+}
+
+.dark .tab-btn.inactive:hover {
+    color: rgb(229 231 235); /* gray-200 */
+}
+
+
+/* Mic Button */
+.ql-mic {
+    float: right;
+    margin-right: 5px;
+    color: #4b5563; /* text-gray-600 */
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+.ql-mic:hover {
+    color: #1d4ed8; /* text-blue-700 */
+}
+.dark .ql-mic {
+    color: #9ca3af; /* text-gray-400 */
+}
+.dark .ql-mic:hover {
+    color: #60a5fa; /* text-blue-400 */
+}
