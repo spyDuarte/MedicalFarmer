@@ -21,7 +21,7 @@ export const FormController = {
     },
 
     // --- Core Form Rendering ---
-    renderForm(id) {
+    async renderForm(id) {
         this.currentPericiaId = id;
         const pericia = id ? Storage.getPericia(id) : {};
 
@@ -62,22 +62,23 @@ export const FormController = {
         setVal('f-dii', pericia.dii);
         setVal('f-parecer', pericia.parecer || 'Capto');
 
-        // Check for Auto-Save
-        const draft = localStorage.getItem('pericia_draft');
-        if (!id && draft) {
-            if(confirm('Existe um rascunho não salvo. Deseja recuperar?')) {
-                const draftData = JSON.parse(draft);
-                // Apply draft values to fields
-                Object.keys(draftData).forEach(key => {
-                    const el = document.getElementById(`f-${key}`);
-                    if(el) el.value = draftData[key] || '';
-                });
-                pericia.anamnese = draftData.anamnese;
-                pericia.exame_fisico = draftData.exame_fisico;
-                pericia.conclusao = draftData.conclusao;
-                pericia.quesitos = draftData.quesitos;
-            } else {
-                localStorage.removeItem('pericia_draft');
+        // Check for Auto-Save (Draft from IDB)
+        if (!id) {
+            const draftData = await Storage.getDraft();
+            if (draftData) {
+                if(confirm('Existe um rascunho não salvo. Deseja recuperar?')) {
+                    // Apply draft values to fields
+                    Object.keys(draftData).forEach(key => {
+                        const el = document.getElementById(`f-${key}`);
+                        if(el) el.value = draftData[key] || '';
+                    });
+                    pericia.anamnese = draftData.anamnese;
+                    pericia.exame_fisico = draftData.exame_fisico;
+                    pericia.conclusao = draftData.conclusao;
+                    pericia.quesitos = draftData.quesitos;
+                } else {
+                    await Storage.clearDraft();
+                }
             }
         }
 
@@ -270,13 +271,13 @@ export const FormController = {
 
     autoSave() {
         if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
-        this.autoSaveTimeout = setTimeout(() => {
+        this.autoSaveTimeout = setTimeout(async () => {
             const data = this.collectFormData();
-            localStorage.setItem('pericia_draft', JSON.stringify(data));
+            await Storage.saveDraft(data);
         }, 2000);
     },
 
-    saveForm(finalize = false) {
+    async saveForm(finalize = false) {
         const data = this.collectFormData();
         let errors = [];
 
@@ -313,8 +314,8 @@ export const FormController = {
              }
         }
 
-        Storage.savePericia(data);
-        localStorage.removeItem('pericia_draft');
+        await Storage.savePericia(data);
+        await Storage.clearDraft();
 
         // Using a global Toast or alert here? Let's use alert for simplicity in this module context or we need to import a UI service
         // Ideally we pass a callback or return promise.
@@ -612,8 +613,8 @@ export const FormController = {
         // The original app code had a bug here, it saved content to DB in memory but pushed to documents list.
         // Let's fix:
         const fileId = pericia.documents[pericia.documents.length-1].id;
-        FileDB.saveFile(fileId, dataUrl).then(() => {
-            Storage.savePericia(pericia);
+        FileDB.saveFile(fileId, dataUrl).then(async () => {
+            await Storage.savePericia(pericia);
             this.renderDocumentsList(pericia.documents);
             document.getElementById('annotation-modal').classList.add('hidden');
         });

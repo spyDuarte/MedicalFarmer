@@ -4,6 +4,9 @@ import { FormController } from './modules/form.js';
 import { SettingsController } from './modules/settings.js';
 import { PrintController } from './modules/print.js';
 
+// Expose Storage for debugging and external access
+window.AppStorage = Storage;
+
 // Global App Object (to bridge HTML onclick events to Modules)
 window.App = {
     // Bridges
@@ -114,7 +117,7 @@ window.App = {
 };
 
 // Initialize
-window.onload = () => {
+window.onload = async () => {
     // Theme Init
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -124,6 +127,13 @@ window.onload = () => {
     } else {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
+    }
+
+    try {
+        await Storage.init();
+    } catch (e) {
+        console.error("Failed to initialize storage:", e);
+        alert("Erro crítico ao carregar banco de dados local. Verifique o console.");
     }
 
     Router.init();
