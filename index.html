@@ -16,6 +16,9 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="static/css/toast.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         .hidden { display: none; }
         .dark .ql-toolbar { background-color: #d1d5db; }
@@ -31,6 +34,26 @@
         .tab-btn { @apply px-4 py-2 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 whitespace-nowrap; }
         .tab-btn.active { @apply border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400; }
         .tab-btn.inactive { @apply border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200; }
+
+        /* Mic Button */
+        .ql-mic {
+            float: right;
+            margin-right: 5px;
+            color: #4b5563; /* text-gray-600 */
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            text-align: center;
+        }
+        .ql-mic:hover {
+            color: #1d4ed8; /* text-blue-700 */
+        }
+        .dark .ql-mic {
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .dark .ql-mic:hover {
+            color: #60a5fa; /* text-blue-400 */
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
@@ -104,6 +127,7 @@
             </a>
             <div class="space-x-4 flex items-center">
                 <a href="#dashboard" class="hover:text-blue-200 transition">Dashboard</a>
+                <a href="#calendar" class="hover:text-blue-200 transition">Calendário</a>
                 <a href="#macros" class="hover:text-blue-200 transition">Modelos</a>
                 <a href="#settings" class="hover:text-blue-200 transition">Configurações</a>
                 <a href="#nova" class="bg-white text-blue-800 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition">
@@ -369,9 +393,10 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
+                            <div class="relative">
                                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cid">Diagnóstico (CID-10)</label>
-                                <input id="f-cid" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Ex: M54.5">
+                                <input id="f-cid" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Digite código ou nome..." autocomplete="off">
+                                <ul id="cid-suggestions" class="absolute z-10 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden"></ul>
                             </div>
                             <div>
                                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-nexo">Nexo Causal</label>
@@ -563,15 +588,22 @@
             </div>
 
             <div class="fixed bottom-4 right-4 no-print flex gap-2">
-                <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-3 rounded shadow-lg hover:bg-blue-700 font-bold">IMPRIMIR LAUDO</button>
+                <button onclick="App.exportPDF()" class="bg-red-600 text-white px-6 py-3 rounded shadow-lg hover:bg-red-700 font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
+                <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-3 rounded shadow-lg hover:bg-blue-700 font-bold">Imprimir</button>
                 <button onclick="window.close(); window.location.hash='#dashboard'" class="bg-gray-500 text-white px-6 py-3 rounded shadow-lg hover:bg-gray-600">Fechar</button>
             </div>
+        </div>
+
+        <!-- CALENDAR VIEW -->
+        <div id="view-calendar" class="view-section hidden bg-white dark:bg-gray-800 p-6 rounded shadow">
+             <div id="calendar-container" class="h-[80vh]"></div>
         </div>
 
     </main>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="static/js/db.js"></script>
+    <script src="static/js/cid_data.js"></script>
     <script src="static/js/storage.js"></script>
     <script src="static/js/utils.js"></script>
     <script src="static/js/app.js"></script>

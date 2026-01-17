@@ -120,7 +120,7 @@ const Storage = {
     // --- Backup & Restore ---
     async exportData() {
         // Collect local storage data
-        const data = {
+        let data = {
             pericias: this.getPericias(),
             macros: this.getMacros(),
             settings: this.getSettings(),
@@ -137,11 +137,28 @@ const Storage = {
             alert("Aviso: Não foi possível exportar os anexos.");
         }
 
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+        let jsonString = JSON.stringify(data, null, 2);
+        let filename = `backup_pericias_${new Date().toISOString().slice(0,10)}.json`;
+
+        // Encryption Flow
+        const password = prompt("Deseja proteger o backup com senha? (Deixe em branco para não criptografar)");
+        if (password) {
+            try {
+                const encrypted = CryptoJS.AES.encrypt(jsonString, password).toString();
+                jsonString = encrypted;
+                filename += ".enc"; // Encrypted extension
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao criptografar.");
+                return;
+            }
+        }
+
+        const blob = new Blob([jsonString], {type: "application/json"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `backup_pericias_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
     },
@@ -158,7 +175,25 @@ const Storage = {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                const data = JSON.parse(e.target.result);
+                let content = e.target.result;
+                let data;
+
+                // Check if encrypted
+                if (file.name.endsWith('.enc') || !content.trim().startsWith('{')) {
+                    const password = prompt("Este backup está criptografado. Digite a senha:");
+                    if (!password) return;
+                    try {
+                        const bytes = CryptoJS.AES.decrypt(content, password);
+                        const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+                        if (!decryptedData) throw new Error("Senha incorreta");
+                        data = JSON.parse(decryptedData);
+                    } catch (err) {
+                        alert("Falha na descriptografia: Senha incorreta ou arquivo corrompido.");
+                        return;
+                    }
+                } else {
+                    data = JSON.parse(content);
+                }
 
                 // Restore LocalStorage
                 if(data.pericias) localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
