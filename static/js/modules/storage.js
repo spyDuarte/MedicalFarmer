@@ -1,10 +1,12 @@
+import { FileDB } from './db.js';
+import { DEFAULT_MACROS } from './default_data.js';
 
 const DB_KEY = 'pericia_sys_data';
 const MACROS_KEY = 'pericia_sys_macros';
 const SETTINGS_KEY = 'pericia_sys_settings';
 const TEMPLATES_KEY = 'pericia_sys_templates';
 
-const Storage = {
+export const Storage = {
     // --- Data Initialization ---
     init() {
         if (!localStorage.getItem(DB_KEY)) {
@@ -14,13 +16,7 @@ const Storage = {
             localStorage.setItem(TEMPLATES_KEY, JSON.stringify([]));
         }
         if (!localStorage.getItem(MACROS_KEY)) {
-            // Default Macros
-            const defaults = [
-                {id: 1, titulo: "Anamnese Padrão", categoria: "anamnese", conteudo: "Paciente refere dor..."},
-                {id: 2, titulo: "Exame Físico Normal", categoria: "exame_fisico", conteudo: "BEG, LOTE, Mote..."},
-                {id: 3, titulo: "Conclusão - Incapaz", categoria: "conclusao", conteudo: "Há incapacidade laborativa..."}
-            ];
-            localStorage.setItem(MACROS_KEY, JSON.stringify(defaults));
+            localStorage.setItem(MACROS_KEY, JSON.stringify(DEFAULT_MACROS));
         }
         if (!localStorage.getItem(SETTINGS_KEY)) {
             const defaultSettings = {
@@ -144,9 +140,16 @@ const Storage = {
         const password = prompt("Deseja proteger o backup com senha? (Deixe em branco para não criptografar)");
         if (password) {
             try {
-                const encrypted = CryptoJS.AES.encrypt(jsonString, password).toString();
-                jsonString = encrypted;
-                filename += ".enc"; // Encrypted extension
+                // Assuming CryptoJS is available globally or imported if needed.
+                // In ES modules, we should probably check window.CryptoJS
+                if (window.CryptoJS) {
+                    const encrypted = window.CryptoJS.AES.encrypt(jsonString, password).toString();
+                    jsonString = encrypted;
+                    filename += ".enc";
+                } else {
+                    alert("Biblioteca de criptografia não carregada.");
+                    return;
+                }
             } catch (e) {
                 console.error(e);
                 alert("Erro ao criptografar.");
@@ -183,10 +186,14 @@ const Storage = {
                     const password = prompt("Este backup está criptografado. Digite a senha:");
                     if (!password) return;
                     try {
-                        const bytes = CryptoJS.AES.decrypt(content, password);
-                        const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-                        if (!decryptedData) throw new Error("Senha incorreta");
-                        data = JSON.parse(decryptedData);
+                         if (window.CryptoJS) {
+                            const bytes = window.CryptoJS.AES.decrypt(content, password);
+                            const decryptedData = bytes.toString(window.CryptoJS.enc.Utf8);
+                            if (!decryptedData) throw new Error("Senha incorreta");
+                            data = JSON.parse(decryptedData);
+                         } else {
+                             throw new Error("Lib CryptoJS missing");
+                         }
                     } catch (err) {
                         alert("Falha na descriptografia: Senha incorreta ou arquivo corrompido.");
                         return;

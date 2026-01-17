@@ -1,6 +1,6 @@
 
 /* Input Masks Logic */
-const Mask = {
+export const Mask = {
     cpf(value) {
         return value
             .replace(/\D/g, '')
@@ -29,7 +29,7 @@ const Mask = {
 };
 
 /* Validators */
-const Validator = {
+export const Validator = {
     cpf(cpf) {
         cpf = cpf.replace(/[^\d]+/g, '');
         if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;

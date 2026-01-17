@@ -3,7 +3,7 @@ const DB_NAME = 'PericiaDB';
 const DB_VERSION = 1;
 const STORE_FILES = 'files';
 
-const FileDB = {
+export const FileDB = {
     db: null,
 
     async init() {
@@ -93,5 +93,5 @@ const FileDB = {
     }
 };
 
-// Initialize immediately
+// Initialize immediately handled by caller or here
 FileDB.init().catch(console.error);

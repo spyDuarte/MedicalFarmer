@@ -1,30 +1,30 @@
 
-const CID10_DATA = [
-    {code: "F32", desc: "Episódio depressivo"},
-    {code: "F33", desc: "Transtorno depressivo recorrente"},
-    {code: "F41", desc: "Outros transtornos ansiosos"},
-    {code: "F43.1", desc: "Estado de estresse pós-traumático"},
-    {code: "M54.5", desc: "Dor lombar baixa"},
-    {code: "M51.1", desc: "Transtorno de disco lombar e de outros discos intervertebrais com radiculopatia"},
-    {code: "M75.1", desc: "Síndrome do manguito rotador"},
-    {code: "M77.1", desc: "Epicondilite lateral"},
-    {code: "S82", desc: "Fratura da perna, incluindo tornozelo"},
-    {code: "S62", desc: "Fratura ao nível do punho e da mão"},
-    {code: "G56.0", desc: "Síndrome do túnel do carpo"},
-    {code: "M17", desc: "Gonartrose [artrose do joelho]"},
-    {code: "M16", desc: "Coxartrose [artrose do quadril]"},
-    {code: "I10", desc: "Hipertensão essencial (primária)"},
-    {code: "E11", desc: "Diabetes mellitus não-insulino-dependente"},
-    {code: "Z00.0", desc: "Exame médico geral"}
-];
-
-const CID10 = {
+/* Simple CID-10 Mock Data for Autocomplete - Expanded */
+export const CID10 = {
     search(query) {
-        if (!query || query.length < 2) return [];
+        if (!query || query.length < 3) return [];
         query = query.toLowerCase();
-        return CID10_DATA.filter(c =>
-            c.code.toLowerCase().includes(query) ||
-            c.desc.toLowerCase().includes(query)
+
+        // This is a small subset. Real app would load a full JSON or fetch from API.
+        const data = [
+            {code: "M54.4", desc: "Lumbago com ciática"},
+            {code: "M54.5", desc: "Dor lombar baixa (Lombalgia)"},
+            {code: "M51.1", desc: "Transtorno de disco lombar e de outros discos intervertebrais com radiculopatia"},
+            {code: "M75.1", desc: "Síndrome do manguito rotador"},
+            {code: "G56.0", desc: "Síndrome do túnel do carpo"},
+            {code: "F32",   desc: "Episódios depressivos"},
+            {code: "F32.2", desc: "Episódio depressivo grave sem sintomas psicóticos"},
+            {code: "F41.1", desc: "Ansiedade generalizada"},
+            {code: "S82",   desc: "Fratura da perna, incluindo tornozelo"},
+            {code: "M17",   desc: "Gonartrose [artrose do joelho]"},
+            {code: "M16",   desc: "Coxartrose [artrose do quadril]"},
+            {code: "M25.5", desc: "Dor articular"},
+            {code: "Z02.7", desc: "Emissão de atestado médico"}
+        ];
+
+        return data.filter(item =>
+            item.code.toLowerCase().includes(query) ||
+            item.desc.toLowerCase().includes(query)
         );
     }
 };
