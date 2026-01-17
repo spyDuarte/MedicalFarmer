@@ -2,11 +2,14 @@ import { Storage } from './storage.js';
 import { Mask, Validator } from './utils.js';
 import { FileDB } from './db.js';
 import { CID10 } from '../cid_data.js';
+import { Templates } from './template_definitions.js';
+import { FormRenderer } from './form_renderer.js';
 
 export const FormController = {
     editors: {},
     currentPericiaId: null,
     autoSaveTimeout: null,
+    currentTemplateId: 'previdenciaria', // Default
 
     // Annotation
     canvas: null,
@@ -20,57 +23,75 @@ export const FormController = {
         this.renderForm(id);
     },
 
+    changeReportType(type) {
+        if(confirm('Mudar o tipo pode perder dados não salvos. Continuar?')) {
+            this.currentTemplateId = type;
+            this.renderForm(this.currentPericiaId, true); // Force re-render
+        } else {
+             // Revert select
+             document.getElementById('report-type-selector').value = this.currentTemplateId;
+        }
+    },
+
     // --- Core Form Rendering ---
-    renderForm(id) {
+    renderForm(id, forceRender = false) {
         this.currentPericiaId = id;
         const pericia = id ? Storage.getPericia(id) : {};
 
+        // Determine Template
+        if (pericia.template_type) {
+            this.currentTemplateId = pericia.template_type;
+        }
+
+        // Update Selector UI
+        const typeSelector = document.getElementById('report-type-selector');
+        if(typeSelector) typeSelector.value = this.currentTemplateId;
+
+        // Render Structure
+        const template = Templates[this.currentTemplateId] || Templates.previdenciaria;
+        FormRenderer.render(template, 'dynamic-form-container', this);
+
         // Default Tab
-        this.switchTab('tab-identificacao');
+        const firstTab = template.sections[0].id;
+        this.switchTab(`tab-${firstTab}`);
+
         this.populateTemplateSelector();
 
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
-            if(el) el.value = val || '';
+        // Populate fields
+        // Helper to check if field exists before setting
+        const setVal = (key, val) => {
+             const el = document.getElementById(`f-${key}`);
+             if(el) {
+                 if(el.tagName === 'DIV' && el.querySelector('input')) {
+                      // complex field like cid_search
+                      el.querySelector('input').value = val || '';
+                 } else {
+                      el.value = val || '';
+                 }
+             }
         };
 
-        // Populate fields
-        setVal('f-numero_processo', pericia.numero_processo);
-        setVal('f-vara', pericia.vara);
-        setVal('f-nome_autor', pericia.nome_autor);
-        setVal('f-data_nascimento', pericia.data_nascimento);
-        setVal('f-cpf', pericia.cpf);
-        setVal('f-rg', pericia.rg);
-        setVal('f-escolaridade', pericia.escolaridade);
+        // We can just loop through data keys and try to find matching fields
+        // But we should prioritize known mapped fields
+        Object.keys(pericia).forEach(key => {
+            if(key === 'documents') return;
+            // Handle Rich Text separately
+            if(['anamnese', 'exame_fisico', 'conclusao', 'quesitos'].includes(key)) return;
+
+            setVal(key, pericia[key]);
+        });
+
+        // Special handling for Age calculation if dob exists
         this.calcAge();
-
-        setVal('f-data_pericia', pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '');
-        setVal('f-valor_honorarios', pericia.valor_honorarios || 0);
-        setVal('f-status_pagamento', pericia.status_pagamento || 'Pendente');
-
-        setVal('f-profissao', pericia.profissao);
-        setVal('f-tempo_funcao', pericia.tempo_funcao);
-        setVal('f-desc_atividades', pericia.desc_atividades);
-        setVal('f-antecedentes', pericia.antecedentes);
-
-        setVal('f-exames_complementares', pericia.exames_complementares);
-
-        setVal('f-discussao', pericia.discussao);
-        setVal('f-cid', pericia.cid);
-        setVal('f-nexo', pericia.nexo || 'Não há nexo');
-        setVal('f-did', pericia.did);
-        setVal('f-dii', pericia.dii);
-        setVal('f-parecer', pericia.parecer || 'Capto');
 
         // Check for Auto-Save
         const draft = localStorage.getItem('pericia_draft');
         if (!id && draft) {
             if(confirm('Existe um rascunho não salvo. Deseja recuperar?')) {
                 const draftData = JSON.parse(draft);
-                // Apply draft values to fields
-                Object.keys(draftData).forEach(key => {
-                    const el = document.getElementById(`f-${key}`);
-                    if(el) el.value = draftData[key] || '';
+                // Apply draft values
+                 Object.keys(draftData).forEach(key => {
+                    setVal(key, draftData[key]);
                 });
                 pericia.anamnese = draftData.anamnese;
                 pericia.exame_fisico = draftData.exame_fisico;
@@ -84,59 +105,47 @@ export const FormController = {
         this.initQuill(pericia);
         this.renderDocumentsList(pericia.documents || []);
 
-        // Add Listeners (Auto-Save + Masks)
-        document.querySelectorAll('#view-form input, #view-form select, #view-form textarea').forEach(el => {
-            const newEl = el.cloneNode(true);
-            newEl.value = el.value; // Restore dynamic value
-            el.parentNode.replaceChild(newEl, el);
-
-            newEl.addEventListener('input', () => this.autoSave());
-            newEl.addEventListener('change', () => this.autoSave());
-
-            if(newEl.id === 'f-cpf') {
-                newEl.addEventListener('input', (e) => e.target.value = Mask.cpf(e.target.value));
-            }
-            if(newEl.id === 'f-cid') {
-                newEl.addEventListener('input', (e) => this.handleCIDSearch(e));
-                newEl.addEventListener('blur', () => setTimeout(() => document.getElementById('cid-suggestions').classList.add('hidden'), 200));
-            }
-             if(newEl.id === 'f-data_nascimento') {
-                newEl.addEventListener('change', () => this.calcAge());
-            }
-        });
+        // Listeners are already bound by FormRenderer for inputs
     },
 
     // --- Logic Helpers ---
     switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById(tabId).classList.remove('hidden');
+        const tab = document.getElementById(tabId);
+        if(tab) tab.classList.remove('hidden');
 
         document.querySelectorAll('.tab-btn').forEach(el => {
             el.classList.remove('active');
             el.classList.add('inactive');
         });
-        document.getElementById(`btn-${tabId}`).classList.remove('inactive');
-        document.getElementById(`btn-${tabId}`).classList.add('active');
+        const btn = document.getElementById(`btn-${tabId}`);
+        if(btn) {
+            btn.classList.remove('inactive');
+            btn.classList.add('active');
+        }
     },
 
     calcAge() {
-        const dobStr = document.getElementById('f-data_nascimento').value;
-        const display = document.getElementById('f-idade-display');
-        if(dobStr) {
+        const dobInput = document.getElementById('f-data_nascimento');
+        if(!dobInput) return;
+
+        const dobStr = dobInput.value;
+        const display = document.getElementById('f-idade_display'); // Updated ID from definition
+        if(dobStr && display) {
             const dob = new Date(dobStr);
             const diff_ms = Date.now() - dob.getTime();
             const age_dt = new Date(diff_ms);
             const age = Math.abs(age_dt.getUTCFullYear() - 1970);
             display.innerText = `${age} anos`;
-        } else {
+        } else if (display) {
             display.innerText = '';
         }
     },
 
-    handleCIDSearch(e) {
+    handleCIDSearch(e, ulId, inputId) {
         const query = e.target.value;
         const results = CID10.search(query);
-        const ul = document.getElementById('cid-suggestions');
+        const ul = document.getElementById(ulId);
 
         ul.innerHTML = '';
         if (results.length === 0) {
@@ -149,7 +158,7 @@ export const FormController = {
             li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-sm";
             li.innerText = `${item.code} - ${item.desc}`;
             li.onmousedown = () => { // mousedown fires before blur
-                document.getElementById('f-cid').value = `${item.code} - ${item.desc}`;
+                document.getElementById(inputId).value = `${item.code} - ${item.desc}`;
                 ul.classList.add('hidden');
                 this.autoSave();
             };
@@ -166,15 +175,22 @@ export const FormController = {
         ];
         const opts = { theme: 'snow', modules: { toolbar: toolbarOptions } };
 
-        // Cleanup old
-        document.querySelectorAll('.ql-toolbar').forEach(e => e.remove());
+        // Cleanup old toolbars in case of re-render
+        // With dynamic renderer, we create new containers, but Quill appends toolbar before container
+        // We need to be careful not to init twice
 
-        const createEditor = (id, key) => {
-            // Check if container exists
-            if(!document.getElementById(id)) return;
-            // Clear content
-            document.getElementById(id).innerHTML = '';
+        const initEditor = (key) => {
+            const id = `q-${key}`;
+            const el = document.getElementById(id);
+            if(!el) return;
 
+            // Check if already initialized? Quill modifies DOM class
+            if(el.classList.contains('ql-container')) {
+                 // Already init, just set content
+                 // But wait, if we re-rendered HTML, the DOM node is new, so it shouldn't have class
+            }
+
+            el.innerHTML = ''; // Safe clear
             const quill = new Quill('#' + id, opts);
 
             // Add Mic
@@ -191,39 +207,46 @@ export const FormController = {
             this.editors[key] = quill;
         };
 
-        createEditor('q-anamnese', 'anamnese');
-        createEditor('q-exame_fisico', 'exame_fisico');
-        createEditor('q-conclusao', 'conclusao');
-        createEditor('q-quesitos', 'quesitos');
+        // Find which editors are present in the current template
+        // We can scan the DOM for ids starting with q-
+        document.querySelectorAll('[id^="q-"]').forEach(el => {
+             const key = el.id.substring(2);
+             initEditor(key);
+        });
 
         this.populateMacroSelects();
     },
 
     populateMacroSelects() {
         const macros = Storage.getMacros();
-        ['anamnese', 'exame_fisico', 'conclusao'].forEach(cat => {
-            const sel = document.getElementById(`macro-sel-${cat}`);
-            if(!sel) return;
 
-            sel.innerHTML = '<option value="">Inserir modelo...</option>';
-            macros.filter(m => m.categoria === cat).forEach(m => {
+        document.querySelectorAll('[id^="macro-sel-"]').forEach(sel => {
+             const key = sel.id.substring(10); // remove macro-sel-
+
+             sel.innerHTML = '<option value="">Inserir modelo...</option>';
+             // Filter macros by category or show all if category matches key?
+             // Standard keys: anamnese, exame_fisico, conclusao.
+             // If key is different, maybe just show all or none.
+
+             macros.filter(m => m.categoria === key).forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m.id;
                 opt.innerText = m.titulo;
                 sel.appendChild(opt);
             });
 
-            const newSel = sel.cloneNode(true);
-            sel.parentNode.replaceChild(newSel, sel);
+            // Re-attach listener
+             const newSel = sel.cloneNode(true);
+             sel.parentNode.replaceChild(newSel, sel);
 
-            newSel.addEventListener('change', (e) => {
+             newSel.addEventListener('change', (e) => {
                 const id = e.target.value;
                 if(!id) return;
                 const m = macros.find(x => x.id == id);
-                if(m && this.editors[cat]) {
-                    const range = this.editors[cat].getSelection(true);
-                    if (range) this.editors[cat].insertText(range.index, m.conteudo + '\n');
-                    else this.editors[cat].insertText(this.editors[cat].getLength(), m.conteudo + '\n');
+                if(m && this.editors[key]) {
+                    const range = this.editors[key].getSelection(true);
+                    if (range) this.editors[key].insertText(range.index, m.conteudo + '\n');
+                    else this.editors[key].insertText(this.editors[key].getLength(), m.conteudo + '\n');
                 }
                 e.target.value = "";
             });
@@ -231,41 +254,30 @@ export const FormController = {
     },
 
     collectFormData() {
-        return {
+        const data = {
             id: this.currentPericiaId,
-            numero_processo: document.getElementById('f-numero_processo').value,
-            vara: document.getElementById('f-vara').value,
-            nome_autor: document.getElementById('f-nome_autor').value,
-
-            data_nascimento: document.getElementById('f-data_nascimento').value,
-            cpf: document.getElementById('f-cpf').value,
-            rg: document.getElementById('f-rg').value,
-            escolaridade: document.getElementById('f-escolaridade').value,
-
-            profissao: document.getElementById('f-profissao').value,
-            tempo_funcao: document.getElementById('f-tempo_funcao').value,
-            desc_atividades: document.getElementById('f-desc_atividades').value,
-            antecedentes: document.getElementById('f-antecedentes').value,
-
-            exames_complementares: document.getElementById('f-exames_complementares').value,
-            discussao: document.getElementById('f-discussao').value,
-            cid: document.getElementById('f-cid').value,
-            nexo: document.getElementById('f-nexo').value,
-            did: document.getElementById('f-did').value,
-            dii: document.getElementById('f-dii').value,
-            parecer: document.getElementById('f-parecer').value,
-
-            data_pericia: document.getElementById('f-data_pericia').value,
-            valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
-            status_pagamento: document.getElementById('f-status_pagamento').value,
-
-            anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
-            exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
-            conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
-            quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
-
+            template_type: this.currentTemplateId,
             documents: this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : []
         };
+
+        // Collect all inputs starting with f-
+        document.querySelectorAll('[id^="f-"]').forEach(el => {
+            const key = el.id.substring(2);
+            if(el.tagName === 'SPAN') return; // Display fields
+            if(el.type === 'file') return; // Uploads handled separately
+
+            data[key] = el.value;
+        });
+
+        // Collect Editors
+        Object.keys(this.editors).forEach(key => {
+            data[key] = this.editors[key].root.innerHTML;
+        });
+
+        // Ensure honorarios is float
+        if(data.valor_honorarios) data.valor_honorarios = parseFloat(data.valor_honorarios);
+
+        return data;
     },
 
     autoSave() {
@@ -281,17 +293,25 @@ export const FormController = {
         let errors = [];
 
         if (finalize) {
+            // Validate based on template required fields?
+            // For now, keep basic validation
             if (!data.numero_processo) errors.push("Número do Processo é obrigatório.");
-            if (!data.nome_autor) errors.push("Nome do Autor é obrigatório.");
-            if (!data.cid) errors.push("Diagnóstico (CID) é obrigatório.");
-            if (!data.conclusao || data.conclusao === '<p><br></p>') errors.push("Conclusão é obrigatória.");
+            if (!data.nome_autor) errors.push("Nome do Autor/Periciado é obrigatório.");
+
+            // if (!data.cid) errors.push("Diagnóstico (CID) é obrigatório."); // Might not exist in all templates?
+            // Let's check if the field exists in DOM before requiring it
+            if (document.getElementById('f-cid') && !data.cid) errors.push("Diagnóstico (CID) é obrigatório.");
+
+            if ((!data.conclusao || data.conclusao === '<p><br></p>') && document.getElementById('q-conclusao')) errors.push("Conclusão é obrigatória.");
         }
 
         if (data.cpf && !Validator.cpf(data.cpf)) {
             errors.push("CPF inválido.");
-            document.getElementById('f-cpf').classList.add('border-red-500');
+            const cpfEl = document.getElementById('f-cpf');
+            if(cpfEl) cpfEl.classList.add('border-red-500');
         } else {
-            document.getElementById('f-cpf').classList.remove('border-red-500');
+             const cpfEl = document.getElementById('f-cpf');
+            if(cpfEl) cpfEl.classList.remove('border-red-500');
         }
 
         if (errors.length > 0) {
@@ -306,7 +326,7 @@ export const FormController = {
 
              if (this.currentPericiaId) {
                  const old = Storage.getPericia(this.currentPericiaId);
-                 if (old.status === 'Em Andamento' || old.status === 'Concluido') data.status = old.status;
+                 if (old && (old.status === 'Em Andamento' || old.status === 'Concluido')) data.status = old.status;
              }
              if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== 'Concluido') {
                  data.status = 'Em Andamento';
@@ -316,9 +336,6 @@ export const FormController = {
         Storage.savePericia(data);
         localStorage.removeItem('pericia_draft');
 
-        // Using a global Toast or alert here? Let's use alert for simplicity in this module context or we need to import a UI service
-        // Ideally we pass a callback or return promise.
-        // For now, let's assume the router handles the transition, but we need to notify user.
         alert(finalize ? 'Perícia finalizada!' : 'Salvo com sucesso!');
         window.location.hash = '#dashboard';
     },
@@ -461,7 +478,7 @@ export const FormController = {
     populateTemplateSelector() {
         const selector = document.getElementById('template-selector');
         if(!selector) return;
-        selector.innerHTML = '<option value="">Carregar Template...</option>';
+        selector.innerHTML = '<option value="">Preencher com Modelo...</option>';
         Storage.getTemplates().forEach(t => {
             const opt = document.createElement('option');
             opt.value = t.id;
@@ -477,33 +494,49 @@ export const FormController = {
     },
 
     saveAsTemplate() {
-        const title = prompt("Nome do Template:");
+        const title = prompt("Nome do Template (Salva apenas os valores preenchidos):");
         if(!title) return;
         const data = this.collectFormData();
         delete data.id; delete data.numero_processo; delete data.nome_autor;
         delete data.cpf; delete data.rg; delete data.data_nascimento; delete data.documents;
         Storage.addTemplate({ title, data });
         this.populateTemplateSelector();
-        alert('Template salvo!');
+        alert('Modelo salvo!');
     },
 
     loadTemplate(id) {
         if(!id) return;
-        if(!confirm("Carregar template? Isso substituirá os dados atuais.")) {
+        if(!confirm("Carregar dados do modelo? Isso substituirá os campos correspondentes.")) {
             document.getElementById('template-selector').value = "";
             return;
         }
         const t = Storage.getTemplates().find(x => x.id == id);
         if(t) {
             const data = t.data;
+
+            // Helper to set val if field exists
+            const setVal = (key, val) => {
+                 const el = document.getElementById(`f-${key}`);
+                 if(el) {
+                     if(el.tagName === 'DIV' && el.querySelector('input')) {
+                          el.querySelector('input').value = val || '';
+                     } else {
+                          el.value = val || '';
+                     }
+                 }
+            };
+
             Object.keys(data).forEach(key => {
-                const el = document.getElementById(`f-${key}`);
-                if(el) el.value = data[key] || '';
+                if(key === 'template_type') return; // Don't change type when loading content template
+                setVal(key, data[key]);
             });
-            this.editors['anamnese'].root.innerHTML = data.anamnese || '';
-            this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
-            this.editors['conclusao'].root.innerHTML = data.conclusao || '';
-            this.editors['quesitos'].root.innerHTML = data.quesitos || '';
+
+            // Load editors
+            Object.keys(this.editors).forEach(key => {
+                if(data[key]) {
+                     this.editors[key].root.innerHTML = data[key];
+                }
+            });
         }
         document.getElementById('template-selector').value = "";
     },
@@ -608,9 +641,7 @@ export const FormController = {
             id: Date.now(),
             original_name: `Anotação_${new Date().toLocaleTimeString().replace(/:/g, '')}.jpg`
         });
-        // We need to save the file content to DB too!
-        // The original app code had a bug here, it saved content to DB in memory but pushed to documents list.
-        // Let's fix:
+
         const fileId = pericia.documents[pericia.documents.length-1].id;
         FileDB.saveFile(fileId, dataUrl).then(() => {
             Storage.savePericia(pericia);

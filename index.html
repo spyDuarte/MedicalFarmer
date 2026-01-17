@@ -20,6 +20,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script type="module" src="static/js/main.js"></script>
+    <script>
+        // Pre-load logic if needed
+    </script>
     <style>
         .hidden { display: none; }
         .dark .ql-toolbar { background-color: #d1d5db; }
@@ -200,9 +203,7 @@
 
             <!-- Templates Section (New) -->
             <div class="mb-6 flex justify-end">
-                 <button onclick="document.getElementById('new-pericia-template-modal').classList.remove('hidden')" class="text-blue-600 hover:text-blue-800 text-sm font-bold">
-                    <i class="fa-solid fa-file-medical"></i> Gerenciar Templates
-                 </button>
+                 <!-- Removed old button -->
             </div>
             </div>
 
@@ -227,12 +228,20 @@
             <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden w-full">
                 <!-- Header -->
                 <div class="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Editor de Perícia</h2>
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Editor de Perícia</h2>
+                        <select id="report-type-selector" onchange="App.changeReportType(this.value)" class="border rounded px-2 py-1 text-sm text-gray-800 dark:text-gray-200 dark:bg-gray-600">
+                            <option value="previdenciaria">Previdenciária</option>
+                            <option value="trabalhista">Trabalhista</option>
+                            <option value="civil">Cível</option>
+                        </select>
+                    </div>
+
                     <div class="flex gap-2 items-center">
                         <select id="template-selector" onchange="App.loadTemplate(this.value)" class="text-xs border rounded p-1 dark:bg-gray-600 dark:text-white mr-2">
-                            <option value="">Carregar Template...</option>
+                            <option value="">Preencher com Modelo...</option>
                         </select>
-                        <button onclick="App.saveAsTemplate()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+                        <button onclick="App.saveAsTemplate()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar Estado como Modelo"><i class="fa-solid fa-star"></i></button>
 
                         <button onclick="App.saveForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold">Salvar</button>
                         <button onclick="App.saveForm(true)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-bold">Finalizar</button>
@@ -240,214 +249,9 @@
                     </div>
                 </div>
 
-                <!-- Tabs Navigation -->
-                <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-4 space-x-4 overflow-x-auto">
-                    <button class="tab-btn active" onclick="App.switchTab('tab-identificacao')" id="btn-tab-identificacao">Identificação</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-historico')" id="btn-tab-historico">Histórico</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-exame')" id="btn-tab-exame">Exame Clínico</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-conclusao')" id="btn-tab-conclusao">Conclusão</button>
-                    <button class="tab-btn inactive" onclick="App.switchTab('tab-quesitos')" id="btn-tab-quesitos">Quesitos</button>
-                </div>
-
-                <div class="p-6">
-
-                    <!-- TAB 1: IDENTIFICAÇÃO -->
-                    <div id="tab-identificacao" class="tab-content">
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Dados Administrativos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-numero_processo">Processo</label>
-                                <input id="f-numero_processo" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-vara">Vara / Comarca</label>
-                                <input id="f-vara" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                        </div>
-
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Dados do Periciado</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-nome_autor">Nome Completo</label>
-                                <input id="f-nome_autor" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-1/2">
-                                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_nascimento">Data Nasc.</label>
-                                    <input id="f-data_nascimento" type="date" onchange="App.calcAge()" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                </div>
-                                <div class="w-1/2 flex items-center pt-6">
-                                    <span id="f-idade-display" class="text-blue-600 dark:text-blue-400 font-bold"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cpf">CPF</label>
-                                <input id="f-cpf" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-rg">RG / Documento</label>
-                                <input id="f-rg" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-escolaridade">Escolaridade</label>
-                                <select id="f-escolaridade" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="">Selecione...</option>
-                                    <option value="Fundamental Incompleto">Fundamental Incompleto</option>
-                                    <option value="Fundamental Completo">Fundamental Completo</option>
-                                    <option value="Médio Completo">Médio Completo</option>
-                                    <option value="Superior Completo">Superior Completo</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Agendamento</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_pericia">Data Perícia</label>
-                                <input id="f-data_pericia" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-valor_honorarios">Honorários (R$)</label>
-                                <input id="f-valor_honorarios" type="number" step="0.01" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-status_pagamento">Pagamento</label>
-                                <select id="f-status_pagamento" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Pendente">Pendente</option>
-                                    <option value="Pago">Pago</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 2: HISTÓRICO -->
-                    <div id="tab-historico" class="tab-content hidden">
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Histórico Ocupacional</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-profissao">Profissão / Cargo Atual</label>
-                                <input id="f-profissao" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-tempo_funcao">Tempo na Função</label>
-                                <input id="f-tempo_funcao" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-desc_atividades">Descrição das Atividades e Riscos</label>
-                            <textarea id="f-desc_atividades" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24"></textarea>
-                        </div>
-
-                        <hr class="my-6 dark:border-gray-600">
-
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-anamnese">História da Doença Atual (HDA)</label>
-                                <select id="macro-sel-anamnese" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-anamnese" class="bg-white h-48"></div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-antecedentes">Antecedentes Pessoais e Familiares</label>
-                            <textarea id="f-antecedentes" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- TAB 3: EXAME CLÍNICO -->
-                    <div id="tab-exame" class="tab-content hidden">
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-exame_fisico">Exame Físico (Geral e Especial)</label>
-                                <select id="macro-sel-exame_fisico" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-exame_fisico" class="bg-white h-64"></div>
-                        </div>
-
-                        <hr class="my-6 dark:border-gray-600">
-
-                        <!-- Document Analysis / Exams -->
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Análise de Documentos Médicos</h3>
-
-                        <!-- Upload Section inside Tab -->
-                        <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded border dark:border-gray-600">
-                            <h4 class="font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos (PDF/Img)</h4>
-                            <div class="flex gap-2 mb-4">
-                                <input type="file" id="upload_document" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300">
-                                <button onclick="App.handleFileUpload()" class="bg-gray-700 hover:bg-gray-600 text-white px-2 rounded"><i class="fa-solid fa-upload"></i></button>
-                            </div>
-                            <ul id="documents-list-ul" class="space-y-2"></ul>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-exames_complementares">Descrição dos Exames Complementares Apresentados</label>
-                            <textarea id="f-exames_complementares" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-32" placeholder="Data - Tipo - Resultado..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- TAB 4: CONCLUSÃO FORENSE -->
-                    <div id="tab-conclusao" class="tab-content hidden">
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-discussao">Discussão Médico-Legal</label>
-                            <textarea id="f-discussao" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div class="relative">
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cid">Diagnóstico (CID-10)</label>
-                                <input id="f-cid" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Digite código ou nome..." autocomplete="off">
-                                <ul id="cid-suggestions" class="absolute z-10 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden"></ul>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-nexo">Nexo Causal</label>
-                                <select id="f-nexo" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Não há nexo">Não há nexo</option>
-                                    <option value="Nexo Causal Típico (Trabalho)">Nexo Causal Típico (Trabalho)</option>
-                                    <option value="Nexo Concausal (Agravamento)">Nexo Concausal (Agravamento)</option>
-                                    <option value="Nexo Traumático (Acidente)">Nexo Traumático (Acidente)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-did">DID (Início Doença)</label>
-                                <input id="f-did" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="dd/mm/aaaa">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-dii">DII (Início Incapacidade)</label>
-                                <input id="f-dii" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="dd/mm/aaaa ou 'Não há'">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-parecer">Parecer Final</label>
-                                <select id="f-parecer" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Capto">Apto / Capaz</option>
-                                    <option value="Incapaz Temporariamente (Total)">Incapaz Temporariamente (Total)</option>
-                                    <option value="Incapaz Permanentemente (Total)">Incapaz Permanentemente (Total)</option>
-                                    <option value="Incapaz Parcialmente">Incapaz Parcialmente</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-conclusao">Conclusão Final (Resumo)</label>
-                                <select id="macro-sel-conclusao" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-conclusao" class="bg-white h-40"></div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 5: QUESITOS -->
-                    <div id="tab-quesitos" class="tab-content hidden">
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block">Respostas aos Quesitos</label>
-                            <div id="q-quesitos" class="bg-white h-96"></div>
-                        </div>
-                    </div>
-
+                <!-- Dynamic Form Container -->
+                <div id="dynamic-form-container">
+                    <!-- FormRenderer will inject here -->
                 </div>
             </div>
         </div>

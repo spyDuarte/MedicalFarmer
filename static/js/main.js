@@ -11,6 +11,11 @@ window.App = {
     handleFileUpload: () => FormController.handleFileUpload(),
     saveAsTemplate: () => FormController.saveAsTemplate(),
 
+    // New
+    changeReportType: (type) => FormController.changeReportType(type),
+    loadTemplate: (id) => FormController.loadTemplate(id),
+    calcAge: () => FormController.calcAge(),
+
     // Settings
     saveSettings: () => SettingsController.save(),
     openSignatureModal: () => SettingsController.openSignatureModal(),
