@@ -1,8 +1,16 @@
 import { Storage } from './storage.js';
+import { STATUS, PAYMENT_STATUS } from './constants.js';
 
+/**
+ * Controller for the Dashboard View.
+ * Handles chart rendering and table filtering.
+ */
 export const DashboardController = {
     statusChart: null,
 
+    /**
+     * Binds events for dashboard filters.
+     */
     bindEvents() {
         const filters = ['status-filter', 'date-start', 'date-end', 'search-input'];
         filters.forEach(id => {
@@ -15,16 +23,11 @@ export const DashboardController = {
                 }
             }
         });
-
-        // Note: Backup/Restore buttons are handled in app.js or MainController
-        // because they are global actions, but they live in the dashboard view initially.
-        // We will move their listener binding to app.js or here if specific to dashboard.
-        // Given they are in the dashboard view container, we should bind them here if possible,
-        // or ensure app.js binds them globally if they exist.
-        // Let's bind them here for now if they are dashboard specific controls.
-        // Wait, they are inside #view-dashboard in HTML.
     },
 
+    /**
+     * Renders the dashboard table and charts based on filters.
+     */
     render() {
         const pericias = Storage.getPericias();
         const tbody = document.getElementById('dashboard-table-body');
@@ -59,10 +62,11 @@ export const DashboardController = {
              return matchesSearch && matchesStatus && matchesDate;
         }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        const stats = { 'Aguardando': 0, 'Agendado': 0, 'Em Andamento': 0, 'Concluido': 0 };
+        const stats = {};
+        Object.values(STATUS).forEach(s => stats[s] = 0);
 
         filtered.forEach(p => {
-            if (p.status_pagamento === 'Pago') totalRecebido += parseFloat(p.valor_honorarios || 0);
+            if (p.status_pagamento === PAYMENT_STATUS.PAID) totalRecebido += parseFloat(p.valor_honorarios || 0);
             else totalPendente += parseFloat(p.valor_honorarios || 0);
 
             if (stats[p.status] !== undefined) stats[p.status]++;
@@ -81,13 +85,13 @@ export const DashboardController = {
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
                     <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valor_honorarios || 0).toFixed(2)}</p>
-                    ${p.status_pagamento === 'Pago'
-                        ? '<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> Pago</span>'
-                        : '<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> Pendente</span>'}
+                    ${p.status_pagamento === PAYMENT_STATUS.PAID
+                        ? `<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> ${PAYMENT_STATUS.PAID}</span>`
+                        : `<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> ${PAYMENT_STATUS.PENDING}</span>`}
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm flex gap-2">
                     <a href="#editar/${p.id}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"><i class="fa-solid fa-pen-to-square fa-lg"></i></a>
-                    ${p.status === 'Concluido' ? `<a href="#print/${p.id}" target="_blank" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"><i class="fa-solid fa-file-pdf fa-lg"></i></a>` : ''}
+                    ${p.status === STATUS.DONE ? `<a href="#print/${p.id}" target="_blank" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"><i class="fa-solid fa-file-pdf fa-lg"></i></a>` : ''}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -102,6 +106,10 @@ export const DashboardController = {
         this.renderCharts(stats);
     },
 
+    /**
+     * Renders the status distribution chart.
+     * @param {Object} stats - Count of pericias per status.
+     */
     renderCharts(stats) {
         const ctx = document.getElementById('chart-status');
         if (!ctx) return;
@@ -113,9 +121,9 @@ export const DashboardController = {
         this.statusChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Aguardando', 'Agendado', 'Em Andamento', 'Concluído'],
+                labels: [STATUS.WAITING, STATUS.SCHEDULED, STATUS.IN_PROGRESS, STATUS.DONE],
                 datasets: [{
-                    data: [stats['Aguardando'], stats['Agendado'], stats['Em Andamento'], stats['Concluido']],
+                    data: [stats[STATUS.WAITING], stats[STATUS.SCHEDULED], stats[STATUS.IN_PROGRESS], stats[STATUS.DONE]],
                     backgroundColor: ['#facc15', '#60a5fa', '#3b82f6', '#22c55e'],
                     borderWidth: 0
                 }]
@@ -130,12 +138,17 @@ export const DashboardController = {
         });
     },
 
+    /**
+     * Generates HTML badge for status.
+     * @param {string} status
+     * @returns {string} HTML string.
+     */
     getStatusBadge(status) {
         const classes = {
-            'Aguardando': 'bg-yellow-200 text-yellow-900',
-            'Agendado': 'bg-blue-100 text-blue-900',
-            'Em Andamento': 'bg-blue-200 text-blue-900',
-            'Concluido': 'bg-green-200 text-green-900'
+            [STATUS.WAITING]: 'bg-yellow-200 text-yellow-900',
+            [STATUS.SCHEDULED]: 'bg-blue-100 text-blue-900',
+            [STATUS.IN_PROGRESS]: 'bg-blue-200 text-blue-900',
+            [STATUS.DONE]: 'bg-green-200 text-green-900'
         };
         const cls = classes[status] || 'bg-gray-200 text-gray-900';
         return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${status}</span>`;

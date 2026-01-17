@@ -1,6 +1,15 @@
-
+/**
+ * User Interface Utilities.
+ * Handles Toasts, Modals, Theme toggling, and Loading overlays.
+ */
 export const UI = {
     Toast: {
+        /**
+         * Shows a toast notification.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'info', 'success', 'error', or 'warning'.
+         * @param {number} duration - Duration in ms (default 3000).
+         */
         show(message, type = 'info', duration = 3000) {
             let container = document.getElementById('toast-container');
             if (!container) {
@@ -62,11 +71,16 @@ export const UI = {
     },
 
     Modal: {
+        /**
+         * Shows a confirmation modal.
+         * @param {string} message - The question.
+         * @param {Function} onConfirm - Callback if confirmed.
+         * @param {string} title - Title of the modal.
+         */
         confirm(message, onConfirm, title = "Confirmação") {
             const modal = document.getElementById('custom-modal');
 
             if (!modal) {
-                // Fallback
                 if(window.confirm(message)) onConfirm();
                 return;
             }
@@ -96,6 +110,11 @@ export const UI = {
             modal.classList.remove('hidden');
         },
 
+        /**
+         * Shows an alert modal.
+         * @param {string} message - Message to display.
+         * @param {string} title - Title of the modal.
+         */
         alert(message, title = "Aviso") {
              const modal = document.getElementById('custom-modal');
 
@@ -129,17 +148,21 @@ export const UI = {
              modal.classList.remove('hidden');
         },
 
+        /**
+         * Prompts the user for input.
+         * @param {string} message
+         * @param {string} defaultValue
+         * @returns {string|null} The user input or null.
+         */
         prompt(message, defaultValue = "") {
-            // Native prompt is synchronous and hard to replicate purely with the current modal structure
-            // without using Promises and awaiting.
-            // For now, we will use native prompt or expand this if needed.
-            // Given the scope, let's stick to native prompt where return value is needed immediately,
-            // OR return a Promise.
             return window.prompt(message, defaultValue);
         }
     },
 
     Theme: {
+        /**
+         * Toggles between Light and Dark mode.
+         */
         toggle() {
             const isDark = document.documentElement.classList.contains('dark');
             const icon = document.getElementById('theme-icon');
@@ -163,6 +186,9 @@ export const UI = {
             }
         },
 
+        /**
+         * Initializes the theme based on local storage or system preference.
+         */
         init() {
              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -177,10 +203,16 @@ export const UI = {
     },
 
     Loading: {
+        /**
+         * Shows the loading overlay.
+         */
         show() {
             const el = document.getElementById('loading-overlay');
             if(el) el.classList.remove('hidden');
         },
+        /**
+         * Hides the loading overlay.
+         */
         hide() {
             const el = document.getElementById('loading-overlay');
             if(el) el.classList.add('hidden');

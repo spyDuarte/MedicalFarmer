@@ -1,7 +1,13 @@
 import { Storage } from './storage.js';
 import { UI } from './ui.js';
 
+/**
+ * Controller for Printing and PDF Export.
+ */
 export const PrintController = {
+    /**
+     * Binds print-related events.
+     */
     bindEvents() {
         const btnPrint = document.getElementById('btn-print-native');
         if(btnPrint) btnPrint.addEventListener('click', () => window.print());
@@ -11,11 +17,15 @@ export const PrintController = {
 
         const btnClose = document.getElementById('btn-close-print');
         if(btnClose) btnClose.addEventListener('click', () => {
-             window.close(); // Only works if opened by script, but here it's SPA view
+             // Only works if opened by script, but here it's SPA view
              window.location.hash = '#dashboard';
         });
     },
 
+    /**
+     * Renders the print view for a specific Pericia.
+     * @param {number|string} id - The Pericia ID.
+     */
     render(id) {
         const pericia = Storage.getPericia(id);
         const s = Storage.getSettings();
@@ -32,7 +42,7 @@ export const PrintController = {
         setTxt('print-header-contact', `${s.endereco ? s.endereco : ''} ${s.telefone ? ' | ' + s.telefone : ''}`);
 
         setTxt('p-processo', pericia.numero_processo);
-        setTxt('p-autor', pericia.nome_autor); // Added missing mapping for p-autor
+        setTxt('p-autor', pericia.nome_autor);
         setTxt('p-data', pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
 
         // Helper for Age
@@ -83,6 +93,9 @@ export const PrintController = {
         }
     },
 
+    /**
+     * Exports the current print view to PDF using html2pdf.
+     */
     exportPDF() {
         const element = document.getElementById('view-print');
         const opt = {
@@ -97,6 +110,7 @@ export const PrintController = {
         if(btnContainer) btnContainer.style.display = 'none';
 
         UI.Loading.show();
+        // eslint-disable-next-line no-undef
         html2pdf().set(opt).from(element).save().then(() => {
              if(btnContainer) btnContainer.style.display = 'flex';
              UI.Loading.hide();

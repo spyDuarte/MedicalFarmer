@@ -3,53 +3,74 @@ import { Mask, Validator } from './utils.js';
 import { FileDB } from './db.js';
 import { CID10 } from '../cid_data.js';
 import { UI } from './ui.js';
+import { SpeechService } from './speech.js';
+import { ImageProcessor } from './image_processor.js';
+import { DB_KEYS, STATUS, PAYMENT_STATUS, DEFAULTS } from './constants.js';
 
+/**
+ * Controller for the Main Form (Pericia).
+ * Handles rendering, validation, saving, and interaction logic.
+ */
 export const FormController = {
     editors: {},
     currentPericiaId: null,
     autoSaveTimeout: null,
 
-    // Annotation
+    // Annotation State
     canvas: null,
     ctx: null,
     currentTool: 'pen',
     currentImage: null,
 
+    /**
+     * Initializes the form controller.
+     * @param {number|null} id - The ID of the pericia to load.
+     */
     init(id) {
         this.renderForm(id);
     },
 
+    /**
+     * Binds static event listeners for the form buttons.
+     */
     bindEvents() {
-        // Bind Buttons that are static in HTML
-        const btnSave = document.getElementById('btn-save-form'); // We need to add this ID
-        const btnFinalize = document.getElementById('btn-finalize-form'); // We need to add this ID
-        const btnUpload = document.getElementById('btn-upload'); // We need to add this ID
-        const btnSaveTemplate = document.getElementById('btn-save-template'); // We need to add this ID
+        // Buttons that exist in the static HTML structure
+        const btnSave = document.getElementById('btn-save-form');
+        if (btnSave) btnSave.addEventListener('click', () => this.saveForm(false));
 
-        // Dynamic listeners are handled in renderForm by re-attaching or delegation
-        // Ideally we delegate, but for now we'll stick to attaching on render but remove the cloneNode hack
+        const btnFinalize = document.getElementById('btn-finalize-form');
+        if (btnFinalize) btnFinalize.addEventListener('click', () => this.saveForm(true));
 
-        // Listen to Tab Buttons
+        const btnUpload = document.getElementById('btn-upload');
+        if (btnUpload) btnUpload.addEventListener('click', () => this.handleFileUpload());
+
+        const btnSaveTemplate = document.getElementById('btn-save-template');
+        if (btnSaveTemplate) btnSaveTemplate.addEventListener('click', () => this.saveAsTemplate());
+
+        // Tab Navigation
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.switchTab(e.target.id.replace('btn-', '')));
         });
     },
 
-    // --- Core Form Rendering ---
+    /**
+     * Renders the form with data for a specific Pericia.
+     * @param {number|null} id - Pericia ID.
+     */
     renderForm(id) {
         this.currentPericiaId = id;
         const pericia = id ? Storage.getPericia(id) : {};
 
-        // Default Tab
+        // Reset UI state
         this.switchTab('tab-identificacao');
         this.populateTemplateSelector();
 
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+        const setVal = (fieldId, val) => {
+            const el = document.getElementById(fieldId);
             if(el) el.value = val || '';
         };
 
-        // Populate fields
+        // Populate Identification Fields
         setVal('f-numero_processo', pericia.numero_processo);
         setVal('f-vara', pericia.vara);
         setVal('f-nome_autor', pericia.nome_autor);
@@ -59,10 +80,12 @@ export const FormController = {
         setVal('f-escolaridade', pericia.escolaridade);
         this.calcAge();
 
+        // Populate Status/Finance
         setVal('f-data_pericia', pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '');
         setVal('f-valor_honorarios', pericia.valor_honorarios || 0);
-        setVal('f-status_pagamento', pericia.status_pagamento || 'Pendente');
+        setVal('f-status_pagamento', pericia.status_pagamento || PAYMENT_STATUS.PENDING);
 
+        // Populate Occupational History
         setVal('f-profissao', pericia.profissao);
         setVal('f-tempo_funcao', pericia.tempo_funcao);
         setVal('f-desc_atividades', pericia.desc_atividades);
@@ -70,47 +93,52 @@ export const FormController = {
 
         setVal('f-exames_complementares', pericia.exames_complementares);
 
+        // Populate Conclusion
         setVal('f-discussao', pericia.discussao);
         setVal('f-cid', pericia.cid);
-        setVal('f-nexo', pericia.nexo || 'Não há nexo');
+        setVal('f-nexo', pericia.nexo || DEFAULTS.NEXO);
         setVal('f-did', pericia.did);
         setVal('f-dii', pericia.dii);
-        setVal('f-parecer', pericia.parecer || 'Capto');
+        setVal('f-parecer', pericia.parecer || DEFAULTS.PARECER);
 
-        // Check for Auto-Save
-        const draft = localStorage.getItem('pericia_draft');
+        // Check for Auto-Save Draft
+        const draft = localStorage.getItem(DB_KEYS.DRAFT);
         if (!id && draft) {
             UI.Modal.confirm('Existe um rascunho não salvo. Deseja recuperar?', () => {
                 const draftData = JSON.parse(draft);
-                // Apply draft values to fields
+                // Apply draft values
                 Object.keys(draftData).forEach(key => {
-                    const el = document.getElementById(`f-${key}`);
-                    if(el) el.value = draftData[key] || '';
+                    if (key !== 'anamnese' && key !== 'exame_fisico' && key !== 'conclusao' && key !== 'quesitos') {
+                         setVal(`f-${key}`, draftData[key]);
+                    }
                 });
+
+                // Merge draft text fields into the pericia object for initQuill
                 pericia.anamnese = draftData.anamnese;
                 pericia.exame_fisico = draftData.exame_fisico;
                 pericia.conclusao = draftData.conclusao;
                 pericia.quesitos = draftData.quesitos;
 
-                // Re-init editors with draft data
                 this.initQuill(pericia);
             });
-            // If user cancels, we should probably clear draft?
-            // In Modal.confirm, cancellation just hides modal.
-            // We might want to clear draft if they say no, but current Modal impl doesn't support 'Cancel' callback easily.
-            // Let's assume they might want to recover later or we manually clear if they start typing new stuff.
         }
 
         this.initQuill(pericia);
         this.renderDocumentsList(pericia.documents || []);
+        this.attachFormListeners();
+    },
 
-        // Attach listeners (without cloning)
-        // We use a flag or named handler to avoid duplicates if possible,
-        // but since renderForm might be called multiple times, we need to be careful.
-        // The simplest way without cloning is to assign `oninput` directly, which overrides previous.
-        // It's not "addEventListener" but it prevents stacking.
+    /**
+     * Attaches listeners to form inputs for auto-save and validation.
+     */
+    attachFormListeners() {
+        // We use event delegation or direct attachment.
+        // To avoid piling listeners if renderForm is called again, we can use onchange properties
+        // or ensure we clone/replace elements. For simplicity in this refactor, we stick to direct properties
+        // but cleaner.
 
-        document.querySelectorAll('#view-form input, #view-form select, #view-form textarea').forEach(el => {
+        const inputs = document.querySelectorAll('#view-form input, #view-form select, #view-form textarea');
+        inputs.forEach(el => {
             el.oninput = (e) => {
                 this.autoSave();
                 if(el.id === 'f-cpf') e.target.value = Mask.cpf(e.target.value);
@@ -120,13 +148,18 @@ export const FormController = {
                 this.autoSave();
                 if(el.id === 'f-data_nascimento') this.calcAge();
             };
+
             if(el.id === 'f-cid') {
-                el.onblur = () => setTimeout(() => document.getElementById('cid-suggestions').classList.add('hidden'), 200);
+                el.onblur = () => setTimeout(() => {
+                    const suggestions = document.getElementById('cid-suggestions');
+                    if (suggestions) suggestions.classList.add('hidden');
+                }, 200);
             }
         });
     },
 
     // --- Logic Helpers ---
+
     switchTab(tabId) {
         if(!tabId) return;
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -173,7 +206,7 @@ export const FormController = {
             const li = document.createElement('li');
             li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-sm";
             li.innerText = `${item.code} - ${item.desc}`;
-            li.onmousedown = () => { // mousedown fires before blur
+            li.onmousedown = () => {
                 document.getElementById('f-cid').value = `${item.code} - ${item.desc}`;
                 ul.classList.add('hidden');
                 this.autoSave();
@@ -191,19 +224,9 @@ export const FormController = {
         ];
         const opts = { theme: 'snow', modules: { toolbar: toolbarOptions } };
 
-        // Cleanup old toolbars to prevent duplication
-        // Quill attaches toolbar before the container usually if theme is snow and we passed selector?
-        // Actually, if we init on same ID, Quill might double up.
-        // We should clear the container INNER HTML first (which we do in renderForm logic below?)
-
         ['q-anamnese', 'q-exame_fisico', 'q-conclusao', 'q-quesitos'].forEach(id => {
              const container = document.getElementById(id);
              if(container) {
-                 // Check if already has quill instance? Hard to check without ref.
-                 // We clear innerHTML.
-                 // Note: This removes the toolbar if it was inside? No, toolbar is usually sibling or top.
-                 // Quill 1.3.6: if we pass selector, it appends toolbar.
-                 // We need to remove previous toolbars.
                  const prevToolbar = container.previousElementSibling;
                  if(prevToolbar && prevToolbar.classList.contains('ql-toolbar')) {
                      prevToolbar.remove();
@@ -214,14 +237,18 @@ export const FormController = {
 
         const createEditor = (id, key) => {
             if(!document.getElementById(id)) return;
+            // eslint-disable-next-line no-undef
             const quill = new Quill('#' + id, opts);
 
-            // Add Mic
+            // Add Mic Button
             const container = quill.getModule('toolbar').container;
             const btn = document.createElement('button');
             btn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
             btn.classList.add('ql-mic');
-            btn.onclick = (e) => { e.preventDefault(); this.toggleSpeech(quill, btn); };
+            btn.onclick = (e) => {
+                e.preventDefault();
+                SpeechService.toggle(quill, btn);
+            };
             container.appendChild(btn);
 
             quill.root.innerHTML = pericia[key] || '';
@@ -252,7 +279,6 @@ export const FormController = {
                 sel.appendChild(opt);
             });
 
-            // Use onchange directly to avoid stacking listeners
             sel.onchange = (e) => {
                 const id = e.target.value;
                 if(!id) return;
@@ -309,7 +335,7 @@ export const FormController = {
         if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
         this.autoSaveTimeout = setTimeout(() => {
             const data = this.collectFormData();
-            localStorage.setItem('pericia_draft', JSON.stringify(data));
+            localStorage.setItem(DB_KEYS.DRAFT, JSON.stringify(data));
         }, 2000);
     },
 
@@ -336,23 +362,25 @@ export const FormController = {
             return;
         }
 
-        if (finalize) data.status = 'Concluido';
+        if (finalize) data.status = STATUS.DONE;
         else if (!data.status) {
-             if (data.data_pericia) data.status = 'Agendado';
-             else data.status = 'Aguardando';
+             if (data.data_pericia) data.status = STATUS.SCHEDULED;
+             else data.status = STATUS.WAITING;
 
              if (this.currentPericiaId) {
                  const old = Storage.getPericia(this.currentPericiaId);
-                 if (old && (old.status === 'Em Andamento' || old.status === 'Concluido')) data.status = old.status;
+                 if (old && (old.status === STATUS.IN_PROGRESS || old.status === STATUS.DONE)) {
+                     data.status = old.status;
+                 }
              }
-             if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== 'Concluido') {
-                 data.status = 'Em Andamento';
+             if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== STATUS.DONE) {
+                 data.status = STATUS.IN_PROGRESS;
              }
         }
 
         try {
             Storage.savePericia(data);
-            localStorage.removeItem('pericia_draft');
+            localStorage.removeItem(DB_KEYS.DRAFT);
             UI.Toast.show(finalize ? 'Perícia finalizada!' : 'Salvo com sucesso!', 'success');
             window.location.hash = '#dashboard';
         } catch (e) {
@@ -361,6 +389,7 @@ export const FormController = {
     },
 
     // --- Files ---
+
     handleFileUpload() {
         const input = document.getElementById('upload_document');
         const file = input.files[0];
@@ -370,46 +399,14 @@ export const FormController = {
         }
 
         UI.Loading.show();
+
+        const saveCallback = (blob) => this._saveFileToDB(blob, file.name);
+
         if (file.type.startsWith('image/')) {
-            this.compressImage(file, (compressedBlob) => {
-                this._saveFileToDB(compressedBlob, file.name);
-            });
+            ImageProcessor.compress(file, saveCallback);
         } else {
-            this._saveFileToDB(file, file.name);
+            saveCallback(file);
         }
-    },
-
-    compressImage(file, callback) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const MAX_WIDTH = 1200;
-                const MAX_HEIGHT = 1200;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
-                }
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-                canvas.toBlob((blob) => { callback(blob); }, 'image/jpeg', 0.7);
-            };
-        };
     },
 
     _saveFileToDB(blob, originalName) {
@@ -501,6 +498,7 @@ export const FormController = {
     },
 
     // --- Templates ---
+
     populateTemplateSelector() {
         const selector = document.getElementById('template-selector');
         if(!selector) return;
@@ -512,12 +510,10 @@ export const FormController = {
             selector.appendChild(opt);
         });
 
-        // Use onchange directly
         selector.onchange = (e) => this.loadTemplate(e.target.value);
     },
 
     saveAsTemplate() {
-        // Native prompt is okay for now as UI.prompt is just native prompt wrapper in my implementation
         const title = UI.Modal.prompt("Nome do Template:");
         if(!title) return;
         const data = this.collectFormData();
@@ -538,53 +534,17 @@ export const FormController = {
                     const el = document.getElementById(`f-${key}`);
                     if(el) el.value = data[key] || '';
                 });
-                this.editors['anamnese'].root.innerHTML = data.anamnese || '';
-                this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
-                this.editors['conclusao'].root.innerHTML = data.conclusao || '';
-                this.editors['quesitos'].root.innerHTML = data.quesitos || '';
+                if (this.editors['anamnese']) this.editors['anamnese'].root.innerHTML = data.anamnese || '';
+                if (this.editors['exame_fisico']) this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
+                if (this.editors['conclusao']) this.editors['conclusao'].root.innerHTML = data.conclusao || '';
+                if (this.editors['quesitos']) this.editors['quesitos'].root.innerHTML = data.quesitos || '';
             }
         });
         document.getElementById('template-selector').value = "";
     },
 
-    // --- Speech ---
-    toggleSpeech(quill, btn) {
-        if (!('webkitSpeechRecognition' in window)) {
-            UI.Modal.alert("Navegador não suporta reconhecimento de voz.");
-            return;
-        }
-        if (this.recognition && this.recognition.started) {
-            this.recognition.stop();
-            this.recognition.started = false;
-            btn.classList.remove('text-red-600', 'animate-pulse');
-            return;
-        }
-        this.recognition = new webkitSpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
-        this.recognition.onstart = () => {
-            this.recognition.started = true;
-            btn.classList.add('text-red-600', 'animate-pulse');
-        };
-        this.recognition.onend = () => {
-            this.recognition.started = false;
-            btn.classList.remove('text-red-600', 'animate-pulse');
-        };
-        this.recognition.onresult = (event) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) transcript += event.results[i][0].transcript + ' ';
-            }
-            if (transcript) {
-                const range = quill.getSelection(true);
-                quill.insertText(range.index || quill.getLength(), transcript);
-            }
-        };
-        this.recognition.start();
-    },
-
     // --- Annotation ---
+
     async openAnnotation(docId) {
         const content = await FileDB.getFile(parseInt(docId));
         if (!content) return;

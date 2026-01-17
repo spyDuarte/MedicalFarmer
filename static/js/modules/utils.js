@@ -1,6 +1,13 @@
 
-/* Input Masks Logic */
+/**
+ * Utility for Input Masking.
+ */
 export const Mask = {
+    /**
+     * Masks a value as CPF (000.000.000-00).
+     * @param {string} value
+     * @returns {string} Masked CPF.
+     */
     cpf(value) {
         return value
             .replace(/\D/g, '')
@@ -10,6 +17,11 @@ export const Mask = {
             .replace(/(-\d{2})\d+?$/, '$1');
     },
 
+    /**
+     * Masks a value as Phone ( (00) 00000-0000 ).
+     * @param {string} value
+     * @returns {string} Masked Phone.
+     */
     phone(value) {
         return value
             .replace(/\D/g, '')
@@ -18,18 +30,27 @@ export const Mask = {
             .replace(/(-\d{4})\d+?$/, '$1');
     },
 
+    /**
+     * Masks a value as Currency (0.00).
+     * @param {string} value
+     * @returns {string} Formatted currency string.
+     */
     currency(value) {
-        // Simple currency input handling
-        // Remove non-digits
         let v = value.replace(/\D/g, '');
-        // Convert to float
         v = (parseFloat(v) / 100).toFixed(2);
         return isNaN(v) ? '0.00' : v;
     }
 };
 
-/* Validators */
+/**
+ * Utility for Validation.
+ */
 export const Validator = {
+    /**
+     * Validates a CPF number using Mod11 algorithm.
+     * @param {string} cpf
+     * @returns {boolean} True if valid.
+     */
     cpf(cpf) {
         cpf = cpf.replace(/[^\d]+/g, '');
         if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;

@@ -1,11 +1,19 @@
 import { Storage } from './storage.js';
 import { Mask } from './utils.js';
 import { UI } from './ui.js';
+import { DB_KEYS } from './constants.js';
 
+/**
+ * Controller for the Settings View.
+ * Handles Profile Editing and Signature Capture.
+ */
 export const SettingsController = {
     sigCanvas: null,
     sigCtx: null,
 
+    /**
+     * Binds events for settings page.
+     */
     bindEvents() {
         // Static buttons
         const btnSave = document.getElementById('btn-save-settings');
@@ -30,6 +38,9 @@ export const SettingsController = {
         }
     },
 
+    /**
+     * Renders the settings view.
+     */
     render() {
         const s = Storage.getSettings();
         document.getElementById('s-nome').value = s.nome || '';
@@ -51,6 +62,9 @@ export const SettingsController = {
         }
     },
 
+    /**
+     * Saves the settings (excluding signature, which is handled separately).
+     */
     save() {
         const settings = {
             nome: document.getElementById('s-nome').value,
@@ -63,7 +77,8 @@ export const SettingsController = {
         UI.Toast.show('Configurações salvas!', 'success');
     },
 
-    // Signature Modal
+    // --- Signature Modal ---
+
     openSignatureModal() {
         const modal = document.getElementById('signature-modal');
         const canvas = document.getElementById('signature-canvas');

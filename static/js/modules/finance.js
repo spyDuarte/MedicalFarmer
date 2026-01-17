@@ -1,6 +1,13 @@
 import { Storage } from './storage.js';
+import { PAYMENT_STATUS } from './constants.js';
 
+/**
+ * Controller for the Financial Reports View.
+ */
 export const FinanceController = {
+    /**
+     * Renders financial charts and KPIs.
+     */
     render() {
         const pericias = Storage.getPericias();
         const container = document.getElementById('view-finance');
@@ -9,16 +16,15 @@ export const FinanceController = {
         // --- Data Aggregation ---
         const monthlyData = {};
         const pendingVsPaid = { paid: 0, pending: 0 };
-        const nextMonthPrediction = 0; // Future enhancement
 
         pericias.forEach(p => {
             const val = parseFloat(p.valor_honorarios || 0);
 
             // Paid vs Pending
-            if (p.status_pagamento === 'Pago') pendingVsPaid.paid += val;
+            if (p.status_pagamento === PAYMENT_STATUS.PAID) pendingVsPaid.paid += val;
             else pendingVsPaid.pending += val;
 
-            // Monthly (using date_pericia or created_at? date_pericia is better for accrual)
+            // Monthly
             const dateStr = p.data_pericia || p.created_at;
             if (dateStr) {
                 const date = new Date(dateStr);
@@ -38,6 +44,10 @@ export const FinanceController = {
         document.getElementById('fin-total-paid').innerText = `R$ ${pendingVsPaid.paid.toFixed(2)}`;
     },
 
+    /**
+     * Renders the monthly revenue bar chart.
+     * @param {Object} data - Monthly aggregation data.
+     */
     renderMonthlyChart(data) {
         const ctx = document.getElementById('chart-finance-monthly');
         if(!ctx) return;
@@ -65,6 +75,10 @@ export const FinanceController = {
         });
     },
 
+    /**
+     * Renders the Paid vs Pending doughnut chart.
+     * @param {Object} data - Paid vs Pending amounts.
+     */
     renderStatusChart(data) {
         const ctx = document.getElementById('chart-finance-status');
         if(!ctx) return;
@@ -74,7 +88,7 @@ export const FinanceController = {
         window.financeStatusChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Pago', 'Pendente'],
+                labels: [PAYMENT_STATUS.PAID, PAYMENT_STATUS.PENDING],
                 datasets: [{
                     data: [data.paid, data.pending],
                     backgroundColor: ['#22c55e', '#eab308']
