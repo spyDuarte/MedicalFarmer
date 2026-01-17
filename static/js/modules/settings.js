@@ -1,9 +1,34 @@
 import { Storage } from './storage.js';
 import { Mask } from './utils.js';
+import { UI } from './ui.js';
 
 export const SettingsController = {
     sigCanvas: null,
     sigCtx: null,
+
+    bindEvents() {
+        // Static buttons
+        const btnSave = document.getElementById('btn-save-settings');
+        if (btnSave) btnSave.addEventListener('click', () => this.save());
+
+        const btnSigOpen = document.getElementById('btn-open-signature');
+        if (btnSigOpen) btnSigOpen.addEventListener('click', () => this.openSignatureModal());
+
+        const btnSigClear = document.getElementById('btn-clear-signature');
+        if (btnSigClear) btnSigClear.addEventListener('click', () => this.clearSignature());
+
+        const btnSigSave = document.getElementById('btn-save-signature');
+        if (btnSigSave) btnSigSave.addEventListener('click', () => this.saveSignature());
+
+        const btnSigCancel = document.getElementById('btn-cancel-signature');
+        if (btnSigCancel) btnSigCancel.addEventListener('click', () => document.getElementById('signature-modal').classList.add('hidden'));
+
+        // Input Masks
+        const telInput = document.getElementById('s-telefone');
+        if(telInput) {
+            telInput.addEventListener('input', (e) => e.target.value = Mask.phone(e.target.value));
+        }
+    },
 
     render() {
         const s = Storage.getSettings();
@@ -11,17 +36,6 @@ export const SettingsController = {
         document.getElementById('s-crm').value = s.crm || '';
         document.getElementById('s-endereco').value = s.endereco || '';
         document.getElementById('s-telefone').value = s.telefone || '';
-
-        // Add Listeners
-        document.querySelectorAll('#view-settings input').forEach(el => {
-            const newEl = el.cloneNode(true);
-            newEl.value = el.value;
-            el.parentNode.replaceChild(newEl, el);
-
-            if(newEl.id === 's-telefone') {
-                newEl.addEventListener('input', (e) => e.target.value = Mask.phone(e.target.value));
-            }
-        });
 
         // Render signature preview
         const container = document.querySelector('#view-settings .max-w-2xl');
@@ -32,7 +46,7 @@ export const SettingsController = {
             const img = document.createElement('img');
             img.src = s.signature;
             img.id = 'signature-preview';
-            img.className = 'mt-4 border rounded max-h-24';
+            img.className = 'mt-4 border rounded max-h-24 block mx-auto';
             container.appendChild(img);
         }
     },
@@ -46,7 +60,7 @@ export const SettingsController = {
             signature: Storage.getSettings().signature // preserve signature
         };
         Storage.saveSettings(settings);
-        alert('Configurações salvas!');
+        UI.Toast.show('Configurações salvas!', 'success');
     },
 
     // Signature Modal
@@ -84,6 +98,6 @@ export const SettingsController = {
         Storage.saveSettings(s);
         document.getElementById('signature-modal').classList.add('hidden');
         this.render();
-        alert('Assinatura salva!');
+        UI.Toast.show('Assinatura salva!', 'success');
     }
 };

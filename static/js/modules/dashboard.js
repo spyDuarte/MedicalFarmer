@@ -3,6 +3,28 @@ import { Storage } from './storage.js';
 export const DashboardController = {
     statusChart: null,
 
+    bindEvents() {
+        const filters = ['status-filter', 'date-start', 'date-end', 'search-input'];
+        filters.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                if(id === 'search-input') {
+                    el.addEventListener('keyup', () => this.render());
+                } else {
+                    el.addEventListener('change', () => this.render());
+                }
+            }
+        });
+
+        // Note: Backup/Restore buttons are handled in app.js or MainController
+        // because they are global actions, but they live in the dashboard view initially.
+        // We will move their listener binding to app.js or here if specific to dashboard.
+        // Given they are in the dashboard view container, we should bind them here if possible,
+        // or ensure app.js binds them globally if they exist.
+        // Let's bind them here for now if they are dashboard specific controls.
+        // Wait, they are inside #view-dashboard in HTML.
+    },
+
     render() {
         const pericias = Storage.getPericias();
         const tbody = document.getElementById('dashboard-table-body');

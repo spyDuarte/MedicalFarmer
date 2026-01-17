@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'pericia-web-v2';
+const CACHE_NAME = 'pericia-web-v3';
 const ASSETS = [
     './',
     './index.html',
@@ -15,6 +15,8 @@ const ASSETS = [
     './static/js/modules/print.js',
     './static/js/modules/settings.js',
     './static/js/modules/finance.js',
+    './static/js/modules/ui.js',
+    './static/js/modules/macros.js',
     './static/js/modules/default_data.js',
     './static/js/cid_data.js',
     './static/css/toast.css',

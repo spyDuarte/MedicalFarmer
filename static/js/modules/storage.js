@@ -55,9 +55,9 @@ export const Storage = {
             localStorage.setItem(DB_KEY, JSON.stringify(pericias));
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
-                alert('Limite de armazenamento excedido! Tente remover arquivos anexados.');
-                throw e; // Propagate to caller
+                throw new Error('Limite de armazenamento excedido! Tente remover arquivos anexados.');
             }
+            throw e;
         }
         return pericia;
     },
@@ -114,7 +114,7 @@ export const Storage = {
     },
 
     // --- Backup & Restore ---
-    async exportData() {
+    async getExportData(password = null) {
         // Collect local storage data
         let data = {
             pericias: this.getPericias(),
@@ -130,100 +130,71 @@ export const Storage = {
             data.files = files; // Array of {id, content}
         } catch (e) {
             console.error("Error exporting files:", e);
-            alert("Aviso: Não foi possível exportar os anexos.");
+            throw new Error("Não foi possível exportar os anexos.");
         }
 
         let jsonString = JSON.stringify(data, null, 2);
         let filename = `backup_pericias_${new Date().toISOString().slice(0,10)}.json`;
 
-        // Encryption Flow
-        const password = prompt("Deseja proteger o backup com senha? (Deixe em branco para não criptografar)");
         if (password) {
-            try {
-                // Assuming CryptoJS is available globally or imported if needed.
-                // In ES modules, we should probably check window.CryptoJS
-                if (window.CryptoJS) {
-                    const encrypted = window.CryptoJS.AES.encrypt(jsonString, password).toString();
-                    jsonString = encrypted;
-                    filename += ".enc";
-                } else {
-                    alert("Biblioteca de criptografia não carregada.");
-                    return;
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Erro ao criptografar.");
-                return;
+            if (window.CryptoJS) {
+                const encrypted = window.CryptoJS.AES.encrypt(jsonString, password).toString();
+                jsonString = encrypted;
+                filename += ".enc";
+            } else {
+                throw new Error("Biblioteca de criptografia não carregada.");
             }
         }
 
-        const blob = new Blob([jsonString], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
+        return { filename, content: jsonString };
     },
 
-    importData(input) {
-        const file = input.files[0];
-        if(!file) return;
+    async processImportData(content, password = null) {
+        let data;
 
-        if(!confirm("ATENÇÃO: Isso irá substituir todos os dados atuais pelos do backup. Deseja continuar?")) {
-            input.value = "";
-            return;
+        // Check if potentially encrypted
+        // Naive check: if it doesn't start with '{', it's likely not plain JSON
+        // Or check file extension in caller.
+        // Here we just try to parse or decrypt.
+
+        try {
+            // First try JSON parse
+            data = JSON.parse(content);
+        } catch (e) {
+            // If failed, maybe it's encrypted
+            if (password && window.CryptoJS) {
+                try {
+                    const bytes = window.CryptoJS.AES.decrypt(content, password);
+                    const decryptedData = bytes.toString(window.CryptoJS.enc.Utf8);
+                    if (!decryptedData) throw new Error("Senha incorreta");
+                    data = JSON.parse(decryptedData);
+                } catch (decryptError) {
+                    throw new Error("Falha na descriptografia: Senha incorreta ou arquivo corrompido.");
+                }
+            } else {
+                if (!password) throw new Error("Arquivo parece criptografado ou inválido, mas nenhuma senha foi fornecida.");
+                 throw new Error("Falha ao ler arquivo: " + e.message);
+            }
         }
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                let content = e.target.result;
-                let data;
+        // Validate structure
+        if (!data.pericias && !data.settings) throw new Error("Arquivo de backup inválido.");
 
-                // Check if encrypted
-                if (file.name.endsWith('.enc') || !content.trim().startsWith('{')) {
-                    const password = prompt("Este backup está criptografado. Digite a senha:");
-                    if (!password) return;
-                    try {
-                         if (window.CryptoJS) {
-                            const bytes = window.CryptoJS.AES.decrypt(content, password);
-                            const decryptedData = bytes.toString(window.CryptoJS.enc.Utf8);
-                            if (!decryptedData) throw new Error("Senha incorreta");
-                            data = JSON.parse(decryptedData);
-                         } else {
-                             throw new Error("Lib CryptoJS missing");
-                         }
-                    } catch (err) {
-                        alert("Falha na descriptografia: Senha incorreta ou arquivo corrompido.");
-                        return;
-                    }
-                } else {
-                    data = JSON.parse(content);
-                }
+        // Restore LocalStorage
+        if(data.pericias) localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
+        if(data.macros) localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
+        if(data.templates) localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
+        if(data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
 
-                // Restore LocalStorage
-                if(data.pericias) localStorage.setItem(DB_KEY, JSON.stringify(data.pericias));
-                if(data.macros) localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
-                if(data.templates) localStorage.setItem(TEMPLATES_KEY, JSON.stringify(data.templates));
-                if(data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
-
-                // Restore IndexedDB
-                if(data.files && Array.isArray(data.files)) {
-                    await FileDB.clear();
-                    for(const file of data.files) {
-                        await FileDB.saveFile(file.id, file.content);
-                    }
-                }
-
-                alert("Dados restaurados com sucesso!");
-                location.reload();
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao restaurar backup. Verifique o arquivo.");
+        // Restore IndexedDB
+        if(data.files && Array.isArray(data.files)) {
+            await FileDB.clear();
+            for(const file of data.files) {
+                await FileDB.saveFile(file.id, file.content);
             }
-        };
-        reader.readAsText(file);
+        }
+
+        return true;
     }
 };
 
