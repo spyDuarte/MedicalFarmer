@@ -28,6 +28,10 @@ class Pericia(db.Model):
     exame_fisico = db.Column(db.Text, nullable=True)
     conclusao = db.Column(db.Text, nullable=True)
 
+    # Financeiro
+    valor_honorarios = db.Column(db.Float, default=0.0)
+    status_pagamento = db.Column(db.String(20), default='Pendente') # Pendente, Pago
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     documents = db.relationship('Documento', backref='pericia', lazy=True, cascade="all, delete-orphan")
@@ -70,7 +74,12 @@ def index():
         query = query.filter(Pericia.status == status_filter)
 
     pericias = query.order_by(Pericia.created_at.desc()).all()
-    return render_template('index.html', pericias=pericias, search=search, status_filter=status_filter)
+
+    # Totais Financeiros
+    total_recebido = sum(p.valor_honorarios for p in pericias if p.status_pagamento == 'Pago')
+    total_pendente = sum(p.valor_honorarios for p in pericias if p.status_pagamento == 'Pendente')
+
+    return render_template('index.html', pericias=pericias, search=search, status_filter=status_filter, total_recebido=total_recebido, total_pendente=total_pendente)
 
 @app.route('/nova', methods=['GET', 'POST'])
 def nova_pericia():
@@ -86,11 +95,19 @@ def nova_pericia():
             except ValueError:
                 pass
 
+        # New fields optional on creation
+        valor_honorarios = request.form.get('valor_honorarios', 0.0)
+        try:
+             valor_honorarios = float(valor_honorarios)
+        except:
+             valor_honorarios = 0.0
+
         nova = Pericia(
             numero_processo=numero_processo,
             nome_autor=nome_autor,
             data_pericia=data_pericia,
-            status='Agendado' if data_pericia else 'Aguardando'
+            status='Agendado' if data_pericia else 'Aguardando',
+            valor_honorarios=valor_honorarios
         )
         db.session.add(nova)
         db.session.commit()
@@ -103,9 +120,6 @@ def editar_pericia(id):
     macros = Macro.query.all()
 
     if request.method == 'POST':
-        # Legacy form based upload is handled by new API route,
-        # but if someone submits main form, we save text data.
-
         pericia.numero_processo = request.form['numero_processo']
         pericia.nome_autor = request.form['nome_autor']
         data_str = request.form.get('data_pericia')
@@ -115,6 +129,15 @@ def editar_pericia(id):
         pericia.anamnese = request.form.get('anamnese')
         pericia.exame_fisico = request.form.get('exame_fisico')
         pericia.conclusao = request.form.get('conclusao')
+
+        # Financeiro
+        try:
+            pericia.valor_honorarios = float(request.form.get('valor_honorarios', 0.0))
+        except:
+             pericia.valor_honorarios = 0.0
+
+        pericia.status_pagamento = request.form.get('status_pagamento', 'Pendente')
+
 
         if 'finalizar' in request.form:
             pericia.status = 'Concluido'
