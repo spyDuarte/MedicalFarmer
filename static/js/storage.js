@@ -1,6 +1,7 @@
 
 const DB_KEY = 'pericia_sys_data';
 const MACROS_KEY = 'pericia_sys_macros';
+const SETTINGS_KEY = 'pericia_sys_settings';
 
 const Storage = {
     // --- Data Initialization ---
@@ -16,6 +17,15 @@ const Storage = {
                 {id: 3, titulo: "Conclusão - Incapaz", categoria: "conclusao", conteudo: "Há incapacidade laborativa..."}
             ];
             localStorage.setItem(MACROS_KEY, JSON.stringify(defaults));
+        }
+        if (!localStorage.getItem(SETTINGS_KEY)) {
+            const defaultSettings = {
+                nome: "Dr. Perito Judicial",
+                crm: "CRM-XX 00000",
+                endereco: "",
+                telefone: ""
+            };
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
         }
     },
 
@@ -69,11 +79,21 @@ const Storage = {
          localStorage.setItem(MACROS_KEY, JSON.stringify(macros));
     },
 
+    // --- Settings ---
+    getSettings() {
+        return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    },
+
+    saveSettings(settings) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    },
+
     // --- Backup & Restore ---
     exportData() {
         const data = {
             pericias: this.getPericias(),
             macros: this.getMacros(),
+            settings: this.getSettings(),
             exportDate: new Date().toISOString()
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
@@ -103,6 +123,9 @@ const Storage = {
                 }
                 if(data.macros && Array.isArray(data.macros)) {
                     localStorage.setItem(MACROS_KEY, JSON.stringify(data.macros));
+                }
+                if(data.settings) {
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
                 }
                 alert("Dados restaurados com sucesso!");
                 location.reload();
