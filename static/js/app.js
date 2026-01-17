@@ -3,6 +3,7 @@
 const App = {
     editors: {}, // Quill instances
     currentPericiaId: null,
+    statusChart: null,
 
     init() {
         this.bindEvents();
@@ -65,6 +66,9 @@ const App = {
         } else if (path === 'print') {
             this.renderPrint(id);
             document.getElementById('view-print').classList.remove('hidden');
+        } else if (path === 'settings') {
+            this.renderSettings();
+            document.getElementById('view-settings').classList.remove('hidden');
         }
     },
 
@@ -91,9 +95,14 @@ const App = {
              return matchesSearch && matchesStatus;
         }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+        // Stats Logic
+        const stats = { 'Aguardando': 0, 'Agendado': 0, 'Em Andamento': 0, 'Concluido': 0 };
+
         filtered.forEach(p => {
             if (p.status_pagamento === 'Pago') totalRecebido += parseFloat(p.valor_honorarios || 0);
             else totalPendente += parseFloat(p.valor_honorarios || 0);
+
+            if (stats[p.status] !== undefined) stats[p.status]++;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -123,6 +132,44 @@ const App = {
 
         document.getElementById('total-pendente').innerText = `R$ ${totalPendente.toFixed(2)}`;
         document.getElementById('total-recebido').innerText = `R$ ${totalRecebido.toFixed(2)}`;
+
+        this.renderCharts(stats);
+    },
+
+    renderCharts(stats) {
+        const ctx = document.getElementById('chart-status');
+        if (!ctx) return;
+
+        // Destroy old chart
+        if (this.statusChart) {
+            this.statusChart.destroy();
+        }
+
+        // Check if dark mode is active to adjust text colors
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#e5e7eb' : '#374151';
+
+        this.statusChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aguardando', 'Agendado', 'Em Andamento', 'Concluído'],
+                datasets: [{
+                    data: [stats['Aguardando'], stats['Agendado'], stats['Em Andamento'], stats['Concluido']],
+                    backgroundColor: ['#facc15', '#60a5fa', '#3b82f6', '#22c55e'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: textColor }
+                    }
+                }
+            }
+        });
     },
 
     renderForm(id) {
@@ -132,7 +179,15 @@ const App = {
         // Populate inputs
         document.getElementById('f-numero_processo').value = pericia.numero_processo || '';
         document.getElementById('f-nome_autor').value = pericia.nome_autor || '';
-        document.getElementById('f-data_pericia').value = pericia.data_pericia ? pericia.data_pericia.split('T')[0] : ''; // Simple handling
+
+        // Extended Patient Data
+        document.getElementById('f-data_nascimento').value = pericia.data_nascimento || '';
+        document.getElementById('f-cpf').value = pericia.cpf || '';
+        document.getElementById('f-rg').value = pericia.rg || '';
+        document.getElementById('f-profissao').value = pericia.profissao || '';
+        this.calcAge(); // Update age display
+
+        document.getElementById('f-data_pericia').value = pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '';
         document.getElementById('f-valor_honorarios').value = pericia.valor_honorarios || 0;
         document.getElementById('f-status_pagamento').value = pericia.status_pagamento || 'Pendente';
 
@@ -149,6 +204,14 @@ const App = {
             clinicalSection.classList.add('hidden');
             documentsSection.classList.add('hidden');
         }
+    },
+
+    renderSettings() {
+        const s = Storage.getSettings();
+        document.getElementById('s-nome').value = s.nome || '';
+        document.getElementById('s-crm').value = s.crm || '';
+        document.getElementById('s-endereco').value = s.endereco || '';
+        document.getElementById('s-telefone').value = s.telefone || '';
     },
 
     renderMacros() {
@@ -182,14 +245,38 @@ const App = {
 
     renderPrint(id) {
         const pericia = Storage.getPericia(id);
+        const s = Storage.getSettings();
         if(!pericia) return;
+
+        // Header (Professional Info)
+        document.getElementById('print-header-name').innerText = s.nome || 'Dr. Perito Judicial';
+        document.getElementById('print-header-crm').innerText = s.crm || 'CRM-XX 00000';
+        document.getElementById('print-header-details').innerText = `${s.endereco ? s.endereco + ' | ' : ''}${s.telefone || ''}`;
 
         document.getElementById('p-processo').innerText = pericia.numero_processo;
         document.getElementById('p-data').innerText = pericia.data_pericia ? new Date(pericia.data_pericia).toLocaleDateString('pt-BR') : '___/___/____';
+
+        // Extended Patient Data
         document.getElementById('p-autor').innerText = pericia.nome_autor;
+
+        let details = [];
+        if(pericia.data_nascimento) {
+            const age = this.calculateAgeValue(pericia.data_nascimento);
+            details.push(`Nascimento: ${new Date(pericia.data_nascimento).toLocaleDateString('pt-BR')} (${age} anos)`);
+        }
+        if(pericia.rg) details.push(`RG: ${pericia.rg}`);
+        if(pericia.cpf) details.push(`CPF: ${pericia.cpf}`);
+        if(pericia.profissao) details.push(`Profissão: ${pericia.profissao}`);
+
+        document.getElementById('p-autor-details').innerText = details.join(' | ');
+
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
         document.getElementById('p-exame').innerHTML = pericia.exame_fisico || 'Não informado.';
         document.getElementById('p-conclusao').innerHTML = pericia.conclusao || 'Não informado.';
+
+        // Footer
+        document.getElementById('print-footer-name').innerText = s.nome || 'Dr. Perito Judicial';
+        document.getElementById('print-footer-crm').innerText = s.crm || 'CRM-XX 00000';
     },
 
     // --- Helpers ---
@@ -203,6 +290,24 @@ const App = {
         };
         const cls = classes[status] || 'bg-gray-200 text-gray-900';
         return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${status}</span>`;
+    },
+
+    calcAge() {
+        const dobStr = document.getElementById('f-data_nascimento').value;
+        const display = document.getElementById('f-idade-display');
+        if(dobStr) {
+            const age = this.calculateAgeValue(dobStr);
+            display.innerText = `${age} anos`;
+        } else {
+            display.innerText = '';
+        }
+    },
+
+    calculateAgeValue(dobStr) {
+        const dob = new Date(dobStr);
+        const diff_ms = Date.now() - dob.getTime();
+        const age_dt = new Date(diff_ms);
+        return Math.abs(age_dt.getUTCFullYear() - 1970);
     },
 
     initQuill(pericia) {
@@ -261,6 +366,13 @@ const App = {
             id: this.currentPericiaId,
             numero_processo: document.getElementById('f-numero_processo').value,
             nome_autor: document.getElementById('f-nome_autor').value,
+
+            // Extended Data
+            data_nascimento: document.getElementById('f-data_nascimento').value,
+            cpf: document.getElementById('f-cpf').value,
+            rg: document.getElementById('f-rg').value,
+            profissao: document.getElementById('f-profissao').value,
+
             data_pericia: document.getElementById('f-data_pericia').value,
             valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value),
             status_pagamento: document.getElementById('f-status_pagamento').value,
@@ -291,6 +403,17 @@ const App = {
 
         const saved = Storage.savePericia(data);
         window.location.hash = '#dashboard';
+    },
+
+    saveSettings() {
+        const settings = {
+            nome: document.getElementById('s-nome').value,
+            crm: document.getElementById('s-crm').value,
+            endereco: document.getElementById('s-endereco').value,
+            telefone: document.getElementById('s-telefone').value
+        };
+        Storage.saveSettings(settings);
+        alert('Configurações salvas!');
     },
 
     saveMacro() {
