@@ -424,7 +424,6 @@ export const FormController = {
                 document.getElementById('upload_document').value = "";
                 UI.Toast.show('Arquivo anexado!', 'success');
             } catch (err) {
-                console.error(err);
                 UI.Toast.show('Erro ao salvar arquivo.', 'error');
             } finally {
                 UI.Loading.hide();
@@ -480,7 +479,6 @@ export const FormController = {
                 UI.Toast.show('Arquivo não encontrado.', 'error');
             }
         } catch (e) {
-            console.error(e);
             UI.Toast.show('Erro ao baixar arquivo.', 'error');
         }
     },

@@ -190,7 +190,6 @@ export const Storage = {
             const files = await FileDB.getAllFiles();
             data.files = files; // Array of {id, content}
         } catch (e) {
-            console.error("Error exporting files:", e);
             throw new Error("Não foi possível exportar os anexos.");
         }
 

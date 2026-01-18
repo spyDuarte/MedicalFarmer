@@ -11,7 +11,6 @@ export const FileDB = {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
 
             request.onerror = (event) => {
-                console.error("IndexedDB error:", event.target.error);
                 reject(event.target.error);
             };
 
@@ -94,4 +93,4 @@ export const FileDB = {
 };
 
 // Initialize immediately handled by caller or here
-FileDB.init().catch(console.error);
+FileDB.init().catch(() => {});
