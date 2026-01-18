@@ -1,6 +1,7 @@
 import { FileDB } from './db.js';
 import { DEFAULT_MACROS, DEFAULT_TEMPLATES } from './default_data.js';
 import { DB_KEYS } from './constants.js';
+import { Pericia } from './models.js';
 
 /**
  * Storage module for handling LocalStorage and IndexedDB interactions.
@@ -28,6 +29,40 @@ export const Storage = {
             };
             localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(defaultSettings));
         }
+
+        this.migrateData();
+    },
+
+    /**
+     * Migrates existing data from snake_case to camelCase.
+     */
+    migrateData() {
+        try {
+            const raw = localStorage.getItem(DB_KEYS.PERICIAS);
+            if (!raw) return;
+            let pericias = JSON.parse(raw);
+            let modified = false;
+
+            pericias = pericias.map(p => {
+                // Check if it's an old record (has snake_case keys)
+                if (p.numero_processo || p.nome_autor || p.tipo_acao) {
+                    modified = true;
+                    // The Pericia constructor handles the mapping from snake_case to camelCase
+                    const newModel = new Pericia(p);
+                    // Return the plain object, not the class instance, to avoid serialization issues?
+                    // Class instance stringifies fine usually.
+                    return { ...newModel };
+                }
+                return p;
+            });
+
+            if (modified) {
+                console.info("Migrating data to CamelCase standards...");
+                localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
+            }
+        } catch (e) {
+            console.error("Migration failed", e);
+        }
     },
 
     // --- Pericias ---
@@ -37,7 +72,9 @@ export const Storage = {
      * @returns {Array} List of pericias.
      */
     getPericias() {
-        return JSON.parse(localStorage.getItem(DB_KEYS.PERICIAS) || '[]');
+        const list = JSON.parse(localStorage.getItem(DB_KEYS.PERICIAS) || '[]');
+        // Ensure they are proper objects (in case migration didn't run or new fields added)
+        return list.map(p => new Pericia(p));
     },
 
     /**
@@ -56,17 +93,23 @@ export const Storage = {
      * @returns {Object} The saved pericia.
      */
     savePericia(pericia) {
+        // Ensure we are saving the Clean Model
+        const model = new Pericia(pericia);
         const pericias = this.getPericias();
-        if (pericia.id) {
-            const index = pericias.findIndex(p => p.id == pericia.id);
+
+        if (model.id) {
+            const index = pericias.findIndex(p => p.id == model.id);
             if (index !== -1) {
-                pericias[index] = { ...pericias[index], ...pericia }; // Update
+                pericias[index] = model; // Update
+            } else {
+                pericias.push(model); // Should not happen often if ID exists
             }
         } else {
-            pericia.id = Date.now(); // Simple ID
-            pericia.created_at = new Date().toISOString();
-            pericias.push(pericia);
+            model.id = Date.now();
+            model.createdAt = new Date().toISOString();
+            pericias.push(model);
         }
+
         try {
             localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
         } catch (e) {
@@ -75,7 +118,7 @@ export const Storage = {
             }
             throw e;
         }
-        return pericia;
+        return model;
     },
 
     /**
@@ -242,6 +285,11 @@ export const Storage = {
         if (!data.pericias && !data.settings) throw new Error("Arquivo de backup inválido.");
 
         // Restore LocalStorage
+        // Note: Imported data might be in old format. We save it as is, and let 'migrateData' handle it on reload,
+        // OR we migrate it right now.
+        // Let's rely on 'init()' calling migrateData() on reload, but to be safe, we can run migration here if we wanted.
+        // But since 'init' runs on page load, and we reload page after import (in app.js), it should be fine.
+
         if(data.pericias) localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(data.pericias));
         if(data.macros) localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(data.macros));
         if(data.templates) localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(data.templates));

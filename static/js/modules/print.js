@@ -1,5 +1,6 @@
 import { Storage } from './storage.js';
 import { UI } from './ui.js';
+import { DEFAULTS } from './constants.js';
 
 /**
  * Controller for Printing and PDF Export.
@@ -41,49 +42,49 @@ export const PrintController = {
         setTxt('print-header-crm', s.crm || 'CRM-XX 00000');
         setTxt('print-header-contact', `${s.endereco ? s.endereco : ''} ${s.telefone ? ' | ' + s.telefone : ''}`);
 
-        setTxt('p-tipo_acao', pericia.tipo_acao || 'Trabalhista');
-        setTxt('p-processo', pericia.numero_processo);
-        setTxt('p-autor', pericia.nome_autor);
-        setTxt('p-data', pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
-        setTxt('p-local_pericia', pericia.local_pericia || '-');
+        setTxt('p-tipo_acao', pericia.tipoAcao || 'Trabalhista');
+        setTxt('p-processo', pericia.numeroProcesso);
+        setTxt('p-autor', pericia.nomeAutor);
+        setTxt('p-data', pericia.dataPericia ? new Date(pericia.dataPericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
+        setTxt('p-local_pericia', pericia.localPericia || '-');
         setTxt('p-assistentes', pericia.assistentes || '-');
 
         setTxt('p-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
         setTxt('p-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
 
         // Helper for Age
-        const dob = pericia.data_nascimento ? new Date(pericia.data_nascimento) : null;
+        const dob = pericia.dataNascimento ? new Date(pericia.dataNascimento) : null;
         const age = dob ? Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970) : '-';
 
         let idDetails = `
-            <strong>Nome:</strong> ${pericia.nome_autor}<br>
-            <strong>Nascimento:</strong> ${pericia.data_nascimento ? new Date(pericia.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+            <strong>Nome:</strong> ${pericia.nomeAutor}<br>
+            <strong>Nascimento:</strong> ${pericia.dataNascimento ? new Date(pericia.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
             (${age} anos)<br>
             <strong>RG:</strong> ${pericia.rg || '-'} | <strong>CPF:</strong> ${pericia.cpf || '-'}<br>
             <strong>Escolaridade:</strong> ${pericia.escolaridade || '-'}
         `;
         document.getElementById('p-identificacao-detalhada').innerHTML = idDetails;
 
-        setTxt('p-estado_civil', pericia.estado_civil || '-');
+        setTxt('p-estado_civil', pericia.estadoCivil || '-');
         setTxt('p-ctps', pericia.ctps || '-');
         setTxt('p-cnh', pericia.cnh || '-');
-        setTxt('p-mao_dominante', pericia.mao_dominante || '-');
+        setTxt('p-mao_dominante', pericia.maoDominante || '-');
 
         let histOcup = `
             <strong>Profissão:</strong> ${pericia.profissao || '-'}<br>
-            <strong>Tempo na Função:</strong> ${pericia.tempo_funcao || '-'}<br>
-            <strong>Atividades/Riscos:</strong> ${pericia.desc_atividades || '-'}
+            <strong>Tempo na Função:</strong> ${pericia.tempoFuncao || '-'}<br>
+            <strong>Atividades/Riscos:</strong> ${pericia.descAtividades || '-'}
         `;
         document.getElementById('p-ocupacional').innerHTML = histOcup;
-        setTxt('p-data_acidente', pericia.data_acidente ? new Date(pericia.data_acidente + 'T00:00:00').toLocaleDateString('pt-BR') : '-');
+        setTxt('p-data_acidente', pericia.dataAcidente ? new Date(pericia.dataAcidente + 'T00:00:00').toLocaleDateString('pt-BR') : '-');
         setTxt('p-epis', pericia.epis || 'Não informado/Não aplicável.');
 
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
         setTxt('p-antecedentes', pericia.antecedentes || 'Nada digno de nota.');
-        setTxt('p-historico_previdenciario', pericia.historico_previdenciario || 'Não informado.');
+        setTxt('p-historico_previdenciario', pericia.historicoPrevidenciario || 'Não informado.');
 
-        document.getElementById('p-exame').innerHTML = pericia.exame_fisico || 'Não informado.';
-        setTxt('p-exames-comp', pericia.exames_complementares || 'Não apresentados.');
+        document.getElementById('p-exame').innerHTML = pericia.exameFisico || 'Não informado.';
+        setTxt('p-exames-comp', pericia.examesComplementares || 'Não apresentados.');
 
         setTxt('p-discussao', pericia.discussao);
         setTxt('p-cid', pericia.cid || '-');
@@ -92,7 +93,7 @@ export const PrintController = {
         setTxt('p-dii', pericia.dii || '-');
         setTxt('p-parecer', pericia.parecer || '-');
         setTxt('p-prognostico', pericia.prognostico || '-');
-        setTxt('p-necessidade_assistencia', pericia.necessidade_assistencia || '-');
+        setTxt('p-necessidade_assistencia', pericia.necessidadeAssistencia || '-');
         document.getElementById('p-conclusao').innerHTML = pericia.conclusao || '';
         setTxt('p-bibliografia', pericia.bibliografia || '-');
 

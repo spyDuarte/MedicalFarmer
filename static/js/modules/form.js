@@ -59,6 +59,7 @@ export const FormController = {
      */
     renderForm(id) {
         this.currentPericiaId = id;
+        // Storage.getPericia now returns a Pericia instance with camelCase properties
         const pericia = id ? Storage.getPericia(id) : {};
 
         // Reset UI state
@@ -71,40 +72,40 @@ export const FormController = {
         };
 
         // Populate Identification Fields
-        setVal('f-numero_processo', pericia.numero_processo);
+        setVal('f-numero_processo', pericia.numeroProcesso);
         setVal('f-vara', pericia.vara);
-        setVal('f-tipo_acao', pericia.tipo_acao || "Trabalhista");
-        setVal('f-nome_autor', pericia.nome_autor);
-        setVal('f-data_nascimento', pericia.data_nascimento);
+        setVal('f-tipo_acao', pericia.tipoAcao || "Trabalhista");
+        setVal('f-nome_autor', pericia.nomeAutor);
+        setVal('f-data_nascimento', pericia.dataNascimento);
         setVal('f-cpf', pericia.cpf);
         setVal('f-rg', pericia.rg);
         setVal('f-escolaridade', pericia.escolaridade);
-        setVal('f-estado_civil', pericia.estado_civil);
+        setVal('f-estado_civil', pericia.estadoCivil);
         setVal('f-ctps', pericia.ctps);
         setVal('f-cnh', pericia.cnh);
-        setVal('f-mao_dominante', pericia.mao_dominante || "Destro");
+        setVal('f-mao_dominante', pericia.maoDominante || "Destro");
         this.calcAge();
 
         // Populate Status/Finance
-        setVal('f-data_pericia', pericia.data_pericia ? pericia.data_pericia.split('T')[0] : '');
-        setVal('f-valor_honorarios', pericia.valor_honorarios || 0);
-        setVal('f-status_pagamento', pericia.status_pagamento || PAYMENT_STATUS.PENDING);
+        setVal('f-data_pericia', pericia.dataPericia ? pericia.dataPericia.split('T')[0] : '');
+        setVal('f-valor_honorarios', pericia.valorHonorarios || 0);
+        setVal('f-status_pagamento', pericia.statusPagamento || PAYMENT_STATUS.PENDING);
 
         setVal('f-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
         setVal('f-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
-        setVal('f-local_pericia', pericia.local_pericia || "");
+        setVal('f-local_pericia', pericia.localPericia || "");
         setVal('f-assistentes', pericia.assistentes || "Ausentes");
 
         // Populate Occupational History
-        setVal('f-data_acidente', pericia.data_acidente);
+        setVal('f-data_acidente', pericia.dataAcidente);
         setVal('f-profissao', pericia.profissao);
-        setVal('f-tempo_funcao', pericia.tempo_funcao);
-        setVal('f-desc_atividades', pericia.desc_atividades);
+        setVal('f-tempo_funcao', pericia.tempoFuncao);
+        setVal('f-desc_atividades', pericia.descAtividades);
         setVal('f-epis', pericia.epis);
         setVal('f-antecedentes', pericia.antecedentes);
-        setVal('f-historico_previdenciario', pericia.historico_previdenciario);
+        setVal('f-historico_previdenciario', pericia.historicoPrevidenciario);
 
-        setVal('f-exames_complementares', pericia.exames_complementares);
+        setVal('f-exames_complementares', pericia.examesComplementares);
 
         // Populate Conclusion
         setVal('f-discussao', pericia.discussao);
@@ -114,7 +115,7 @@ export const FormController = {
         setVal('f-dii', pericia.dii);
         setVal('f-parecer', pericia.parecer || DEFAULTS.PARECER);
         setVal('f-prognostico', pericia.prognostico || "Bom");
-        setVal('f-necessidade_assistencia', pericia.necessidade_assistencia || "Não");
+        setVal('f-necessidade_assistencia', pericia.necessidadeAssistencia || "Não");
         setVal('f-bibliografia', pericia.bibliografia);
 
         // Check for Auto-Save Draft
@@ -123,15 +124,22 @@ export const FormController = {
             UI.Modal.confirm('Existe um rascunho não salvo. Deseja recuperar?', () => {
                 const draftData = JSON.parse(draft);
                 // Apply draft values
+                // Note: draftData will have camelCase keys because collectFormData generates camelCase
                 Object.keys(draftData).forEach(key => {
-                    if (key !== 'anamnese' && key !== 'exame_fisico' && key !== 'conclusao' && key !== 'quesitos') {
-                         setVal(`f-${key}`, draftData[key]);
+                    // Mapping camelCase keys back to HTML IDs (snake-ish)
+                    // This is a bit tricky, so we might need a map.
+                    // Or we just check known keys.
+                    let htmlId = 'f-' + key.replace(/([A-Z])/g, "_$1").toLowerCase(); // simple converter
+                    // Exception: numeroProcesso -> f-numero_processo
+
+                    if (document.getElementById(htmlId)) {
+                        setVal(htmlId, draftData[key]);
                     }
                 });
 
                 // Merge draft text fields into the pericia object for initQuill
                 pericia.anamnese = draftData.anamnese;
-                pericia.exame_fisico = draftData.exame_fisico;
+                pericia.exameFisico = draftData.exameFisico;
                 pericia.conclusao = draftData.conclusao;
                 pericia.quesitos = draftData.quesitos;
 
@@ -148,11 +156,6 @@ export const FormController = {
      * Attaches listeners to form inputs for auto-save and validation.
      */
     attachFormListeners() {
-        // We use event delegation or direct attachment.
-        // To avoid piling listeners if renderForm is called again, we can use onchange properties
-        // or ensure we clone/replace elements. For simplicity in this refactor, we stick to direct properties
-        // but cleaner.
-
         const inputs = document.querySelectorAll('#view-form input, #view-form select, #view-form textarea');
         inputs.forEach(el => {
             el.oninput = (e) => {
@@ -274,7 +277,8 @@ export const FormController = {
         };
 
         createEditor('q-anamnese', 'anamnese');
-        createEditor('q-exame_fisico', 'exame_fisico');
+        // Note: The HTML ID is q-exame_fisico but the property is exameFisico
+        createEditor('q-exame_fisico', 'exameFisico');
         createEditor('q-conclusao', 'conclusao');
         createEditor('q-quesitos', 'quesitos');
 
@@ -283,6 +287,13 @@ export const FormController = {
 
     populateMacroSelects() {
         const macros = Storage.getMacros();
+        // Updated keys map for editor dictionary
+        const catMap = {
+            'anamnese': 'anamnese',
+            'exame_fisico': 'exameFisico',
+            'conclusao': 'conclusao'
+        };
+
         ['anamnese', 'exame_fisico', 'conclusao'].forEach(cat => {
             const sel = document.getElementById(`macro-sel-${cat}`);
             if(!sel) return;
@@ -299,10 +310,12 @@ export const FormController = {
                 const id = e.target.value;
                 if(!id) return;
                 const m = macros.find(x => x.id == id);
-                if(m && this.editors[cat]) {
-                    const range = this.editors[cat].getSelection(true);
-                    if (range) this.editors[cat].insertText(range.index, m.conteudo + '\n');
-                    else this.editors[cat].insertText(this.editors[cat].getLength(), m.conteudo + '\n');
+                // Use mapped key for editors array
+                const editorKey = catMap[cat];
+                if(m && this.editors[editorKey]) {
+                    const range = this.editors[editorKey].getSelection(true);
+                    if (range) this.editors[editorKey].insertText(range.index, m.conteudo + '\n');
+                    else this.editors[editorKey].insertText(this.editors[editorKey].getLength(), m.conteudo + '\n');
                 }
                 e.target.value = "";
             };
@@ -312,29 +325,29 @@ export const FormController = {
     collectFormData() {
         return {
             id: this.currentPericiaId,
-            numero_processo: document.getElementById('f-numero_processo').value,
+            numeroProcesso: document.getElementById('f-numero_processo').value,
             vara: document.getElementById('f-vara').value,
-            tipo_acao: document.getElementById('f-tipo_acao').value,
-            nome_autor: document.getElementById('f-nome_autor').value,
+            tipoAcao: document.getElementById('f-tipo_acao').value,
+            nomeAutor: document.getElementById('f-nome_autor').value,
 
-            data_nascimento: document.getElementById('f-data_nascimento').value,
+            dataNascimento: document.getElementById('f-data_nascimento').value,
             cpf: document.getElementById('f-cpf').value,
             rg: document.getElementById('f-rg').value,
             escolaridade: document.getElementById('f-escolaridade').value,
-            estado_civil: document.getElementById('f-estado_civil').value,
+            estadoCivil: document.getElementById('f-estado_civil').value,
             ctps: document.getElementById('f-ctps').value,
             cnh: document.getElementById('f-cnh').value,
-            mao_dominante: document.getElementById('f-mao_dominante').value,
+            maoDominante: document.getElementById('f-mao_dominante').value,
 
-            data_acidente: document.getElementById('f-data_acidente').value,
+            dataAcidente: document.getElementById('f-data_acidente').value,
             profissao: document.getElementById('f-profissao').value,
-            tempo_funcao: document.getElementById('f-tempo_funcao').value,
-            desc_atividades: document.getElementById('f-desc_atividades').value,
+            tempoFuncao: document.getElementById('f-tempo_funcao').value,
+            descAtividades: document.getElementById('f-desc_atividades').value,
             epis: document.getElementById('f-epis').value,
             antecedentes: document.getElementById('f-antecedentes').value,
-            historico_previdenciario: document.getElementById('f-historico_previdenciario').value,
+            historicoPrevidenciario: document.getElementById('f-historico_previdenciario').value,
 
-            exames_complementares: document.getElementById('f-exames_complementares').value,
+            examesComplementares: document.getElementById('f-exames_complementares').value,
             discussao: document.getElementById('f-discussao').value,
             cid: document.getElementById('f-cid').value,
             nexo: document.getElementById('f-nexo').value,
@@ -342,20 +355,20 @@ export const FormController = {
             dii: document.getElementById('f-dii').value,
             parecer: document.getElementById('f-parecer').value,
             prognostico: document.getElementById('f-prognostico').value,
-            necessidade_assistencia: document.getElementById('f-necessidade_assistencia').value,
+            necessidadeAssistencia: document.getElementById('f-necessidade_assistencia').value,
             bibliografia: document.getElementById('f-bibliografia').value,
 
-            data_pericia: document.getElementById('f-data_pericia').value,
-            valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
-            status_pagamento: document.getElementById('f-status_pagamento').value,
+            dataPericia: document.getElementById('f-data_pericia').value,
+            valorHonorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
+            statusPagamento: document.getElementById('f-status_pagamento').value,
 
             objetivo: document.getElementById('f-objetivo').value,
             metodologia: document.getElementById('f-metodologia').value,
-            local_pericia: document.getElementById('f-local_pericia').value,
+            localPericia: document.getElementById('f-local_pericia').value,
             assistentes: document.getElementById('f-assistentes').value,
 
             anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
-            exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
+            exameFisico: this.editors['exameFisico'] ? this.editors['exameFisico'].root.innerHTML : '',
             conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
             quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
 
@@ -376,8 +389,8 @@ export const FormController = {
         let errors = [];
 
         if (finalize) {
-            if (!data.numero_processo) errors.push("Número do Processo é obrigatório.");
-            if (!data.nome_autor) errors.push("Nome do Autor é obrigatório.");
+            if (!data.numeroProcesso) errors.push("Número do Processo é obrigatório.");
+            if (!data.nomeAutor) errors.push("Nome do Autor é obrigatório.");
             if (!data.cid) errors.push("Diagnóstico (CID) é obrigatório.");
             if (!data.conclusao || data.conclusao === '<p><br></p>') errors.push("Conclusão é obrigatória.");
         }
@@ -396,7 +409,7 @@ export const FormController = {
 
         if (finalize) data.status = STATUS.DONE;
         else if (!data.status) {
-             if (data.data_pericia) data.status = STATUS.SCHEDULED;
+             if (data.dataPericia) data.status = STATUS.SCHEDULED;
              else data.status = STATUS.WAITING;
 
              if (this.currentPericiaId) {
@@ -405,7 +418,7 @@ export const FormController = {
                      data.status = old.status;
                  }
              }
-             if (!finalize && (data.anamnese || data.exame_fisico) && data.status !== STATUS.DONE) {
+             if (!finalize && (data.anamnese || data.exameFisico) && data.status !== STATUS.DONE) {
                  data.status = STATUS.IN_PROGRESS;
              }
         }
@@ -450,7 +463,7 @@ export const FormController = {
                 await FileDB.saveFile(fileId, content);
                 const pericia = Storage.getPericia(this.currentPericiaId);
                 if(!pericia.documents) pericia.documents = [];
-                pericia.documents.push({ id: fileId, original_name: originalName });
+                pericia.documents.push({ id: fileId, originalName: originalName });
                 Storage.savePericia(pericia);
                 this.renderDocumentsList(pericia.documents);
                 document.getElementById('upload_document').value = "";
@@ -475,11 +488,11 @@ export const FormController = {
         docs.forEach(doc => {
             const li = document.createElement('li');
             li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-1";
-            const isImage = doc.original_name.match(/\.(jpg|jpeg|png|webp)$/i);
+            const isImage = doc.originalName.match(/\.(jpg|jpeg|png|webp)$/i);
 
             li.innerHTML = `
                 <div class="flex items-center gap-2 truncate">
-                    <span class="text-blue-600 dark:text-blue-400 truncate cursor-pointer doc-link" data-id="${doc.id}" data-name="${doc.original_name}">${doc.original_name}</span>
+                    <span class="text-blue-600 dark:text-blue-400 truncate cursor-pointer doc-link" data-id="${doc.id}" data-name="${doc.originalName}">${doc.originalName}</span>
                     ${isImage ? `<button class="text-gray-500 hover:text-blue-500 annotate-btn" data-id="${doc.id}" title="Anotar"><i class="fa-solid fa-paintbrush"></i></button>` : ''}
                 </div>
                 <button class="text-red-500 hover:text-red-700 delete-btn" data-id="${doc.id}"><i class="fa-solid fa-trash"></i></button>
@@ -547,8 +560,8 @@ export const FormController = {
         const title = UI.Modal.prompt("Nome do Template:");
         if(!title) return;
         const data = this.collectFormData();
-        delete data.id; delete data.numero_processo; delete data.nome_autor;
-        delete data.cpf; delete data.rg; delete data.data_nascimento; delete data.documents;
+        delete data.id; delete data.numeroProcesso; delete data.nomeAutor;
+        delete data.cpf; delete data.rg; delete data.dataNascimento; delete data.documents;
         Storage.addTemplate({ title, data });
         this.populateTemplateSelector();
         UI.Toast.show('Template salvo!', 'success');
@@ -560,12 +573,38 @@ export const FormController = {
             const t = Storage.getTemplates().find(x => x.id == id);
             if(t) {
                 const data = t.data;
+                // Reverse mapping or direct assignment?
+                // Templates saved with NEW version will have camelCase keys.
+                // Templates saved with OLD version will have snake_case keys.
+                // We should handle both or rely on manual mapping.
+                // Since we just refactored, old templates in storage are snake_case.
+                // But wait, Storage doesn't migrate Templates!
+
+                // I should probably add migration for templates in Storage, but let's handle it gracefully here.
+
+                const map = {
+                    numeroProcesso: 'f-numero_processo',
+                    numero_processo: 'f-numero_processo', // Legacy support
+                    vara: 'f-vara',
+                    tipoAcao: 'f-tipo_acao',
+                    tipo_acao: 'f-tipo_acao',
+                    // ... and so on
+                };
+
+                // Better strategy: Use the camelCase to ID converter used in draft logic
                 Object.keys(data).forEach(key => {
-                    const el = document.getElementById(`f-${key}`);
+                    let htmlId = 'f-' + key.replace(/([A-Z])/g, "_$1").toLowerCase();
+                    if (key === 'numeroProcesso') htmlId = 'f-numero_processo'; // Edge case
+
+                    // Legacy snake_case keys just work naturally with 'f-' prefix usually
+                    if (key.includes('_')) htmlId = 'f-' + key;
+
+                    const el = document.getElementById(htmlId);
                     if(el) el.value = data[key] || '';
                 });
+
                 if (this.editors['anamnese']) this.editors['anamnese'].root.innerHTML = data.anamnese || '';
-                if (this.editors['exame_fisico']) this.editors['exame_fisico'].root.innerHTML = data.exame_fisico || '';
+                if (this.editors['exameFisico']) this.editors['exameFisico'].root.innerHTML = data.exameFisico || data.exame_fisico || '';
                 if (this.editors['conclusao']) this.editors['conclusao'].root.innerHTML = data.conclusao || '';
                 if (this.editors['quesitos']) this.editors['quesitos'].root.innerHTML = data.quesitos || '';
             }
@@ -635,7 +674,7 @@ export const FormController = {
         const pericia = Storage.getPericia(this.currentPericiaId);
         pericia.documents.push({
             id: Date.now(),
-            original_name: `Anotação_${new Date().toLocaleTimeString().replace(/:/g, '')}.jpg`
+            originalName: `Anotação_${new Date().toLocaleTimeString().replace(/:/g, '')}.jpg`
         });
         const fileId = pericia.documents[pericia.documents.length-1].id;
         FileDB.saveFile(fileId, dataUrl).then(() => {
