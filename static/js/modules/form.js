@@ -81,6 +81,7 @@ export const FormController = {
         setVal('f-escolaridade', pericia.escolaridade);
         setVal('f-estado_civil', pericia.estado_civil);
         setVal('f-ctps', pericia.ctps);
+        setVal('f-cnh', pericia.cnh);
         setVal('f-mao_dominante', pericia.mao_dominante || "Destro");
         this.calcAge();
 
@@ -95,6 +96,7 @@ export const FormController = {
         setVal('f-assistentes', pericia.assistentes || "Ausentes");
 
         // Populate Occupational History
+        setVal('f-data_acidente', pericia.data_acidente);
         setVal('f-profissao', pericia.profissao);
         setVal('f-tempo_funcao', pericia.tempo_funcao);
         setVal('f-desc_atividades', pericia.desc_atividades);
@@ -111,6 +113,8 @@ export const FormController = {
         setVal('f-did', pericia.did);
         setVal('f-dii', pericia.dii);
         setVal('f-parecer', pericia.parecer || DEFAULTS.PARECER);
+        setVal('f-prognostico', pericia.prognostico || "Bom");
+        setVal('f-necessidade_assistencia', pericia.necessidade_assistencia || "Não");
         setVal('f-bibliografia', pericia.bibliografia);
 
         // Check for Auto-Save Draft
@@ -319,8 +323,10 @@ export const FormController = {
             escolaridade: document.getElementById('f-escolaridade').value,
             estado_civil: document.getElementById('f-estado_civil').value,
             ctps: document.getElementById('f-ctps').value,
+            cnh: document.getElementById('f-cnh').value,
             mao_dominante: document.getElementById('f-mao_dominante').value,
 
+            data_acidente: document.getElementById('f-data_acidente').value,
             profissao: document.getElementById('f-profissao').value,
             tempo_funcao: document.getElementById('f-tempo_funcao').value,
             desc_atividades: document.getElementById('f-desc_atividades').value,
@@ -335,6 +341,8 @@ export const FormController = {
             did: document.getElementById('f-did').value,
             dii: document.getElementById('f-dii').value,
             parecer: document.getElementById('f-parecer').value,
+            prognostico: document.getElementById('f-prognostico').value,
+            necessidade_assistencia: document.getElementById('f-necessidade_assistencia').value,
             bibliografia: document.getElementById('f-bibliografia').value,
 
             data_pericia: document.getElementById('f-data_pericia').value,

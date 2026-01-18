@@ -105,6 +105,18 @@ export class Pericia {
         /** @type {string} */
         this.epis = data.epis || "";
 
+        /** @type {string} */
+        this.cnh = data.cnh || "";
+
+        /** @type {string|null} */
+        this.data_acidente = data.data_acidente || null;
+
+        /** @type {string} */
+        this.prognostico = data.prognostico || "Bom";
+
+        /** @type {string} */
+        this.necessidade_assistencia = data.necessidade_assistencia || "Não";
+
         /** @type {Processo} */
         this.processo = {
             numero: data.processo?.numero || "",
