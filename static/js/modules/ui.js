@@ -217,5 +217,94 @@ export const UI = {
             const el = document.getElementById('loading-overlay');
             if(el) el.classList.add('hidden');
         }
+    },
+
+    Sidebar: {
+        init() {
+            const btn = document.getElementById('btn-mobile-menu');
+            const overlay = document.getElementById('sidebar-overlay');
+            const links = document.querySelectorAll('.nav-link');
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    this.toggle();
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    this.close();
+                });
+            }
+
+            // Close sidebar on mobile when link clicked
+            links.forEach(link => {
+                link.addEventListener('click', () => {
+                   if (window.innerWidth < 768) { // md breakpoint
+                       this.close();
+                   }
+                });
+            });
+        },
+        toggle() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) {
+                 const isClosed = sidebar.classList.contains('-translate-x-full');
+                 if (isClosed) {
+                     sidebar.classList.remove('-translate-x-full');
+                     if(overlay) overlay.classList.remove('hidden');
+                 } else {
+                     sidebar.classList.add('-translate-x-full');
+                     if(overlay) overlay.classList.add('hidden');
+                 }
+            }
+        },
+        close() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) {
+                sidebar.classList.add('-translate-x-full');
+            }
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
+        },
+        setActive(hash) {
+            const links = document.querySelectorAll('.nav-link');
+            // Default to dashboard if root
+            const currentHash = hash || '#dashboard';
+
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                // Check if hash starts with href (to handle sub-routes if any, though exact match is safer for now)
+                // Also handle #dashboard as default
+
+                let isActive = false;
+                if (href === '#dashboard' && (currentHash === '' || currentHash === '#dashboard')) {
+                    isActive = true;
+                } else if (href !== '#dashboard' && currentHash.startsWith(href)) {
+                    isActive = true;
+                }
+
+                if (isActive) {
+                    link.classList.add('bg-primary-50', 'dark:bg-gray-700', 'text-primary-600', 'dark:text-white');
+                    link.classList.remove('text-gray-700', 'dark:text-gray-300');
+                    const icon = link.querySelector('i');
+                    if(icon) {
+                        icon.classList.remove('text-gray-400');
+                        icon.classList.add('text-primary-500', 'dark:text-primary-400');
+                    }
+                } else {
+                     link.classList.remove('bg-primary-50', 'dark:bg-gray-700', 'text-primary-600', 'dark:text-white');
+                     link.classList.add('text-gray-700', 'dark:text-gray-300');
+                     const icon = link.querySelector('i');
+                     if(icon) {
+                        icon.classList.add('text-gray-400');
+                        icon.classList.remove('text-primary-500', 'dark:text-primary-400');
+                    }
+                }
+            });
+        }
     }
 };

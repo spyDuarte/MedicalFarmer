@@ -10,8 +10,30 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
         }
     </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="static/css/toast.css">
@@ -22,750 +44,817 @@
     <link rel="stylesheet" href="static/css/styles.css">
     <script type="module" src="static/js/app.js"></script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans h-screen flex overflow-hidden transition-colors duration-200">
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Custom Modal -->
-    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-96 transform transition-all scale-100">
-            <h3 id="modal-title" class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
-            <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6">Tem certeza?</p>
+    <!-- Modals -->
+    <!-- Confirmation Modal -->
+    <div id="custom-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all scale-100 border border-gray-100 dark:border-gray-700">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
+            <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">Tem certeza?</p>
             <div class="flex justify-end gap-3">
-                <button id="modal-cancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Cancelar</button>
-                <button id="modal-confirm" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Confirmar</button>
+                <button id="modal-cancel" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
+                <button id="modal-confirm" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium">Confirmar</button>
             </div>
         </div>
     </div>
 
     <!-- Signature Modal -->
-    <div id="signature-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-96 transform transition-all scale-100">
-            <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Assinatura Digital</h3>
-            <div class="border border-gray-300 dark:border-gray-600 rounded bg-white h-40 flex justify-center items-center cursor-crosshair">
-                <canvas id="signature-canvas" width="340" height="150"></canvas>
+    <div id="signature-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all border border-gray-100 dark:border-gray-700">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Assinatura Digital</h3>
+            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white h-40 flex justify-center items-center cursor-crosshair relative">
+                <canvas id="signature-canvas" width="340" height="150" class="w-full h-full object-contain"></canvas>
             </div>
             <div class="flex justify-between mt-2">
-                <button id="btn-clear-signature" class="text-xs text-red-500 hover:underline">Limpar</button>
+                <button id="btn-clear-signature" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"><i class="fa-solid fa-eraser"></i> Limpar</button>
             </div>
             <div class="flex justify-end gap-3 mt-4">
-                <button id="btn-cancel-signature" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
-                <button id="btn-save-signature" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Assinatura</button>
+                <button id="btn-cancel-signature" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
+                <button id="btn-save-signature" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Annotation Modal -->
+    <div id="annotation-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-pencil"></i> Anotar Imagem</h3>
+                <div class="flex gap-2 items-center bg-gray-100 dark:bg-gray-700 p-1.5 rounded-lg">
+                    <button id="btn-annotate-pen" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
+                    <button id="btn-annotate-text" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm" title="Texto"><i class="fa-solid fa-font"></i></button>
+                    <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                    <button id="btn-annotate-clear" class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-red-500" title="Limpar"><i class="fa-solid fa-trash"></i></button>
+                    <input type="color" id="annotation-color" value="#ff0000" class="h-8 w-8 p-0 border-0 rounded cursor-pointer ml-2">
+                </div>
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i class="fa-solid fa-times fa-lg"></i></button>
+            </div>
+            <div class="flex-grow bg-gray-100 dark:bg-gray-900 overflow-hidden relative border border-gray-200 dark:border-gray-700 rounded-lg flex justify-center items-center">
+                <canvas id="annotation-canvas" class="shadow-lg"></canvas>
+            </div>
+            <div class="mt-4 flex justify-end gap-3">
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium">Cancelar</button>
+                <button id="btn-annotate-save" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-lg shadow-primary-500/30 font-medium">Salvar Anotação</button>
             </div>
         </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <div id="loading-overlay" class="fixed inset-0 z-[100] hidden flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600 mb-4"></div>
+        <p class="text-gray-600 dark:text-gray-300 font-medium animate-pulse">Processando...</p>
     </div>
 
-    <!-- Image Annotation Modal -->
-    <div id="annotation-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-90">
-        <div class="bg-white p-4 rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Anotar Imagem</h3>
-                <div class="flex gap-2">
-                    <button id="btn-annotate-pen" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300 active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
-                    <button id="btn-annotate-text" class="tool-btn bg-gray-200 p-2 rounded hover:bg-gray-300" title="Texto"><i class="fa-solid fa-font"></i></button>
-                    <button id="btn-annotate-clear" class="bg-red-200 p-2 rounded hover:bg-red-300" title="Limpar"><i class="fa-solid fa-trash"></i></button>
-                    <input type="color" id="annotation-color" value="#ff0000" class="h-10 w-10 p-1 border rounded cursor-pointer">
-                </div>
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times fa-lg"></i></button>
-            </div>
-            <div class="flex-grow bg-gray-100 overflow-hidden relative border border-gray-300 rounded flex justify-center items-center">
-                <canvas id="annotation-canvas"></canvas>
-            </div>
-            <div class="mt-4 flex justify-end gap-3">
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancelar</button>
-                <button id="btn-annotate-save" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar Anotação</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navbar -->
-    <nav class="bg-blue-800 dark:bg-blue-900 text-white shadow-lg no-print">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="#dashboard" class="text-xl font-bold flex items-center gap-2">
-                <i class="fa-solid fa-user-doctor"></i>
-                PeritoJudicial<span class="font-light">Web</span>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-white dark:bg-gray-800 w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 absolute inset-y-0 left-0 z-40 transform -translate-x-full md:relative md:translate-x-0 no-print">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
+            <a href="#dashboard" class="text-xl font-bold flex items-center gap-2 text-primary-700 dark:text-primary-400">
+                <i class="fa-solid fa-scale-balanced text-2xl"></i>
+                <span>Perito<span class="font-light text-gray-600 dark:text-gray-300">Sys</span></span>
             </a>
-            <div class="space-x-4 flex items-center">
-                <a href="#dashboard" class="hover:text-blue-200 transition">Dashboard</a>
-                <a href="#calendar" class="hover:text-blue-200 transition">Calendário</a>
-                <a href="#financeiro" class="hover:text-blue-200 transition">Financeiro</a>
-                <a href="#macros" class="hover:text-blue-200 transition">Modelos</a>
-                <a href="#settings" class="hover:text-blue-200 transition">Configurações</a>
-                <a href="#nova" class="bg-white text-blue-800 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition">
-                    <i class="fa-solid fa-plus"></i> Nova Perícia
-                </a>
-                <button id="btn-toggle-theme" class="ml-4 p-2 rounded hover:bg-blue-700 focus:outline-none" title="Alternar Tema">
-                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="flex-grow py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+            <a href="#dashboard" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-chart-pie w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Dashboard
+            </a>
+            <a href="#nova" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-file-medical w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Nova Perícia
+            </a>
+            <a href="#calendar" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-calendar-alt w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Calendário
+            </a>
+            <a href="#financeiro" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-wallet w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Financeiro
+            </a>
+            <div class="pt-4 pb-2">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Configurações</p>
+            </div>
+            <a href="#macros" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-file-invoice w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Modelos de Texto
+            </a>
+            <a href="#settings" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-cog w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+                Preferências
+            </a>
+        </nav>
+
+        <!-- User Profile Snippet (Bottom) -->
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+             <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 font-bold">
+                     <i class="fa-solid fa-user-doctor"></i>
+                 </div>
+                 <div class="flex-1 min-w-0">
+                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Dr. Perito</p>
+                     <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Online</p>
+                 </div>
+             </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden glass-effect"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Top Header -->
+        <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 lg:px-8 no-print">
+            <button id="btn-mobile-menu" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+
+            <!-- Page Title (Dynamic) -->
+            <h1 id="page-title" class="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden md:block">Dashboard</h1>
+
+            <div class="flex items-center gap-4">
+                 <!-- Theme Toggle -->
+                <button id="btn-toggle-theme" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" title="Alternar Tema">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
                 </button>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <main class="container mx-auto px-4 py-8 flex-grow">
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar bg-gray-50 dark:bg-gray-900 scroll-smooth">
 
-        <!-- DASHBOARD VIEW -->
-        <div id="view-dashboard" class="view-section hidden">
-            <!-- (Dashboard content same as before) -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Financials -->
-                <div class="lg:col-span-1 space-y-4">
-                    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Painel de Perícias</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Resumo Financeiro</p>
-                    <div class="flex gap-4">
-                        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 flex-1 border-l-4 border-yellow-400">
-                            <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">A Receber</p>
-                            <p id="total-pendente" class="text-xl font-bold text-gray-800 dark:text-gray-100">R$ 0.00</p>
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-section hidden max-w-7xl mx-auto space-y-6">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                     <!-- Card 1 -->
+                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 dark:border-gray-700">
+                         <div class="flex items-center justify-between mb-4">
+                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pendente</h3>
+                             <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-yellow-600 dark:text-yellow-400">
+                                 <i class="fa-solid fa-clock"></i>
+                             </div>
+                         </div>
+                         <p id="total-pendente" class="text-2xl font-bold text-gray-800 dark:text-gray-100">R$ 0.00</p>
+                         <p class="text-xs text-gray-400 mt-1">Aguardando pagamento</p>
+                     </div>
+
+                     <!-- Card 2 -->
+                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 dark:border-gray-700">
+                         <div class="flex items-center justify-between mb-4">
+                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Recebido</h3>
+                             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+                                 <i class="fa-solid fa-check"></i>
+                             </div>
+                         </div>
+                         <p id="total-recebido" class="text-2xl font-bold text-gray-800 dark:text-gray-100">R$ 0.00</p>
+                         <p class="text-xs text-gray-400 mt-1">Honorários liquidados</p>
+                     </div>
+
+                     <!-- Chart Area (Spans 2 cols on lg) -->
+                     <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 dark:border-gray-700">
+                        <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Status dos Laudos</h3>
+                        <div class="h-40 w-full flex justify-center">
+                            <canvas id="chart-status"></canvas>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 flex-1 border-l-4 border-green-500">
-                            <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Recebido</p>
-                            <p id="total-recebido" class="text-xl font-bold text-gray-800 dark:text-gray-100">R$ 0.00</p>
+                     </div>
+                </div>
+
+                <!-- Filters & Actions -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div class="flex flex-wrap gap-3 w-full md:w-auto items-center">
+                         <div class="relative w-full md:w-64">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa-solid fa-search"></i>
+                            </span>
+                            <input type="text" id="search-input" placeholder="Buscar perícia..." class="pl-10 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-all">
                         </div>
-                    </div>
-                </div>
-                <!-- Chart -->
-                <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-                    <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Status dos Laudos</h3>
-                    <div class="h-32">
-                        <canvas id="chart-status"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
-                <div class="flex flex-wrap gap-2 w-full md:w-auto items-center">
-                    <select id="status-filter" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600">
-                        <option value="">Todos os Status</option>
-                        <option value="Aguardando">Aguardando</option>
-                        <option value="Agendado">Agendado</option>
-                        <option value="Em Andamento">Em Andamento</option>
-                        <option value="Concluido">Concluído</option>
-                    </select>
-                    <input type="date" id="date-start" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Inicial">
-                    <span class="text-gray-500">-</span>
-                    <input type="date" id="date-end" class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600" title="Data Final">
-                    <input type="text" id="search-input" placeholder="Buscar..." class="border rounded px-3 py-2 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 md:w-64">
-                </div>
-
-                <div class="flex gap-2">
-                     <button id="btn-export-backup" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2" title="Exportar Backup">
-                        <i class="fa-solid fa-download"></i> Backup
-                    </button>
-                    <label class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2 cursor-pointer" title="Restaurar Backup">
-                        <i class="fa-solid fa-upload"></i> Restaurar
-                        <input type="file" id="input-import-backup" class="hidden" accept=".json,.enc">
-                    </label>
-                </div>
-            </div>
-
-            <!-- Templates Section (New) -->
-            <div class="mb-6 flex justify-end">
-                 <!-- No ID needed if managed inline by template system or make it managed? It uses inline onclick to open modal. Let's fix that. -->
-                 <!-- Actually, I missed creating the template modal controller logic or ID binding.
-                      The 'new-pericia-template-modal' doesn't exist in the HTML I read earlier!
-                      Wait, did I miss it?
-                      In previous reads, I saw `onclick="document.getElementById('new-pericia-template-modal').classList.remove('hidden')"`
-                      but I don't see the modal HTML itself in the `index.html` I read.
-                      It might be injected or I missed it.
-                      Checking the read output... `index.html` ends with `serviceWorker` script.
-                      I don't see `new-pericia-template-modal`.
-                      So that button does nothing? Or I missed reading it.
-                      The memory said "A Template System is implemented...".
-                      Let's check `form.js` logic. `saveAsTemplate` calls `Storage.addTemplate`.
-                      The button in dashboard `Gerenciar Templates` tries to open a modal.
-                      I will assume it's missing or I should implement it.
-                      For now I will keep the button but maybe wire it to something or leave it as a TODO if the modal is missing.
-                      Actually, `view-macros` seems to be used for models/templates in some context, but `macros` are text snippets.
-                      Let's leave it alone for now to avoid breaking existing stuff I might have missed,
-                      BUT I will remove the inline onclick and bind it if I can find the modal.
-                      If not, I'll remove the onclick and maybe log a warning.
-                 -->
-                 <!-- I'll remove the inline onclick and bind it in dashboard controller if I was to fix it fully.
-                      But since I don't have the modal HTML, I'll just leave it as a static button with no action or remove the onclick.
-                 -->
-                 <button class="text-gray-400 text-sm font-bold cursor-not-allowed" title="Funcionalidade em desenvolvimento">
-                    <i class="fa-solid fa-file-medical"></i> Gerenciar Templates
-                 </button>
-            </div>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-x-auto">
-                <table class="min-w-full leading-normal">
-                    <thead>
-                        <tr>
-                            <th class="px-5 py-3 border-b-2 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Status</th>
-                            <th class="px-5 py-3 border-b-2 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Processo / Autor</th>
-                            <th class="px-5 py-3 border-b-2 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Data</th>
-                            <th class="px-5 py-3 border-b-2 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Honorários</th>
-                            <th class="px-5 py-3 border-b-2 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dashboard-table-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- FORM VIEW (Redesigned with Tabs) -->
-        <div id="view-form" class="view-section hidden">
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden w-full">
-                <!-- Header -->
-                <div class="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Editor de Perícia</h2>
-                    <div class="flex gap-2 items-center">
-                        <select id="template-selector" class="text-xs border rounded p-1 dark:bg-gray-600 dark:text-white mr-2">
-                            <option value="">Carregar Template...</option>
+                        <select id="status-filter" class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white bg-white">
+                            <option value="">Todos Status</option>
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Agendado">Agendado</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluido">Concluído</option>
                         </select>
-                        <button id="btn-save-template" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs font-bold" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
-
-                        <button id="btn-save-form" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold">Salvar</button>
-                        <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-bold">Finalizar</button>
-                        <a href="#dashboard" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1 rounded text-sm font-bold">Voltar</a>
+                        <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
+                            <input type="date" id="date-start" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
+                            <span class="text-gray-400 text-xs">até</span>
+                            <input type="date" id="date-end" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                         <button id="btn-export-backup" class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Backup
+                        </button>
+                        <label class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-upload"></i> Restaurar
+                            <input type="file" id="input-import-backup" class="hidden" accept=".json,.enc">
+                        </label>
+                         <button class="text-gray-400 cursor-not-allowed px-3 py-2 rounded-lg text-sm font-medium" title="Em breve">
+                            <i class="fa-solid fa-star"></i> Templates
+                        </button>
                     </div>
                 </div>
 
-                <!-- Tabs Navigation -->
-                <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-4 space-x-4 overflow-x-auto">
-                    <button class="tab-btn active" id="btn-tab-identificacao">Identificação</button>
-                    <button class="tab-btn inactive" id="btn-tab-historico">Histórico</button>
-                    <button class="tab-btn inactive" id="btn-tab-exame">Exame Clínico</button>
-                    <button class="tab-btn inactive" id="btn-tab-conclusao">Conclusão</button>
-                    <button class="tab-btn inactive" id="btn-tab-quesitos">Quesitos</button>
-                </div>
-
-                <div class="p-6">
-
-                    <!-- TAB 1: IDENTIFICAÇÃO -->
-                    <div id="tab-identificacao" class="tab-content">
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Dados Administrativos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-numero_processo">Processo</label>
-                                <input id="f-numero_processo" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-vara">Vara / Comarca</label>
-                                <input id="f-vara" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-tipo_acao">Natureza da Ação</label>
-                                <select id="f-tipo_acao" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Trabalhista">Trabalhista</option>
-                                    <option value="Cível">Cível</option>
-                                    <option value="Previdenciária">Previdenciária</option>
-                                    <option value="DPVAT">DPVAT</option>
-                                    <option value="Outros">Outros</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Dados do Periciado</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-nome_autor">Nome Completo</label>
-                                <input id="f-nome_autor" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-1/2">
-                                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_nascimento">Data Nasc.</label>
-                                    <input id="f-data_nascimento" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                </div>
-                                <div class="w-1/2 flex items-center pt-6">
-                                    <span id="f-idade-display" class="text-blue-600 dark:text-blue-400 font-bold"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cpf">CPF</label>
-                                <input id="f-cpf" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-rg">RG / Documento</label>
-                                <input id="f-rg" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-escolaridade">Escolaridade</label>
-                                <select id="f-escolaridade" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="">Selecione...</option>
-                                    <option value="Fundamental Incompleto">Fundamental Incompleto</option>
-                                    <option value="Fundamental Completo">Fundamental Completo</option>
-                                    <option value="Médio Completo">Médio Completo</option>
-                                    <option value="Superior Completo">Superior Completo</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-estado_civil">Estado Civil</label>
-                                <input id="f-estado_civil" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-ctps">CTPS (Série/Nº)</label>
-                                <input id="f-ctps" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-mao_dominante">Mão Dominante</label>
-                                <select id="f-mao_dominante" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Destro">Destro</option>
-                                    <option value="Canhoto">Canhoto</option>
-                                    <option value="Ambidestro">Ambidestro</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-6">
-                             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cnh">CNH (Categoria)</label>
-                             <input id="f-cnh" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Ex: B">
-                        </div>
-
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Agendamento</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_pericia">Data Perícia</label>
-                                <input id="f-data_pericia" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-valor_honorarios">Honorários (R$)</label>
-                                <input id="f-valor_honorarios" type="number" step="0.01" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-status_pagamento">Pagamento</label>
-                                <select id="f-status_pagamento" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Pendente">Pendente</option>
-                                    <option value="Pago">Pago</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-local_pericia">Local da Perícia</label>
-                                <input id="f-local_pericia" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Ex: Consultório, Hospital...">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-assistentes">Assistentes Técnicos</label>
-                                <input id="f-assistentes" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" value="Ausentes">
-                            </div>
-                        </div>
-
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Estrutura do Laudo</h3>
-                        <div class="space-y-4">
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-objetivo">Objetivo</label>
-                                <textarea id="f-objetivo" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-20"></textarea>
-                            </div>
-                             <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-metodologia">Metodologia</label>
-                                <textarea id="f-metodologia" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-20"></textarea>
-                            </div>
-                        </div>
+                <!-- Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full leading-normal">
+                            <thead>
+                                <tr>
+                                    <th class="px-5 py-4 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-5 py-4 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Processo / Autor</th>
+                                    <th class="px-5 py-4 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th>
+                                    <th class="px-5 py-4 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Honorários</th>
+                                    <th class="px-5 py-4 bg-gray-50 dark:bg-gray-700/50 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-table-body" class="divide-y divide-gray-100 dark:divide-gray-700"></tbody>
+                        </table>
                     </div>
-
-                    <!-- TAB 2: HISTÓRICO -->
-                    <div id="tab-historico" class="tab-content hidden">
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Histórico Ocupacional</h3>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_acidente">Data do Acidente / Fato</label>
-                            <input id="f-data_acidente" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 md:w-1/3">
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-profissao">Profissão / Cargo Atual</label>
-                                <input id="f-profissao" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-tempo_funcao">Tempo na Função</label>
-                                <input id="f-tempo_funcao" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                            </div>
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-desc_atividades">Descrição das Atividades e Riscos</label>
-                            <textarea id="f-desc_atividades" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24"></textarea>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-epis">EPIs (Equipamentos de Proteção Individual)</label>
-                            <textarea id="f-epis" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-16" placeholder="Descreva os EPIs utilizados e o fornecimento..."></textarea>
-                        </div>
-
-                        <hr class="my-6 dark:border-gray-600">
-
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-anamnese">História da Doença Atual (HDA)</label>
-                                <select id="macro-sel-anamnese" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-anamnese" class="bg-white h-48"></div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-antecedentes">Antecedentes Pessoais e Familiares</label>
-                            <textarea id="f-antecedentes" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-historico_previdenciario">Histórico Previdenciário</label>
-                            <textarea id="f-historico_previdenciario" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- TAB 3: EXAME CLÍNICO -->
-                    <div id="tab-exame" class="tab-content hidden">
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-exame_fisico">Exame Físico (Geral e Especial)</label>
-                                <select id="macro-sel-exame_fisico" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-exame_fisico" class="bg-white h-64"></div>
-                        </div>
-
-                        <hr class="my-6 dark:border-gray-600">
-
-                        <!-- Document Analysis / Exams -->
-                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Análise de Documentos Médicos</h3>
-
-                        <!-- Upload Section inside Tab -->
-                        <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded border dark:border-gray-600">
-                            <h4 class="font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos (PDF/Img)</h4>
-                            <div class="flex gap-2 mb-4">
-                                <input type="file" id="upload_document" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300">
-                                <button id="btn-upload" class="bg-gray-700 hover:bg-gray-600 text-white px-2 rounded"><i class="fa-solid fa-upload"></i></button>
-                            </div>
-                            <ul id="documents-list-ul" class="space-y-2"></ul>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-exames_complementares">Descrição dos Exames Complementares Apresentados</label>
-                            <textarea id="f-exames_complementares" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-32" placeholder="Data - Tipo - Resultado..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- TAB 4: CONCLUSÃO FORENSE -->
-                    <div id="tab-conclusao" class="tab-content hidden">
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-discussao">Discussão Médico-Legal</label>
-                            <textarea id="f-discussao" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div class="relative">
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-cid">Diagnóstico (CID-10)</label>
-                                <input id="f-cid" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Digite código ou nome..." autocomplete="off">
-                                <ul id="cid-suggestions" class="absolute z-10 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden"></ul>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-nexo">Nexo Causal</label>
-                                <select id="f-nexo" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Não há nexo">Não há nexo</option>
-                                    <option value="Nexo Causal Típico (Trabalho)">Nexo Causal Típico (Trabalho)</option>
-                                    <option value="Nexo Concausal (Agravamento)">Nexo Concausal (Agravamento)</option>
-                                    <option value="Nexo Traumático (Acidente)">Nexo Traumático (Acidente)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-did">DID (Início Doença)</label>
-                                <input id="f-did" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="dd/mm/aaaa">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-dii">DII (Início Incapacidade)</label>
-                                <input id="f-dii" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="dd/mm/aaaa ou 'Não há'">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-parecer">Parecer Final</label>
-                                <select id="f-parecer" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Apto">Apto / Capaz</option>
-                                    <option value="Incapaz Temporariamente (Total)">Incapaz Temporariamente (Total)</option>
-                                    <option value="Incapaz Permanentemente (Total)">Incapaz Permanentemente (Total)</option>
-                                    <option value="Incapaz Parcialmente">Incapaz Parcialmente</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-prognostico">Prognóstico</label>
-                                <select id="f-prognostico" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Bom">Bom</option>
-                                    <option value="Reservado">Reservado</option>
-                                    <option value="Ruim">Ruim</option>
-                                    <option value="Imprevisível">Imprevisível</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-necessidade_assistencia">Necessita de Assistência de Terceiros?</label>
-                                <select id="f-necessidade_assistencia" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Não">Não</option>
-                                    <option value="Sim - Parcial">Sim - Parcial</option>
-                                    <option value="Sim - Permanente">Sim - Permanente</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <div class="flex justify-between items-end mb-1">
-                                <label class="font-bold text-sm text-gray-700 dark:text-gray-300" for="macro-sel-conclusao">Conclusão Final (Resumo)</label>
-                                <select id="macro-sel-conclusao" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
-                            </div>
-                            <div id="q-conclusao" class="bg-white h-40"></div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-bibliografia">Bibliografia / Referências</label>
-                            <textarea id="f-bibliografia" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- TAB 5: QUESITOS -->
-                    <div id="tab-quesitos" class="tab-content hidden">
-                        <div class="mb-6">
-                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block">Respostas aos Quesitos</label>
-                            <div id="q-quesitos" class="bg-white h-96"></div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
-        </div>
 
-        <!-- SETTINGS VIEW (Same as before) -->
-        <div id="view-settings" class="view-section hidden">
-             <!-- ... existing content ... -->
-             <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-                <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Configurações do Perito</h1>
-                <!-- ... inputs ... -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Nome Completo</label>
-                    <input id="s-nome" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700">
+            <!-- FORM VIEW -->
+            <div id="view-form" class="view-section hidden max-w-5xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col h-full">
+                    <!-- Form Header -->
+                    <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-20">
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                             <i class="fa-solid fa-pen-to-square text-primary-600"></i> Editor de Perícia
+                        </h2>
+                        <div class="flex gap-2 items-center flex-wrap justify-end">
+                            <div class="flex items-center gap-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-1">
+                                <select id="template-selector" class="text-xs border-none bg-transparent dark:text-white focus:ring-0 cursor-pointer">
+                                    <option value="">Carregar Template...</option>
+                                </select>
+                                <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+                            </div>
+
+                            <button id="btn-save-form" class="btn-primary flex items-center gap-2 text-sm px-4 py-2">
+                                <i class="fa-solid fa-save"></i> Salvar
+                            </button>
+                            <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm">
+                                <i class="fa-solid fa-check"></i> Finalizar
+                            </button>
+                            <a href="#dashboard" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Voltar</a>
+                        </div>
+                    </div>
+
+                    <!-- Tabs Navigation -->
+                    <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-2 space-x-1 overflow-x-auto bg-gray-50 dark:bg-gray-800">
+                        <button class="tab-btn active" id="btn-tab-identificacao"><i class="fa-solid fa-id-card mr-2"></i> Identificação</button>
+                        <button class="tab-btn inactive" id="btn-tab-historico"><i class="fa-solid fa-history mr-2"></i> Histórico</button>
+                        <button class="tab-btn inactive" id="btn-tab-exame"><i class="fa-solid fa-user-md mr-2"></i> Exame</button>
+                        <button class="tab-btn inactive" id="btn-tab-conclusao"><i class="fa-solid fa-gavel mr-2"></i> Conclusão</button>
+                        <button class="tab-btn inactive" id="btn-tab-quesitos"><i class="fa-solid fa-question-circle mr-2"></i> Quesitos</button>
+                    </div>
+
+                    <div class="p-6 md:p-8 bg-white dark:bg-gray-800">
+
+                        <!-- TAB 1: IDENTIFICAÇÃO -->
+                        <div id="tab-identificacao" class="tab-content space-y-6">
+                            <div class="section-block">
+                                <h3 class="section-title">Dados Administrativos</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-numero_processo">Processo</label>
+                                        <input id="f-numero_processo" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-vara">Vara / Comarca</label>
+                                        <input id="f-vara" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-tipo_acao">Natureza da Ação</label>
+                                        <select id="f-tipo_acao" class="form-select">
+                                            <option value="Trabalhista">Trabalhista</option>
+                                            <option value="Cível">Cível</option>
+                                            <option value="Previdenciária">Previdenciária</option>
+                                            <option value="DPVAT">DPVAT</option>
+                                            <option value="Outros">Outros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <h3 class="section-title">Dados do Periciado</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-nome_autor">Nome Completo</label>
+                                        <input id="f-nome_autor" type="text" class="form-input">
+                                    </div>
+                                    <div class="flex gap-4">
+                                        <div class="w-1/2 form-group">
+                                            <label class="form-label" for="f-data_nascimento">Data Nasc.</label>
+                                            <input id="f-data_nascimento" type="date" class="form-input">
+                                        </div>
+                                        <div class="w-1/2 flex items-end pb-2">
+                                            <span id="f-idade-display" class="text-primary-600 dark:text-primary-400 font-bold text-lg"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-cpf">CPF</label>
+                                        <input id="f-cpf" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-rg">RG / Documento</label>
+                                        <input id="f-rg" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-escolaridade">Escolaridade</label>
+                                        <select id="f-escolaridade" class="form-select">
+                                            <option value="">Selecione...</option>
+                                            <option value="Fundamental Incompleto">Fundamental Incompleto</option>
+                                            <option value="Fundamental Completo">Fundamental Completo</option>
+                                            <option value="Médio Completo">Médio Completo</option>
+                                            <option value="Superior Completo">Superior Completo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-estado_civil">Estado Civil</label>
+                                        <input id="f-estado_civil" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-ctps">CTPS (Série/Nº)</label>
+                                        <input id="f-ctps" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-mao_dominante">Mão Dominante</label>
+                                        <select id="f-mao_dominante" class="form-select">
+                                            <option value="Destro">Destro</option>
+                                            <option value="Canhoto">Canhoto</option>
+                                            <option value="Ambidestro">Ambidestro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group mt-4">
+                                     <label class="form-label" for="f-cnh">CNH (Categoria)</label>
+                                     <input id="f-cnh" type="text" class="form-input" placeholder="Ex: B">
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <h3 class="section-title">Agendamento</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                     <div class="form-group">
+                                        <label class="form-label" for="f-data_pericia">Data Perícia</label>
+                                        <input id="f-data_pericia" type="date" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-valor_honorarios">Honorários (R$)</label>
+                                        <input id="f-valor_honorarios" type="number" step="0.01" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-status_pagamento">Pagamento</label>
+                                        <select id="f-status_pagamento" class="form-select">
+                                            <option value="Pendente">Pendente</option>
+                                            <option value="Pago">Pago</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                     <div class="form-group">
+                                        <label class="form-label" for="f-local_pericia">Local da Perícia</label>
+                                        <input id="f-local_pericia" type="text" class="form-input" placeholder="Ex: Consultório, Hospital...">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-assistentes">Assistentes Técnicos</label>
+                                        <input id="f-assistentes" type="text" class="form-input" value="Ausentes">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <h3 class="section-title">Estrutura do Laudo</h3>
+                                <div class="space-y-4">
+                                     <div class="form-group">
+                                        <label class="form-label" for="f-objetivo">Objetivo</label>
+                                        <textarea id="f-objetivo" class="form-textarea h-20"></textarea>
+                                    </div>
+                                     <div class="form-group">
+                                        <label class="form-label" for="f-metodologia">Metodologia</label>
+                                        <textarea id="f-metodologia" class="form-textarea h-20"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: HISTÓRICO -->
+                        <div id="tab-historico" class="tab-content hidden space-y-6">
+                            <div class="section-block">
+                                <h3 class="section-title">Histórico Ocupacional</h3>
+                                <div class="form-group mb-4">
+                                    <label class="form-label" for="f-data_acidente">Data do Acidente / Fato</label>
+                                    <input id="f-data_acidente" type="date" class="form-input md:w-1/3">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-profissao">Profissão / Cargo Atual</label>
+                                        <input id="f-profissao" type="text" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-tempo_funcao">Tempo na Função</label>
+                                        <input id="f-tempo_funcao" type="text" class="form-input">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label class="form-label" for="f-desc_atividades">Descrição das Atividades e Riscos</label>
+                                    <textarea id="f-desc_atividades" class="form-textarea h-24"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="f-epis">EPIs (Equipamentos de Proteção Individual)</label>
+                                    <textarea id="f-epis" class="form-textarea h-16" placeholder="Descreva os EPIs utilizados e o fornecimento..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="section-title mb-0" for="macro-sel-anamnese">História da Doença Atual (HDA)</label>
+                                    <select id="macro-sel-anamnese" class="macro-select"></select>
+                                </div>
+                                <div id="q-anamnese" class="bg-white h-48 rounded border dark:border-gray-600"></div>
+                            </div>
+
+                            <div class="section-block">
+                                <label class="section-title block mb-2" for="f-antecedentes">Antecedentes Pessoais e Familiares</label>
+                                <textarea id="f-antecedentes" class="form-textarea h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
+                            </div>
+
+                            <div class="section-block">
+                                <label class="section-title block mb-2" for="f-historico_previdenciario">Histórico Previdenciário</label>
+                                <textarea id="f-historico_previdenciario" class="form-textarea h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: EXAME CLÍNICO -->
+                        <div id="tab-exame" class="tab-content hidden space-y-6">
+                            <div class="section-block">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="section-title mb-0" for="macro-sel-exame_fisico">Exame Físico</label>
+                                    <select id="macro-sel-exame_fisico" class="macro-select"></select>
+                                </div>
+                                <div id="q-exame_fisico" class="bg-white h-64 rounded border dark:border-gray-600"></div>
+                            </div>
+
+                            <div class="section-block">
+                                <h3 class="section-title">Documentos Médicos</h3>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 mb-4">
+                                    <h4 class="font-bold text-sm mb-3 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos</h4>
+                                    <div class="flex gap-2 mb-4">
+                                        <input type="file" id="upload_document" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+                                        <button id="btn-upload" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded shadow-sm transition-colors"><i class="fa-solid fa-upload"></i></button>
+                                    </div>
+                                    <ul id="documents-list-ul" class="space-y-2"></ul>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="f-exames_complementares">Descrição dos Exames Complementares</label>
+                                    <textarea id="f-exames_complementares" class="form-textarea h-32" placeholder="Data - Tipo - Resultado..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: CONCLUSÃO FORENSE -->
+                        <div id="tab-conclusao" class="tab-content hidden space-y-6">
+                            <div class="section-block">
+                                <label class="section-title block mb-2" for="f-discussao">Discussão Médico-Legal</label>
+                                <textarea id="f-discussao" class="form-textarea h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
+                            </div>
+
+                            <div class="section-block">
+                                <h3 class="section-title">Conclusão</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div class="relative form-group">
+                                        <label class="form-label" for="f-cid">Diagnóstico (CID-10)</label>
+                                        <input id="f-cid" type="text" class="form-input" placeholder="Digite código ou nome..." autocomplete="off">
+                                        <ul id="cid-suggestions" class="absolute z-50 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden mt-1"></ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-nexo">Nexo Causal</label>
+                                        <select id="f-nexo" class="form-select">
+                                            <option value="Não há nexo">Não há nexo</option>
+                                            <option value="Nexo Causal Típico (Trabalho)">Nexo Causal Típico (Trabalho)</option>
+                                            <option value="Nexo Concausal (Agravamento)">Nexo Concausal (Agravamento)</option>
+                                            <option value="Nexo Traumático (Acidente)">Nexo Traumático (Acidente)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-did">DID (Início Doença)</label>
+                                        <input id="f-did" type="text" class="form-input" placeholder="dd/mm/aaaa">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-dii">DII (Início Incapacidade)</label>
+                                        <input id="f-dii" type="text" class="form-input" placeholder="dd/mm/aaaa ou 'Não há'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-parecer">Parecer Final</label>
+                                        <select id="f-parecer" class="form-select">
+                                            <option value="Apto">Apto / Capaz</option>
+                                            <option value="Incapaz Temporariamente (Total)">Incapaz Temporariamente (Total)</option>
+                                            <option value="Incapaz Permanentemente (Total)">Incapaz Permanentemente (Total)</option>
+                                            <option value="Incapaz Parcialmente">Incapaz Parcialmente</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-prognostico">Prognóstico</label>
+                                        <select id="f-prognostico" class="form-select">
+                                            <option value="Bom">Bom</option>
+                                            <option value="Reservado">Reservado</option>
+                                            <option value="Ruim">Ruim</option>
+                                            <option value="Imprevisível">Imprevisível</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="f-necessidade_assistencia">Necessita de Assistência de Terceiros?</label>
+                                        <select id="f-necessidade_assistencia" class="form-select">
+                                            <option value="Não">Não</option>
+                                            <option value="Sim - Parcial">Sim - Parcial</option>
+                                            <option value="Sim - Permanente">Sim - Permanente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="section-title mb-0" for="macro-sel-conclusao">Conclusão Final (Resumo)</label>
+                                    <select id="macro-sel-conclusao" class="macro-select"></select>
+                                </div>
+                                <div id="q-conclusao" class="bg-white h-40 rounded border dark:border-gray-600"></div>
+                            </div>
+
+                            <div class="section-block">
+                                <label class="section-title block mb-2" for="f-bibliografia">Bibliografia / Referências</label>
+                                <textarea id="f-bibliografia" class="form-textarea h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- TAB 5: QUESITOS -->
+                        <div id="tab-quesitos" class="tab-content hidden space-y-6">
+                            <div class="section-block">
+                                <label class="section-title block mb-2">Respostas aos Quesitos</label>
+                                <div id="q-quesitos" class="bg-white h-96 rounded border dark:border-gray-600"></div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">CRM / Registro</label>
-                    <input id="s-crm" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Endereço</label>
-                    <input id="s-endereco" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Telefone</label>
-                    <input id="s-telefone" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700">
-                </div>
-                <div class="mb-6">
-                    <button id="btn-open-signature" class="text-blue-600 hover:text-blue-800 text-sm font-bold"><i class="fa-solid fa-pen-nib"></i> Adicionar Assinatura</button>
-                </div>
-                <button id="btn-save-settings" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">Salvar Configurações</button>
             </div>
-        </div>
 
-        <!-- MACROS VIEW (Same as before) -->
-        <div id="view-macros" class="view-section hidden">
-             <!-- ... existing content ... -->
-             <div class="max-w-4xl mx-auto">
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view-section hidden max-w-2xl mx-auto">
+                 <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 border border-gray-100 dark:border-gray-700">
+                    <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-cog text-gray-400"></i> Configurações do Perito</h1>
+
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo</label>
+                            <input id="s-nome" type="text" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CRM / Registro</label>
+                            <input id="s-crm" type="text" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Endereço</label>
+                            <input id="s-endereco" type="text" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input id="s-telefone" type="text" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                        <button id="btn-open-signature" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-pen-nib"></i> Adicionar / Alterar Assinatura Digital
+                        </button>
+                    </div>
+
+                    <button id="btn-save-settings" class="mt-8 btn-primary w-full py-3 text-lg shadow-lg">Salvar Configurações</button>
+                </div>
+            </div>
+
+            <!-- MACROS VIEW -->
+            <div id="view-macros" class="view-section hidden max-w-4xl mx-auto">
                  <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Gerenciar Modelos de Texto</h1>
-                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                 <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-6 mb-6 border border-gray-100 dark:border-gray-700">
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                         <input id="m-titulo" type="text" placeholder="Título do Modelo" class="border dark:border-gray-600 rounded p-2 dark:bg-gray-700 dark:text-gray-200">
-                         <select id="m-categoria" class="border dark:border-gray-600 rounded p-2 dark:bg-gray-700 dark:text-gray-200">
+                         <input id="m-titulo" type="text" placeholder="Título do Modelo" class="form-input">
+                         <select id="m-categoria" class="form-select">
                              <option value="anamnese">História da Doença (HDA)</option>
                              <option value="exame_fisico">Exame Físico</option>
                              <option value="conclusao">Conclusão</option>
                          </select>
                      </div>
-                     <textarea id="m-conteudo" placeholder="Conteúdo do texto..." class="border dark:border-gray-600 rounded w-full p-2 h-32 dark:bg-gray-700 dark:text-gray-200 mb-4"></textarea>
-                     <button id="btn-save-macro" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold">Adicionar Modelo</button>
+                     <textarea id="m-conteudo" placeholder="Conteúdo do texto..." class="form-textarea h-32 mb-4"></textarea>
+                     <div class="flex justify-end">
+                        <button id="btn-save-macro" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-sm transition-colors">Adicionar Modelo</button>
+                     </div>
                  </div>
                  <div id="macros-list" class="space-y-4"></div>
-             </div>
-        </div>
+            </div>
 
-        <!-- PRINT VIEW (Refined Structure) -->
-        <div id="view-print" class="view-section hidden bg-white p-12 max-w-4xl mx-auto shadow-2xl text-black font-serif leading-relaxed">
-
-            <!-- Header -->
-            <div class="border-b-2 border-black pb-6 mb-8 flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-bold uppercase tracking-wider">Laudo Médico Pericial</h1>
-                    <p class="text-sm mt-1" id="print-header-details-print">Excelentíssimo Juízo da Vara Competente</p>
+            <!-- PRINT VIEW -->
+            <div id="view-print" class="view-section hidden bg-white p-12 max-w-4xl mx-auto shadow-2xl text-black font-serif leading-relaxed">
+                 <!-- Header -->
+                <div class="border-b-2 border-black pb-6 mb-8 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-3xl font-bold uppercase tracking-wider">Laudo Médico Pericial</h1>
+                        <p class="text-sm mt-1" id="print-header-details-print">Excelentíssimo Juízo da Vara Competente</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold uppercase" id="print-header-name"></div>
+                        <div class="text-sm" id="print-header-crm"></div>
+                        <div class="text-xs mt-1" id="print-header-contact"></div>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-lg font-bold uppercase" id="print-header-name"></div>
-                    <div class="text-sm" id="print-header-crm"></div>
-                    <div class="text-xs mt-1" id="print-header-contact"></div>
+
+                <!-- Preamble -->
+                <div class="mb-8">
+                    <p class="text-justify">
+                        <strong>NATUREZA DA AÇÃO:</strong> <span id="p-tipo_acao"></span><br>
+                        <strong>PROCESSO Nº:</strong> <span id="p-processo"></span><br>
+                        <strong>AUTOR:</strong> <span id="p-autor"></span><br>
+                        <strong>DATA DA PERÍCIA:</strong> <span id="p-data"></span><br>
+                        <strong>LOCAL:</strong> <span id="p-local_pericia"></span><br>
+                        <strong>ASSISTENTES TÉCNICOS:</strong> <span id="p-assistentes"></span>
+                    </p>
+                    <p class="text-justify mt-4">
+                        Este perito, honrado com a nomeação, apresenta a Vossa Excelência o resultado das diligências e exames realizados, consubstanciados no presente Laudo.
+                    </p>
+                </div>
+
+                <!-- 1. Objetivo -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">1. Objetivo</h2>
+                    <p id="p-objetivo" class="text-justify pl-4 whitespace-pre-wrap"></p>
+                </div>
+
+                <!-- 2. Metodologia -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">2. Metodologia</h2>
+                    <p id="p-metodologia" class="text-justify pl-4 whitespace-pre-wrap"></p>
+                </div>
+
+                <!-- 3. Identificação -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">3. Identificação</h2>
+                    <p id="p-identificacao-detalhada" class="text-justify pl-4"></p>
+                    <p class="pl-4 mt-2">
+                        <strong>Estado Civil:</strong> <span id="p-estado_civil"></span> |
+                        <strong>CTPS:</strong> <span id="p-ctps"></span> |
+                        <strong>CNH:</strong> <span id="p-cnh"></span> |
+                        <strong>Mão Dominante:</strong> <span id="p-mao_dominante"></span>
+                    </p>
+                </div>
+
+                <!-- 4. Histórico -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">4. Histórico</h2>
+
+                    <h3 class="font-bold ml-4 mt-2">4.1. Histórico Ocupacional</h3>
+                    <p class="pl-8 mb-2"><strong>Data do Acidente/Fato:</strong> <span id="p-data_acidente"></span></p>
+                    <p id="p-ocupacional" class="text-justify pl-8 mb-2"></p>
+                    <p class="pl-8 mb-2"><strong>EPIs:</strong> <span id="p-epis"></span></p>
+
+                    <h3 class="font-bold ml-4 mt-2">4.2. História da Doença Atual (HDA)</h3>
+                    <div id="p-anamnese" class="text-justify pl-8 ql-editor mb-2"></div>
+
+                    <h3 class="font-bold ml-4 mt-2">4.3. Antecedentes</h3>
+                    <p id="p-antecedentes" class="text-justify pl-8"></p>
+
+                    <h3 class="font-bold ml-4 mt-2">4.4. Histórico Previdenciário</h3>
+                    <p id="p-historico_previdenciario" class="text-justify pl-8 whitespace-pre-wrap"></p>
+                </div>
+
+                <!-- 5. Exame Físico -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">5. Exame Físico</h2>
+                    <div id="p-exame" class="text-justify pl-4 ql-editor"></div>
+                </div>
+
+                <!-- 6. Documentos -->
+                <div class="mb-6 print-break">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">6. Documentos Médicos</h2>
+                    <p id="p-exames-comp" class="text-justify pl-4 whitespace-pre-wrap"></p>
+                </div>
+
+                <!-- 7. Discussão e Conclusão -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">7. Discussão e Conclusão</h2>
+
+                    <h3 class="font-bold ml-4 mt-2">7.1. Discussão</h3>
+                    <p id="p-discussao" class="text-justify pl-8 mb-2 whitespace-pre-wrap"></p>
+
+                    <h3 class="font-bold ml-4 mt-2">7.2. Diagnóstico</h3>
+                    <p class="pl-8 mb-2"><strong class="mr-2">CID-10:</strong> <span id="p-cid"></span></p>
+
+                    <h3 class="font-bold ml-4 mt-2">7.3. Nexo Causal</h3>
+                    <p id="p-nexo" class="pl-8 mb-2"></p>
+
+                    <h3 class="font-bold ml-4 mt-2">7.4. Datas Técnicas</h3>
+                    <p class="pl-8 mb-2">
+                        <strong>DID:</strong> <span id="p-did"></span> |
+                        <strong>DII:</strong> <span id="p-dii"></span>
+                    </p>
+
+                    <h3 class="font-bold ml-4 mt-2">7.5. Parecer de Capacidade</h3>
+                    <p id="p-parecer" class="pl-8 font-bold text-lg mb-4"></p>
+
+                    <h3 class="font-bold ml-4 mt-2">7.6. Prognóstico e Assistência</h3>
+                    <p class="pl-8 mb-2">
+                        <strong>Prognóstico:</strong> <span id="p-prognostico"></span> |
+                        <strong>Assistência de Terceiros:</strong> <span id="p-necessidade_assistencia"></span>
+                    </p>
+
+                    <div id="p-conclusao" class="text-justify pl-4 bg-gray-100 p-4 rounded border ql-editor"></div>
+                </div>
+
+                <!-- 8. Bibliografia -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">8. Bibliografia</h2>
+                    <p id="p-bibliografia" class="text-justify pl-4 whitespace-pre-wrap"></p>
+                </div>
+
+                <!-- 9. Quesitos -->
+                <div class="mb-12">
+                    <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">9. Respostas aos Quesitos</h2>
+                    <div id="p-quesitos" class="text-justify pl-4 ql-editor"></div>
+                </div>
+
+                <!-- Signature -->
+                <div class="mt-24 text-center">
+                    <div class="w-1/2 mx-auto">
+                        <img id="print-signature" class="mx-auto h-16 mb-2 hidden">
+                        <div class="border-t border-black pt-2">
+                            <p class="font-bold text-lg" id="print-footer-name"></p>
+                            <p class="text-md" id="print-footer-crm"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fixed bottom-4 right-4 no-print flex gap-2">
+                    <button id="btn-export-pdf" class="bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 font-bold flex items-center gap-2 transition-transform transform hover:scale-105"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
+                    <button id="btn-print-native" class="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 font-bold transition-transform transform hover:scale-105">Imprimir</button>
+                    <button id="btn-close-print" class="bg-gray-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-gray-600 transition-transform transform hover:scale-105">Fechar</button>
                 </div>
             </div>
 
-            <!-- Preamble -->
-            <div class="mb-8">
-                <p class="text-justify">
-                    <strong>NATUREZA DA AÇÃO:</strong> <span id="p-tipo_acao"></span><br>
-                    <strong>PROCESSO Nº:</strong> <span id="p-processo"></span><br>
-                    <strong>AUTOR:</strong> <span id="p-autor"></span><br>
-                    <strong>DATA DA PERÍCIA:</strong> <span id="p-data"></span><br>
-                    <strong>LOCAL:</strong> <span id="p-local_pericia"></span><br>
-                    <strong>ASSISTENTES TÉCNICOS:</strong> <span id="p-assistentes"></span>
-                </p>
-                <p class="text-justify mt-4">
-                    Este perito, honrado com a nomeação, apresenta a Vossa Excelência o resultado das diligências e exames realizados, consubstanciados no presente Laudo.
-                </p>
+            <!-- CALENDAR VIEW -->
+            <div id="view-calendar" class="view-section hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-full">
+                 <div id="calendar-container" class="h-full"></div>
             </div>
 
-            <!-- 1. Objetivo -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">1. Objetivo</h2>
-                <p id="p-objetivo" class="text-justify pl-4 whitespace-pre-wrap"></p>
-            </div>
+            <!-- FINANCE VIEW -->
+            <div id="view-finance" class="view-section hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-2">Relatório Financeiro</h2>
 
-            <!-- 2. Metodologia -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">2. Metodologia</h2>
-                <p id="p-metodologia" class="text-justify pl-4 whitespace-pre-wrap"></p>
-            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Status Chart -->
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl shadow-inner">
+                        <h3 class="font-bold text-center mb-4 text-gray-700 dark:text-gray-200">Pago vs Pendente</h3>
+                        <div class="h-64 relative flex justify-center">
+                            <canvas id="chart-finance-status"></canvas>
+                        </div>
+                        <div class="flex justify-around mt-4 text-sm font-bold">
+                            <span class="text-green-600 dark:text-green-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs"></i> Pago: <span id="fin-total-paid">R$ 0,00</span></span>
+                            <span class="text-yellow-600 dark:text-yellow-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs"></i> Pendente: <span id="fin-total-pending">R$ 0,00</span></span>
+                        </div>
+                    </div>
 
-            <!-- 3. Identificação -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">3. Identificação</h2>
-                <p id="p-identificacao-detalhada" class="text-justify pl-4"></p>
-                <p class="pl-4 mt-2">
-                    <strong>Estado Civil:</strong> <span id="p-estado_civil"></span> |
-                    <strong>CTPS:</strong> <span id="p-ctps"></span> |
-                    <strong>CNH:</strong> <span id="p-cnh"></span> |
-                    <strong>Mão Dominante:</strong> <span id="p-mao_dominante"></span>
-                </p>
-            </div>
-
-            <!-- 4. Histórico -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">4. Histórico</h2>
-
-                <h3 class="font-bold ml-4 mt-2">4.1. Histórico Ocupacional</h3>
-                <p class="pl-8 mb-2"><strong>Data do Acidente/Fato:</strong> <span id="p-data_acidente"></span></p>
-                <p id="p-ocupacional" class="text-justify pl-8 mb-2"></p>
-                <p class="pl-8 mb-2"><strong>EPIs:</strong> <span id="p-epis"></span></p>
-
-                <h3 class="font-bold ml-4 mt-2">4.2. História da Doença Atual (HDA)</h3>
-                <div id="p-anamnese" class="text-justify pl-8 ql-editor mb-2"></div>
-
-                <h3 class="font-bold ml-4 mt-2">4.3. Antecedentes</h3>
-                <p id="p-antecedentes" class="text-justify pl-8"></p>
-
-                <h3 class="font-bold ml-4 mt-2">4.4. Histórico Previdenciário</h3>
-                <p id="p-historico_previdenciario" class="text-justify pl-8 whitespace-pre-wrap"></p>
-            </div>
-
-            <!-- 5. Exame Físico -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">5. Exame Físico</h2>
-                <div id="p-exame" class="text-justify pl-4 ql-editor"></div>
-            </div>
-
-            <!-- 6. Documentos -->
-            <div class="mb-6 print-break">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">6. Documentos Médicos</h2>
-                <p id="p-exames-comp" class="text-justify pl-4 whitespace-pre-wrap"></p>
-            </div>
-
-            <!-- 7. Discussão e Conclusão -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">7. Discussão e Conclusão</h2>
-
-                <h3 class="font-bold ml-4 mt-2">7.1. Discussão</h3>
-                <p id="p-discussao" class="text-justify pl-8 mb-2 whitespace-pre-wrap"></p>
-
-                <h3 class="font-bold ml-4 mt-2">7.2. Diagnóstico</h3>
-                <p class="pl-8 mb-2"><strong class="mr-2">CID-10:</strong> <span id="p-cid"></span></p>
-
-                <h3 class="font-bold ml-4 mt-2">7.3. Nexo Causal</h3>
-                <p id="p-nexo" class="pl-8 mb-2"></p>
-
-                <h3 class="font-bold ml-4 mt-2">7.4. Datas Técnicas</h3>
-                <p class="pl-8 mb-2">
-                    <strong>DID:</strong> <span id="p-did"></span> |
-                    <strong>DII:</strong> <span id="p-dii"></span>
-                </p>
-
-                <h3 class="font-bold ml-4 mt-2">7.5. Parecer de Capacidade</h3>
-                <p id="p-parecer" class="pl-8 font-bold text-lg mb-4"></p>
-
-                <h3 class="font-bold ml-4 mt-2">7.6. Prognóstico e Assistência</h3>
-                <p class="pl-8 mb-2">
-                    <strong>Prognóstico:</strong> <span id="p-prognostico"></span> |
-                    <strong>Assistência de Terceiros:</strong> <span id="p-necessidade_assistencia"></span>
-                </p>
-
-                <div id="p-conclusao" class="text-justify pl-4 bg-gray-100 p-4 rounded border ql-editor"></div>
-            </div>
-
-            <!-- 8. Bibliografia -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">8. Bibliografia</h2>
-                <p id="p-bibliografia" class="text-justify pl-4 whitespace-pre-wrap"></p>
-            </div>
-
-            <!-- 9. Quesitos -->
-            <div class="mb-12">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">9. Respostas aos Quesitos</h2>
-                <div id="p-quesitos" class="text-justify pl-4 ql-editor"></div>
-            </div>
-
-            <!-- Signature -->
-            <div class="mt-24 text-center">
-                <div class="w-1/2 mx-auto">
-                    <img id="print-signature" class="mx-auto h-16 mb-2 hidden">
-                    <div class="border-t border-black pt-2">
-                        <p class="font-bold text-lg" id="print-footer-name"></p>
-                        <p class="text-md" id="print-footer-crm"></p>
+                    <!-- Monthly Chart -->
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl shadow-inner">
+                        <h3 class="font-bold text-center mb-4 text-gray-700 dark:text-gray-200">Faturamento Mensal</h3>
+                        <div class="h-64 relative">
+                            <canvas id="chart-finance-monthly"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="fixed bottom-4 right-4 no-print flex gap-2">
-                <button id="btn-export-pdf" class="bg-red-600 text-white px-6 py-3 rounded shadow-lg hover:bg-red-700 font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
-                <button id="btn-print-native" class="bg-blue-600 text-white px-6 py-3 rounded shadow-lg hover:bg-blue-700 font-bold">Imprimir</button>
-                <button id="btn-close-print" class="bg-gray-500 text-white px-6 py-3 rounded shadow-lg hover:bg-gray-600">Fechar</button>
-            </div>
-        </div>
-
-        <!-- CALENDAR VIEW -->
-        <div id="view-calendar" class="view-section hidden bg-white dark:bg-gray-800 p-6 rounded shadow">
-             <div id="calendar-container" class="h-[80vh]"></div>
-        </div>
-
-        <!-- FINANCE VIEW -->
-        <div id="view-finance" class="view-section hidden bg-white dark:bg-gray-800 p-6 rounded shadow space-y-6">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100 border-b pb-2">Relatório Financeiro</h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Status Chart -->
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded shadow">
-                    <h3 class="font-bold text-center mb-4 text-gray-700 dark:text-gray-200">Pago vs Pendente</h3>
-                    <div class="h-64 relative">
-                        <canvas id="chart-finance-status"></canvas>
-                    </div>
-                    <div class="flex justify-around mt-4 text-sm font-bold">
-                        <span class="text-green-600 dark:text-green-400">Pago: <span id="fin-total-paid">R$ 0,00</span></span>
-                        <span class="text-yellow-600 dark:text-yellow-400">Pendente: <span id="fin-total-pending">R$ 0,00</span></span>
-                    </div>
-                </div>
-
-                <!-- Monthly Chart -->
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded shadow">
-                    <h3 class="font-bold text-center mb-4 text-gray-700 dark:text-gray-200">Faturamento Mensal</h3>
-                    <div class="h-64 relative">
-                        <canvas id="chart-finance-monthly"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
+        </main>
+    </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <!-- Modules are loaded by app.js -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js').catch(() => {});
