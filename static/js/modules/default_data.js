@@ -107,5 +107,89 @@ export const DEFAULT_TEMPLATES = [
             conclusao: "<p>Conclui-se que o(a) periciado(a) é portador(a) de Síndrome do Túnel do Carpo Bilateral, relacionada às atividades laborais (LER/DORT). Há incapacidade total e temporária para atividades que exijam movimentos repetitivos de punhos, devendo realizar tratamento fisioterápico.</p>",
             quesitos: "<p><strong>1. Qual o diagnóstico?</strong><br>Síndrome do Túnel do Carpo (G56.0).</p><p><strong>2. É doença ocupacional?</strong><br>Sim, classificada como LER/DORT.</p><p><strong>3. Há incapacidade?</strong><br>Sim, temporária para a função habitual.</p>"
         }
+    },
+    {
+        id: 'tmpl_def_4',
+        title: "Modelo Ortopedia - Ombro Doloroso",
+        data: {
+            profissao: "Pintor / Armazenista",
+            tempo_funcao: "8 anos",
+            desc_atividades: "Movimentos de elevação e abdução de membros superiores acima da linha dos ombros, carregamento de peso.",
+            antecedentes: "Nega trauma em ombros. Nega diabetes.",
+            exames_complementares: "Ultrassom de Ombro Direito (Data: --/--/----): Tendinopatia do supraespinhal e bursite subacromial/subdeltoidea.",
+            discussao: "O quadro clínico e os exames de imagem evidenciam patologia inflamatória/degenerativa em ombro direito. As atividades laborais descritas, exigindo elevação de braços e esforço físico, atuam como fator de risco biomecânico (Nexo Técnico Epidemiológico presente para diversas atividades).",
+            cid: "M75.1 - Síndrome do manguito rotador",
+            nexo: "Concausa",
+            did: "",
+            dii: "",
+            parecer: "Incapaz temporariamente",
+            anamnese: "<p><strong>Queixa Principal:</strong> Dor em ombro direito.</p><p><strong>História da Doença Atual:</strong> Relata início de dor no ombro direito há cerca de 1 ano, com dificuldade para elevar o braço e pentear o cabelo. Dor noturna ao deitar sobre o ombro afetado.</p>",
+            exame_fisico: "<p><strong>Membros Superiores:</strong></p><ul><li>Inspeção: Sem atrofias importantes.</li><li>Mobilidade: Elevação ativa limitada a 90º por dor. Rotações preservadas.</li><li>Manobras Específicas:</li><li>Neer: Positivo.</li><li>Hawkins: Positivo.</li><li>Jobe: Doloroso, força preservada.</li><li>Patte: Negativo.</li><li>Gerber: Negativo.</li></ul>",
+            conclusao: "<p>Há incapacidade temporária para a função habitual devido à sintomatologia álgica e limitação funcional. Há nexo de concausalidade com o trabalho.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>Síndrome do Manguito Rotador (M75.1).</p><p><strong>2. Nexo?</strong><br>Sim, concausa.</p>"
+        }
+    },
+    {
+        id: 'tmpl_def_5',
+        title: "Modelo Ortopedia - Gonartrose",
+        data: {
+            profissao: "Pedreiro",
+            tempo_funcao: "15 anos",
+            desc_atividades: "Agachamentos frequentes, subida e descida de escadas, carregamento de peso.",
+            antecedentes: "Obesidade Grau I.",
+            exames_complementares: "RX de Joelhos: Redução do espaço articular femorotibial medial, esclerose subcondral e osteófitos marginais.",
+            discussao: "A gonartrose é uma doença degenerativa da cartilagem articular. Fatores constitucionais (idade, peso) são preponderantes. O trabalho com sobrecarga pode atuar como fator agravante (concausa) em casos específicos de alta demanda.",
+            cid: "M17 - Gonartrose [artrose do joelho]",
+            nexo: "Concausa",
+            did: "",
+            dii: "",
+            parecer: "Incapaz parcialmente",
+            anamnese: "<p><strong>Queixa Principal:</strong> Dor nos joelhos.</p><p><strong>História da Doença Atual:</strong> Dor progressiva nos joelhos, pior à direita, tipo mecânica. Dificuldade para agachar e subir escadas. Nega bloqueios articulares.</p>",
+            exame_fisico: "<p><strong>Membros Inferiores:</strong></p><ul><li>Alinhamento: Varo de joelhos.</li><li>Edema: Ausente.</li><li>Palpação: Dor na interlinha articular medial.</li><li>Movimento: Flexão limitada a 100º. Extensão completa.</li><li>Crepitação: Presente à mobilização.</li><li>Gavetas e Lachman: Negativos.</li><li>McMurray: Prejudicado pela dor/limitação.</li></ul>",
+            conclusao: "<p>Incapacidade parcial e permanente para atividades que exijam agachamento repetitivo e sobrecarga de joelhos.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>Gonartrose (M17).</p><p><strong>2. Nexo?</strong><br>Concausa (agravamento).</p>"
+        }
+    },
+    {
+        id: 'tmpl_def_6',
+        title: "Modelo Psiquiatria - Ansiedade",
+        data: {
+            profissao: "Bancário / Atendente",
+            tempo_funcao: "4 anos",
+            desc_atividades: "Atendimento ao público, metas de vendas.",
+            antecedentes: "Nega tratamento psiquiátrico prévio.",
+            exames_complementares: "Atestado Médico: CID F41.1, em uso de Escitalopram 10mg.",
+            discussao: "O Transtorno de Ansiedade Generalizada caracteriza-se por preocupação excessiva e persistente. O ambiente de trabalho pode atuar como estressor, mas a etiologia é multifatorial.",
+            cid: "F41.1 - Transtorno de ansiedade generalizada",
+            nexo: "Não há nexo",
+            did: "",
+            dii: "",
+            parecer: "Apto",
+            anamnese: "<p><strong>Queixa Principal:</strong> Nervosismo, taquicardia.</p><p><strong>História da Doença Atual:</strong> Relata que há 1 ano sente-se muito ansioso, com palpitações, sudorese e medo constante. Relata cobrança por metas no trabalho.</p>",
+            exame_fisico: "<p><strong>Exame Psíquico:</strong></p><ul><li>Apresentação: Colaborativo, ansioso.</li><li>Humor: Ansioso.</li><li>Afeto: Modulante.</li><li>Pensamento: Acelerado, conteúdo de preocupação.</li><li>Sem sintomas psicóticos.</li></ul>",
+            conclusao: "<p>Ao exame atual, não se observam elementos de descompensação aguda que justifiquem incapacidade laborativa. O tratamento medicamentoso está em curso e é compatível com a manutenção do labor.</p>",
+            quesitos: "<p><strong>1. Há doença?</strong><br>Sim, transtorno de ansiedade.</p><p><strong>2. Há incapacidade?</strong><br>Não há incapacidade laborativa no momento.</p>"
+        }
+    },
+    {
+        id: 'tmpl_def_7',
+        title: "Modelo ORL - PAIR",
+        data: {
+            profissao: "Operador de Máquinas",
+            tempo_funcao: "12 anos",
+            desc_atividades: "Operação de prensa em ambiente ruidoso (88dB).",
+            antecedentes: "Nega otites de repetição.",
+            exames_complementares: "Audiometria Tonal: Perda auditiva neurossensorial bilateral, simétrica, com entalhe audiométrico em 4kHz e 6kHz.",
+            discussao: "O traçado audiométrico é sugestivo de Perda Auditiva Induzida por Ruído (PAIR), caracterizada por ser neurossensorial, bilateral, irreversível e não progressiva após cessada a exposição.",
+            cid: "H83.3 - Efeitos do ruído sobre o ouvido interno",
+            nexo: "Nexo Causal",
+            did: "",
+            dii: "",
+            parecer: "Apto com restrições",
+            anamnese: "<p><strong>Queixa Principal:</strong> Dificuldade para ouvir em ambientes barulhentos.</p><p><strong>História:</strong> Relata zumbido ocasional. Nega tonturas.</p>",
+            exame_fisico: "<p><strong>Otoscopia:</strong> Membranas timpânicas íntegras e translúcidas, triângulo luminoso presente.</p>",
+            conclusao: "<p>Portador de PAIR. Há redução da capacidade auditiva, porém não há incapacidade para o trabalho, desde que haja uso regular de EPI (protetor auricular) e monitoramento audiométrico.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>PAIR (H83.3).</p><p><strong>2. Nexo?</strong><br>Sim, nexo causal.</p>"
+        }
     }
 ];
