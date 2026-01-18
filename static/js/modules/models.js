@@ -90,6 +90,21 @@ export class Pericia {
         /** @type {string} */
         this.bibliografia = data.bibliografia || "";
 
+        /** @type {string} */
+        this.tipo_acao = data.tipo_acao || "Trabalhista";
+
+        /** @type {string} */
+        this.estado_civil = data.estado_civil || "";
+
+        /** @type {string} */
+        this.ctps = data.ctps || "";
+
+        /** @type {string} */
+        this.mao_dominante = data.mao_dominante || "Destro";
+
+        /** @type {string} */
+        this.epis = data.epis || "";
+
         /** @type {Processo} */
         this.processo = {
             numero: data.processo?.numero || "",

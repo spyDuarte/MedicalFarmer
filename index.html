@@ -251,6 +251,16 @@
                                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-vara">Vara / Comarca</label>
                                 <input id="f-vara" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
                             </div>
+                             <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-tipo_acao">Natureza da Ação</label>
+                                <select id="f-tipo_acao" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
+                                    <option value="Trabalhista">Trabalhista</option>
+                                    <option value="Cível">Cível</option>
+                                    <option value="Previdenciária">Previdenciária</option>
+                                    <option value="DPVAT">DPVAT</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
                         </div>
 
                         <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Dados do Periciado</h3>
@@ -286,6 +296,24 @@
                                     <option value="Fundamental Completo">Fundamental Completo</option>
                                     <option value="Médio Completo">Médio Completo</option>
                                     <option value="Superior Completo">Superior Completo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-estado_civil">Estado Civil</label>
+                                <input id="f-estado_civil" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-ctps">CTPS (Série/Nº)</label>
+                                <input id="f-ctps" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-mao_dominante">Mão Dominante</label>
+                                <select id="f-mao_dominante" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
+                                    <option value="Destro">Destro</option>
+                                    <option value="Canhoto">Canhoto</option>
+                                    <option value="Ambidestro">Ambidestro</option>
                                 </select>
                             </div>
                         </div>
@@ -348,6 +376,11 @@
                         <div class="mb-6">
                             <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-desc_atividades">Descrição das Atividades e Riscos</label>
                             <textarea id="f-desc_atividades" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24"></textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-epis">EPIs (Equipamentos de Proteção Individual)</label>
+                            <textarea id="f-epis" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-16" placeholder="Descreva os EPIs utilizados e o fornecimento..."></textarea>
                         </div>
 
                         <hr class="my-6 dark:border-gray-600">
@@ -541,6 +574,7 @@
             <!-- Preamble -->
             <div class="mb-8">
                 <p class="text-justify">
+                    <strong>NATUREZA DA AÇÃO:</strong> <span id="p-tipo_acao"></span><br>
                     <strong>PROCESSO Nº:</strong> <span id="p-processo"></span><br>
                     <strong>AUTOR:</strong> <span id="p-autor"></span><br>
                     <strong>DATA DA PERÍCIA:</strong> <span id="p-data"></span><br>
@@ -568,6 +602,11 @@
             <div class="mb-6">
                 <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">3. Identificação</h2>
                 <p id="p-identificacao-detalhada" class="text-justify pl-4"></p>
+                <p class="pl-4 mt-2">
+                    <strong>Estado Civil:</strong> <span id="p-estado_civil"></span> |
+                    <strong>CTPS:</strong> <span id="p-ctps"></span> |
+                    <strong>Mão Dominante:</strong> <span id="p-mao_dominante"></span>
+                </p>
             </div>
 
             <!-- 4. Histórico -->
@@ -576,6 +615,7 @@
 
                 <h3 class="font-bold ml-4 mt-2">4.1. Histórico Ocupacional</h3>
                 <p id="p-ocupacional" class="text-justify pl-8 mb-2"></p>
+                <p class="pl-8 mb-2"><strong>EPIs:</strong> <span id="p-epis"></span></p>
 
                 <h3 class="font-bold ml-4 mt-2">4.2. História da Doença Atual (HDA)</h3>
                 <div id="p-anamnese" class="text-justify pl-8 ql-editor mb-2"></div>
