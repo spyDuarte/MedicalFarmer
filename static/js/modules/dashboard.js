@@ -43,15 +43,16 @@ export const DashboardController = {
         const dateEnd = document.getElementById('date-end').value;
 
         const filtered = pericias.filter(p => {
+             // Access camelCase properties
              const matchesSearch = !search ||
-                 (p.numero_processo && p.numero_processo.toLowerCase().includes(search)) ||
-                 (p.nome_autor && p.nome_autor.toLowerCase().includes(search));
+                 (p.numeroProcesso && p.numeroProcesso.toLowerCase().includes(search)) ||
+                 (p.nomeAutor && p.nomeAutor.toLowerCase().includes(search));
 
              const matchesStatus = !statusFilter || p.status === statusFilter;
 
              let matchesDate = true;
              if (dateStart || dateEnd) {
-                 const pDate = p.data_pericia ? new Date(p.data_pericia) : null;
+                 const pDate = p.dataPericia ? new Date(p.dataPericia) : null;
                  if (!pDate) matchesDate = false;
                  else {
                      if (dateStart && pDate < new Date(dateStart)) matchesDate = false;
@@ -60,14 +61,14 @@ export const DashboardController = {
              }
 
              return matchesSearch && matchesStatus && matchesDate;
-        }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const stats = {};
         Object.values(STATUS).forEach(s => stats[s] = 0);
 
         filtered.forEach(p => {
-            if (p.status_pagamento === PAYMENT_STATUS.PAID) totalRecebido += parseFloat(p.valor_honorarios || 0);
-            else totalPendente += parseFloat(p.valor_honorarios || 0);
+            if (p.statusPagamento === PAYMENT_STATUS.PAID) totalRecebido += parseFloat(p.valorHonorarios || 0);
+            else totalPendente += parseFloat(p.valorHonorarios || 0);
 
             if (stats[p.status] !== undefined) stats[p.status]++;
 
@@ -77,15 +78,15 @@ export const DashboardController = {
                     ${this.getStatusBadge(p.status)}
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                    <p class="text-gray-900 dark:text-gray-100 font-bold">${p.numero_processo}</p>
-                    <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nome_autor}</p>
+                    <p class="text-gray-900 dark:text-gray-100 font-bold">${p.numeroProcesso || '-'}</p>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nomeAutor || '-'}</p>
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200">
-                     ${p.data_pericia ? new Date(p.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
+                     ${p.dataPericia ? new Date(p.dataPericia + 'T00:00:00').toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                    <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valor_honorarios || 0).toFixed(2)}</p>
-                    ${p.status_pagamento === PAYMENT_STATUS.PAID
+                    <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valorHonorarios || 0).toFixed(2)}</p>
+                    ${p.statusPagamento === PAYMENT_STATUS.PAID
                         ? `<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> ${PAYMENT_STATUS.PAID}</span>`
                         : `<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> ${PAYMENT_STATUS.PENDING}</span>`}
                 </td>

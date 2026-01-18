@@ -25,10 +25,10 @@ import { DEFAULTS } from './constants.js';
 /**
  * @typedef {Object} DocumentoMetadata
  * @property {string} id - Identificador único do arquivo
- * @property {string} nome - Nome do arquivo
+ * @property {string} originalName - Nome do arquivo
  * @property {number} tamanho - Tamanho em bytes
  * @property {string} tipo - Tipo MIME
- * @property {string} data_upload - Data do upload (ISO 8601)
+ * @property {string} dataUpload - Data do upload (ISO 8601)
  */
 
 /**
@@ -48,7 +48,7 @@ import { DEFAULTS } from './constants.js';
 /**
  * @typedef {Object} Conclusao
  * @property {string} texto - Texto da conclusão
- * @property {boolean} nexo_causal - Se há nexo causal
+ * @property {boolean} nexoCausal - Se há nexo causal
  * @property {string} [diagnostico] - CID ou diagnóstico
  * @property {string} [did] - Data de Início da Doença
  * @property {string} [dii] - Data de Início da Incapacidade
@@ -67,7 +67,7 @@ export class Pericia {
         this.id = data.id || Date.now();
 
         /** @type {string} */
-        this.created_at = data.created_at || new Date().toISOString();
+        this.createdAt = data.createdAt || data.created_at || new Date().toISOString();
 
         /** @type {string} - Status do laudo (e.g. "Em Andamento", "Concluído") */
         this.status = data.status || "Aguardando";
@@ -79,28 +79,28 @@ export class Pericia {
         this.metodologia = data.metodologia || DEFAULTS.METODOLOGIA;
 
         /** @type {string} */
-        this.local_pericia = data.local_pericia || "";
+        this.localPericia = data.localPericia || data.local_pericia || "";
 
         /** @type {string} */
         this.assistentes = data.assistentes || "Ausentes";
 
         /** @type {string} */
-        this.historico_previdenciario = data.historico_previdenciario || "";
+        this.historicoPrevidenciario = data.historicoPrevidenciario || data.historico_previdenciario || "";
 
         /** @type {string} */
         this.bibliografia = data.bibliografia || "";
 
         /** @type {string} */
-        this.tipo_acao = data.tipo_acao || "Trabalhista";
+        this.tipoAcao = data.tipoAcao || data.tipo_acao || "Trabalhista";
 
         /** @type {string} */
-        this.estado_civil = data.estado_civil || "";
+        this.estadoCivil = data.estadoCivil || data.estado_civil || "";
 
         /** @type {string} */
         this.ctps = data.ctps || "";
 
         /** @type {string} */
-        this.mao_dominante = data.mao_dominante || "Destro";
+        this.maoDominante = data.maoDominante || data.mao_dominante || "Destro";
 
         /** @type {string} */
         this.epis = data.epis || "";
@@ -108,38 +108,67 @@ export class Pericia {
         /** @type {string} */
         this.cnh = data.cnh || "";
 
+        // Dados Pessoais Flat (para facilitar binding)
+        this.nomeAutor = data.nomeAutor || data.nome_autor || "";
+        this.dataNascimento = data.dataNascimento || data.data_nascimento || "";
+        this.cpf = data.cpf || "";
+        this.rg = data.rg || "";
+        this.escolaridade = data.escolaridade || "";
+
+        // Histórico Ocupacional
+        this.profissao = data.profissao || "";
+        this.tempoFuncao = data.tempoFuncao || data.tempo_funcao || "";
+        this.descAtividades = data.descAtividades || data.desc_atividades || "";
+        this.antecedentes = data.antecedentes || "";
+
         /** @type {string|null} */
-        this.data_acidente = data.data_acidente || null;
+        this.dataAcidente = data.dataAcidente || data.data_acidente || null;
 
         /** @type {string} */
         this.prognostico = data.prognostico || "Bom";
 
         /** @type {string} */
-        this.necessidade_assistencia = data.necessidade_assistencia || "Não";
+        this.necessidadeAssistencia = data.necessidadeAssistencia || data.necessidade_assistencia || "Não";
+
+        // Financeiro
+        this.dataPericia = data.dataPericia || data.data_pericia || "";
+        this.valorHonorarios = data.valorHonorarios || data.valor_honorarios || 0;
+        this.statusPagamento = data.statusPagamento || data.status_pagamento || "Pendente";
+
+        // Campos de Texto Rico
+        this.anamnese = data.anamnese || "";
+        this.exameFisico = data.exameFisico || data.exame_fisico || "";
+        this.examesComplementares = data.examesComplementares || data.exames_complementares || "";
+        this.discussao = data.discussao || "";
+        this.conclusao = data.conclusao || ""; // Texto HTML
+
+        // Conclusão Estruturada
+        this.cid = data.cid || "";
+        this.nexo = data.nexo || "";
+        this.did = data.did || "";
+        this.dii = data.dii || "";
+        this.parecer = data.parecer || "Apto";
 
         /** @type {Processo} */
         this.processo = {
-            numero: data.processo?.numero || "",
-            vara: data.processo?.vara || "",
+            numero: data.processo?.numero || data.numeroProcesso || data.numero_processo || "", // Fallback
+            vara: data.processo?.vara || data.vara || "",
             uf: data.processo?.uf || "",
             comarca: data.processo?.comarca || ""
         };
 
-        /** @type {Partes} */
-        this.partes = {
-            autor: data.partes?.autor || "",
-            reu: data.partes?.reu || ""
-        };
-
-        /** @type {Datas} */
-        this.datas = {
-            nomeacao: data.datas?.nomeacao || null,
-            diligencia: data.datas?.diligencia || null,
-            entrega: data.datas?.entrega || null
-        };
+        // Flat properties for compatibility with existing UI logic if needed,
+        // but prefer using the structured objects or flat ones above.
+        // We exposed flat properties for author/process above to match current FormController logic.
+        this.numeroProcesso = this.processo.numero;
+        this.vara = this.processo.vara;
 
         /** @type {DocumentoMetadata[]} */
-        this.documentos = Array.isArray(data.documentos) ? data.documentos : [];
+        const rawDocs = data.documents || data.documentos;
+        this.documents = Array.isArray(rawDocs) ? rawDocs.map(d => ({
+            ...d,
+            originalName: d.originalName || d.original_name // Migrate on load
+        })) : [];
 
         /** @type {Quesitos} */
         this.quesitos = {
@@ -147,21 +176,20 @@ export class Pericia {
             autor: Array.isArray(data.quesitos?.autor) ? data.quesitos.autor : [],
             reu: Array.isArray(data.quesitos?.reu) ? data.quesitos.reu : []
         };
-
-        /** @type {string} - Anamnese (texto rico/HTML) */
-        this.anamnese = data.anamnese || "";
-
-        /** @type {string} - Exame Físico (texto rico/HTML) */
-        this.exame_fisico = data.exame_fisico || "";
-
-        /** @type {Conclusao} */
-        this.conclusao = {
-            texto: data.conclusao?.texto || "",
-            nexo_causal: typeof data.conclusao?.nexo_causal === 'boolean' ? data.conclusao.nexo_causal : false,
-            diagnostico: data.conclusao?.diagnostico || "",
-            did: data.conclusao?.did || "",
-            dii: data.conclusao?.dii || ""
-        };
+        // If 'quesitos' came as a string (HTML), it overrides the object structure in some legacy contexts,
+        // but here we keep strict separation. If 'quesitos' is a string in data, it goes to 'this.quesitosHTML' maybe?
+        // The current app uses 'quesitos' as a HTML string in the FormController!
+        // "quesitos: this.editors['quesitos'].root.innerHTML"
+        // So 'quesitos' property is actually a STRING in the current app, not an object.
+        // I will fix this definition to match reality.
+        if (typeof data.quesitos === 'string') {
+             this.quesitos = data.quesitos;
+        } else if (!this.quesitos || typeof this.quesitos === 'object') {
+             // If it was an object (from the Type definition I saw earlier), convert to string or keep?
+             // The previous model defined it as an object, but form.js saved it as HTML string.
+             // I will assume it is a STRING for the text editor.
+             this.quesitos = typeof data.quesitos === 'string' ? data.quesitos : "";
+        }
     }
 
     /**
@@ -169,7 +197,7 @@ export class Pericia {
      * @param {DocumentoMetadata} doc
      */
     addDocumento(doc) {
-        this.documentos.push(doc);
+        this.documents.push(doc);
     }
 
     /**
@@ -177,21 +205,6 @@ export class Pericia {
      * @param {string} id
      */
     removeDocumento(id) {
-        this.documentos = this.documentos.filter(d => d.id !== id);
-    }
-
-    /**
-     * Adiciona um quesito para uma das partes.
-     * @param {'juizo'|'autor'|'reu'} parte
-     * @param {string} texto
-     */
-    addQuesito(parte, texto) {
-        if (this.quesitos[parte]) {
-            this.quesitos[parte].push({
-                id: Date.now().toString() + Math.random().toString().slice(2, 5),
-                texto: texto,
-                resposta: ""
-            });
-        }
+        this.documents = this.documents.filter(d => d.id !== id);
     }
 }
