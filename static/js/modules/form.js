@@ -73,11 +73,15 @@ export const FormController = {
         // Populate Identification Fields
         setVal('f-numero_processo', pericia.numero_processo);
         setVal('f-vara', pericia.vara);
+        setVal('f-tipo_acao', pericia.tipo_acao || "Trabalhista");
         setVal('f-nome_autor', pericia.nome_autor);
         setVal('f-data_nascimento', pericia.data_nascimento);
         setVal('f-cpf', pericia.cpf);
         setVal('f-rg', pericia.rg);
         setVal('f-escolaridade', pericia.escolaridade);
+        setVal('f-estado_civil', pericia.estado_civil);
+        setVal('f-ctps', pericia.ctps);
+        setVal('f-mao_dominante', pericia.mao_dominante || "Destro");
         this.calcAge();
 
         // Populate Status/Finance
@@ -94,6 +98,7 @@ export const FormController = {
         setVal('f-profissao', pericia.profissao);
         setVal('f-tempo_funcao', pericia.tempo_funcao);
         setVal('f-desc_atividades', pericia.desc_atividades);
+        setVal('f-epis', pericia.epis);
         setVal('f-antecedentes', pericia.antecedentes);
         setVal('f-historico_previdenciario', pericia.historico_previdenciario);
 
@@ -305,16 +310,21 @@ export const FormController = {
             id: this.currentPericiaId,
             numero_processo: document.getElementById('f-numero_processo').value,
             vara: document.getElementById('f-vara').value,
+            tipo_acao: document.getElementById('f-tipo_acao').value,
             nome_autor: document.getElementById('f-nome_autor').value,
 
             data_nascimento: document.getElementById('f-data_nascimento').value,
             cpf: document.getElementById('f-cpf').value,
             rg: document.getElementById('f-rg').value,
             escolaridade: document.getElementById('f-escolaridade').value,
+            estado_civil: document.getElementById('f-estado_civil').value,
+            ctps: document.getElementById('f-ctps').value,
+            mao_dominante: document.getElementById('f-mao_dominante').value,
 
             profissao: document.getElementById('f-profissao').value,
             tempo_funcao: document.getElementById('f-tempo_funcao').value,
             desc_atividades: document.getElementById('f-desc_atividades').value,
+            epis: document.getElementById('f-epis').value,
             antecedentes: document.getElementById('f-antecedentes').value,
             historico_previdenciario: document.getElementById('f-historico_previdenciario').value,
 

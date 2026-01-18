@@ -41,6 +41,7 @@ export const PrintController = {
         setTxt('print-header-crm', s.crm || 'CRM-XX 00000');
         setTxt('print-header-contact', `${s.endereco ? s.endereco : ''} ${s.telefone ? ' | ' + s.telefone : ''}`);
 
+        setTxt('p-tipo_acao', pericia.tipo_acao || 'Trabalhista');
         setTxt('p-processo', pericia.numero_processo);
         setTxt('p-autor', pericia.nome_autor);
         setTxt('p-data', pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
@@ -63,12 +64,18 @@ export const PrintController = {
         `;
         document.getElementById('p-identificacao-detalhada').innerHTML = idDetails;
 
+        setTxt('p-estado_civil', pericia.estado_civil || '-');
+        setTxt('p-ctps', pericia.ctps || '-');
+        setTxt('p-mao_dominante', pericia.mao_dominante || '-');
+
         let histOcup = `
             <strong>Profissão:</strong> ${pericia.profissao || '-'}<br>
             <strong>Tempo na Função:</strong> ${pericia.tempo_funcao || '-'}<br>
             <strong>Atividades/Riscos:</strong> ${pericia.desc_atividades || '-'}
         `;
         document.getElementById('p-ocupacional').innerHTML = histOcup;
+        setTxt('p-epis', pericia.epis || 'Não informado/Não aplicável.');
+
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
         setTxt('p-antecedentes', pericia.antecedentes || 'Nada digno de nota.');
         setTxt('p-historico_previdenciario', pericia.historico_previdenciario || 'Não informado.');
