@@ -66,6 +66,7 @@ export const PrintController = {
 
         setTxt('p-estado_civil', pericia.estado_civil || '-');
         setTxt('p-ctps', pericia.ctps || '-');
+        setTxt('p-cnh', pericia.cnh || '-');
         setTxt('p-mao_dominante', pericia.mao_dominante || '-');
 
         let histOcup = `
@@ -74,6 +75,7 @@ export const PrintController = {
             <strong>Atividades/Riscos:</strong> ${pericia.desc_atividades || '-'}
         `;
         document.getElementById('p-ocupacional').innerHTML = histOcup;
+        setTxt('p-data_acidente', pericia.data_acidente ? new Date(pericia.data_acidente + 'T00:00:00').toLocaleDateString('pt-BR') : '-');
         setTxt('p-epis', pericia.epis || 'Não informado/Não aplicável.');
 
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
@@ -89,6 +91,8 @@ export const PrintController = {
         setTxt('p-did', pericia.did || '-');
         setTxt('p-dii', pericia.dii || '-');
         setTxt('p-parecer', pericia.parecer || '-');
+        setTxt('p-prognostico', pericia.prognostico || '-');
+        setTxt('p-necessidade_assistencia', pericia.necessidade_assistencia || '-');
         document.getElementById('p-conclusao').innerHTML = pericia.conclusao || '';
         setTxt('p-bibliografia', pericia.bibliografia || '-');
 
