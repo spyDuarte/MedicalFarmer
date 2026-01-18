@@ -21,5 +21,5 @@ export const PAYMENT_STATUS = {
 
 export const DEFAULTS = {
     NEXO: 'Não há nexo',
-    PARECER: 'Capto'
+    PARECER: 'Apto'
 };

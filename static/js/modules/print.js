@@ -115,7 +115,6 @@ export const PrintController = {
              if(btnContainer) btnContainer.style.display = 'flex';
              UI.Loading.hide();
         }).catch(err => {
-            console.error(err);
             UI.Toast.show("Erro ao gerar PDF: " + err.message, 'error');
             if(btnContainer) btnContainer.style.display = 'flex';
             UI.Loading.hide();

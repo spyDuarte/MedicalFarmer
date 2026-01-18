@@ -411,7 +411,7 @@
                             <div>
                                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-parecer">Parecer Final</label>
                                 <select id="f-parecer" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="Capto">Apto / Capaz</option>
+                                    <option value="Apto">Apto / Capaz</option>
                                     <option value="Incapaz Temporariamente (Total)">Incapaz Temporariamente (Total)</option>
                                     <option value="Incapaz Permanentemente (Total)">Incapaz Permanentemente (Total)</option>
                                     <option value="Incapaz Parcialmente">Incapaz Parcialmente</option>
@@ -637,9 +637,7 @@
     <!-- Modules are loaded by app.js -->
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker registrado:', reg.scope))
-                .catch(err => console.log('Falha no Service Worker:', err));
+            navigator.serviceWorker.register('service-worker.js').catch(() => {});
         }
     </script>
 </body>
