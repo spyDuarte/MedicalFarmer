@@ -308,6 +308,16 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                             <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-local_pericia">Local da Perícia</label>
+                                <input id="f-local_pericia" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" placeholder="Ex: Consultório, Hospital...">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-assistentes">Assistentes Técnicos</label>
+                                <input id="f-assistentes" type="text" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200" value="Ausentes">
+                            </div>
+                        </div>
 
                         <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Estrutura do Laudo</h3>
                         <div class="space-y-4">
@@ -353,6 +363,11 @@
                         <div class="mb-6">
                             <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-antecedentes">Antecedentes Pessoais e Familiares</label>
                             <textarea id="f-antecedentes" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-historico_previdenciario">Histórico Previdenciário</label>
+                            <textarea id="f-historico_previdenciario" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
                         </div>
                     </div>
 
@@ -437,6 +452,11 @@
                                 <select id="macro-sel-conclusao" class="text-xs border dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-gray-200"></select>
                             </div>
                             <div id="q-conclusao" class="bg-white h-40"></div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="font-bold text-sm text-gray-700 dark:text-gray-300 mb-2 block" for="f-bibliografia">Bibliografia / Referências</label>
+                            <textarea id="f-bibliografia" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
                         </div>
                     </div>
 
@@ -523,7 +543,9 @@
                 <p class="text-justify">
                     <strong>PROCESSO Nº:</strong> <span id="p-processo"></span><br>
                     <strong>AUTOR:</strong> <span id="p-autor"></span><br>
-                    <strong>DATA DA PERÍCIA:</strong> <span id="p-data"></span>
+                    <strong>DATA DA PERÍCIA:</strong> <span id="p-data"></span><br>
+                    <strong>LOCAL:</strong> <span id="p-local_pericia"></span><br>
+                    <strong>ASSISTENTES TÉCNICOS:</strong> <span id="p-assistentes"></span>
                 </p>
                 <p class="text-justify mt-4">
                     Este perito, honrado com a nomeação, apresenta a Vossa Excelência o resultado das diligências e exames realizados, consubstanciados no presente Laudo.
@@ -560,6 +582,9 @@
 
                 <h3 class="font-bold ml-4 mt-2">4.3. Antecedentes</h3>
                 <p id="p-antecedentes" class="text-justify pl-8"></p>
+
+                <h3 class="font-bold ml-4 mt-2">4.4. Histórico Previdenciário</h3>
+                <p id="p-historico_previdenciario" class="text-justify pl-8 whitespace-pre-wrap"></p>
             </div>
 
             <!-- 5. Exame Físico -->
@@ -599,9 +624,15 @@
                 <div id="p-conclusao" class="text-justify pl-4 bg-gray-100 p-4 rounded border ql-editor"></div>
             </div>
 
-            <!-- 8. Quesitos -->
+            <!-- 8. Bibliografia -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">8. Bibliografia</h2>
+                <p id="p-bibliografia" class="text-justify pl-4 whitespace-pre-wrap"></p>
+            </div>
+
+            <!-- 9. Quesitos -->
             <div class="mb-12">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">8. Respostas aos Quesitos</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">9. Respostas aos Quesitos</h2>
                 <div id="p-quesitos" class="text-justify pl-4 ql-editor"></div>
             </div>
 

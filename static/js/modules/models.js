@@ -78,6 +78,18 @@ export class Pericia {
         /** @type {string} */
         this.metodologia = data.metodologia || DEFAULTS.METODOLOGIA;
 
+        /** @type {string} */
+        this.local_pericia = data.local_pericia || "";
+
+        /** @type {string} */
+        this.assistentes = data.assistentes || "Ausentes";
+
+        /** @type {string} */
+        this.historico_previdenciario = data.historico_previdenciario || "";
+
+        /** @type {string} */
+        this.bibliografia = data.bibliografia || "";
+
         /** @type {Processo} */
         this.processo = {
             numero: data.processo?.numero || "",
