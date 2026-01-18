@@ -1,5 +1,5 @@
 import { FileDB } from './db.js';
-import { DEFAULT_MACROS } from './default_data.js';
+import { DEFAULT_MACROS, DEFAULT_TEMPLATES } from './default_data.js';
 import { DB_KEYS } from './constants.js';
 
 /**
@@ -14,7 +14,7 @@ export const Storage = {
             localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify([]));
         }
         if (!localStorage.getItem(DB_KEYS.TEMPLATES)) {
-            localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify([]));
+            localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(DEFAULT_TEMPLATES));
         }
         if (!localStorage.getItem(DB_KEYS.MACROS)) {
             localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(DEFAULT_MACROS));
