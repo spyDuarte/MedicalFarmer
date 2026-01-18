@@ -44,6 +44,8 @@ export const PrintController = {
         setTxt('p-processo', pericia.numero_processo);
         setTxt('p-autor', pericia.nome_autor);
         setTxt('p-data', pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
+        setTxt('p-local_pericia', pericia.local_pericia || '-');
+        setTxt('p-assistentes', pericia.assistentes || '-');
 
         setTxt('p-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
         setTxt('p-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
@@ -69,6 +71,7 @@ export const PrintController = {
         document.getElementById('p-ocupacional').innerHTML = histOcup;
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
         setTxt('p-antecedentes', pericia.antecedentes || 'Nada digno de nota.');
+        setTxt('p-historico_previdenciario', pericia.historico_previdenciario || 'Não informado.');
 
         document.getElementById('p-exame').innerHTML = pericia.exame_fisico || 'Não informado.';
         setTxt('p-exames-comp', pericia.exames_complementares || 'Não apresentados.');
@@ -80,6 +83,7 @@ export const PrintController = {
         setTxt('p-dii', pericia.dii || '-');
         setTxt('p-parecer', pericia.parecer || '-');
         document.getElementById('p-conclusao').innerHTML = pericia.conclusao || '';
+        setTxt('p-bibliografia', pericia.bibliografia || '-');
 
         document.getElementById('p-quesitos').innerHTML = pericia.quesitos || 'Vide corpo do laudo.';
 

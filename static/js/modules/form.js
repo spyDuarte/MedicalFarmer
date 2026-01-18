@@ -87,12 +87,15 @@ export const FormController = {
 
         setVal('f-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
         setVal('f-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
+        setVal('f-local_pericia', pericia.local_pericia || "");
+        setVal('f-assistentes', pericia.assistentes || "Ausentes");
 
         // Populate Occupational History
         setVal('f-profissao', pericia.profissao);
         setVal('f-tempo_funcao', pericia.tempo_funcao);
         setVal('f-desc_atividades', pericia.desc_atividades);
         setVal('f-antecedentes', pericia.antecedentes);
+        setVal('f-historico_previdenciario', pericia.historico_previdenciario);
 
         setVal('f-exames_complementares', pericia.exames_complementares);
 
@@ -103,6 +106,7 @@ export const FormController = {
         setVal('f-did', pericia.did);
         setVal('f-dii', pericia.dii);
         setVal('f-parecer', pericia.parecer || DEFAULTS.PARECER);
+        setVal('f-bibliografia', pericia.bibliografia);
 
         // Check for Auto-Save Draft
         const draft = localStorage.getItem(DB_KEYS.DRAFT);
@@ -312,6 +316,7 @@ export const FormController = {
             tempo_funcao: document.getElementById('f-tempo_funcao').value,
             desc_atividades: document.getElementById('f-desc_atividades').value,
             antecedentes: document.getElementById('f-antecedentes').value,
+            historico_previdenciario: document.getElementById('f-historico_previdenciario').value,
 
             exames_complementares: document.getElementById('f-exames_complementares').value,
             discussao: document.getElementById('f-discussao').value,
@@ -320,6 +325,7 @@ export const FormController = {
             did: document.getElementById('f-did').value,
             dii: document.getElementById('f-dii').value,
             parecer: document.getElementById('f-parecer').value,
+            bibliografia: document.getElementById('f-bibliografia').value,
 
             data_pericia: document.getElementById('f-data_pericia').value,
             valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
@@ -327,6 +333,8 @@ export const FormController = {
 
             objetivo: document.getElementById('f-objetivo').value,
             metodologia: document.getElementById('f-metodologia').value,
+            local_pericia: document.getElementById('f-local_pericia').value,
+            assistentes: document.getElementById('f-assistentes').value,
 
             anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
             exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
