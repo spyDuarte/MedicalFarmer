@@ -21,5 +21,7 @@ export const PAYMENT_STATUS = {
 
 export const DEFAULTS = {
     NEXO: 'Não há nexo',
-    PARECER: 'Apto'
+    PARECER: 'Apto',
+    OBJETIVO: 'O presente trabalho pericial tem por objetivo avaliar a capacidade laborativa da parte autora, bem como estabelecer o nexo causal entre a patologia alegada e suas atividades laborais.',
+    METODOLOGIA: 'Para a elaboração deste laudo, foram utilizados os seguintes métodos: Anamnese ocupacional e clínica, Exame Físico direcionado, Análise documental (laudos, exames de imagem e documentos médicos) e Revisão da literatura médica especializada.'
 };
