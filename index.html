@@ -291,7 +291,7 @@
                         </div>
 
                         <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Agendamento</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                              <div>
                                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-data_pericia">Data Perícia</label>
                                 <input id="f-data_pericia" type="date" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200">
@@ -306,6 +306,18 @@
                                     <option value="Pendente">Pendente</option>
                                     <option value="Pago">Pago</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4 mt-6">Estrutura do Laudo</h3>
+                        <div class="space-y-4">
+                             <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-objetivo">Objetivo</label>
+                                <textarea id="f-objetivo" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-20"></textarea>
+                            </div>
+                             <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="f-metodologia">Metodologia</label>
+                                <textarea id="f-metodologia" class="border dark:border-gray-600 rounded w-full py-2 px-3 dark:bg-gray-700 dark:text-gray-200 h-20"></textarea>
                             </div>
                         </div>
                     </div>
@@ -518,66 +530,78 @@
                 </p>
             </div>
 
-            <!-- 1. Identificação -->
+            <!-- 1. Objetivo -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">1. Identificação</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">1. Objetivo</h2>
+                <p id="p-objetivo" class="text-justify pl-4 whitespace-pre-wrap"></p>
+            </div>
+
+            <!-- 2. Metodologia -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">2. Metodologia</h2>
+                <p id="p-metodologia" class="text-justify pl-4 whitespace-pre-wrap"></p>
+            </div>
+
+            <!-- 3. Identificação -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">3. Identificação</h2>
                 <p id="p-identificacao-detalhada" class="text-justify pl-4"></p>
             </div>
 
-            <!-- 2. Histórico -->
+            <!-- 4. Histórico -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">2. Histórico</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">4. Histórico</h2>
 
-                <h3 class="font-bold ml-4 mt-2">2.1. Histórico Ocupacional</h3>
+                <h3 class="font-bold ml-4 mt-2">4.1. Histórico Ocupacional</h3>
                 <p id="p-ocupacional" class="text-justify pl-8 mb-2"></p>
 
-                <h3 class="font-bold ml-4 mt-2">2.2. História da Doença Atual (HDA)</h3>
+                <h3 class="font-bold ml-4 mt-2">4.2. História da Doença Atual (HDA)</h3>
                 <div id="p-anamnese" class="text-justify pl-8 ql-editor mb-2"></div>
 
-                <h3 class="font-bold ml-4 mt-2">2.3. Antecedentes</h3>
+                <h3 class="font-bold ml-4 mt-2">4.3. Antecedentes</h3>
                 <p id="p-antecedentes" class="text-justify pl-8"></p>
             </div>
 
-            <!-- 3. Exame Físico -->
+            <!-- 5. Exame Físico -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">3. Exame Físico</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">5. Exame Físico</h2>
                 <div id="p-exame" class="text-justify pl-4 ql-editor"></div>
             </div>
 
-            <!-- 4. Documentos -->
+            <!-- 6. Documentos -->
             <div class="mb-6 print-break">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">4. Documentos Médicos</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">6. Documentos Médicos</h2>
                 <p id="p-exames-comp" class="text-justify pl-4 whitespace-pre-wrap"></p>
             </div>
 
-            <!-- 5. Discussão e Conclusão -->
+            <!-- 7. Discussão e Conclusão -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">5. Discussão e Conclusão</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">7. Discussão e Conclusão</h2>
 
-                <h3 class="font-bold ml-4 mt-2">5.1. Discussão</h3>
+                <h3 class="font-bold ml-4 mt-2">7.1. Discussão</h3>
                 <p id="p-discussao" class="text-justify pl-8 mb-2 whitespace-pre-wrap"></p>
 
-                <h3 class="font-bold ml-4 mt-2">5.2. Diagnóstico</h3>
+                <h3 class="font-bold ml-4 mt-2">7.2. Diagnóstico</h3>
                 <p class="pl-8 mb-2"><strong class="mr-2">CID-10:</strong> <span id="p-cid"></span></p>
 
-                <h3 class="font-bold ml-4 mt-2">5.3. Nexo Causal</h3>
+                <h3 class="font-bold ml-4 mt-2">7.3. Nexo Causal</h3>
                 <p id="p-nexo" class="pl-8 mb-2"></p>
 
-                <h3 class="font-bold ml-4 mt-2">5.4. Datas Técnicas</h3>
+                <h3 class="font-bold ml-4 mt-2">7.4. Datas Técnicas</h3>
                 <p class="pl-8 mb-2">
                     <strong>DID:</strong> <span id="p-did"></span> |
                     <strong>DII:</strong> <span id="p-dii"></span>
                 </p>
 
-                <h3 class="font-bold ml-4 mt-2">5.5. Parecer de Capacidade</h3>
+                <h3 class="font-bold ml-4 mt-2">7.5. Parecer de Capacidade</h3>
                 <p id="p-parecer" class="pl-8 font-bold text-lg mb-4"></p>
 
                 <div id="p-conclusao" class="text-justify pl-4 bg-gray-100 p-4 rounded border ql-editor"></div>
             </div>
 
-            <!-- 6. Quesitos -->
+            <!-- 8. Quesitos -->
             <div class="mb-12">
-                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">6. Respostas aos Quesitos</h2>
+                <h2 class="text-xl font-bold border-b border-gray-400 mb-3 uppercase">8. Respostas aos Quesitos</h2>
                 <div id="p-quesitos" class="text-justify pl-4 ql-editor"></div>
             </div>
 

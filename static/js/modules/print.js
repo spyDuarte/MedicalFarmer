@@ -45,6 +45,9 @@ export const PrintController = {
         setTxt('p-autor', pericia.nome_autor);
         setTxt('p-data', pericia.data_pericia ? new Date(pericia.data_pericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
 
+        setTxt('p-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
+        setTxt('p-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
+
         // Helper for Age
         const dob = pericia.data_nascimento ? new Date(pericia.data_nascimento) : null;
         const age = dob ? Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970) : '-';

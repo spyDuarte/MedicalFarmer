@@ -1,4 +1,6 @@
 
+import { DEFAULTS } from './constants.js';
+
 /**
  * @typedef {Object} Processo
  * @property {string} numero - Número do processo
@@ -69,6 +71,12 @@ export class Pericia {
 
         /** @type {string} - Status do laudo (e.g. "Em Andamento", "Concluído") */
         this.status = data.status || "Aguardando";
+
+        /** @type {string} */
+        this.objetivo = data.objetivo || DEFAULTS.OBJETIVO;
+
+        /** @type {string} */
+        this.metodologia = data.metodologia || DEFAULTS.METODOLOGIA;
 
         /** @type {Processo} */
         this.processo = {

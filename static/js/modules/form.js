@@ -85,6 +85,9 @@ export const FormController = {
         setVal('f-valor_honorarios', pericia.valor_honorarios || 0);
         setVal('f-status_pagamento', pericia.status_pagamento || PAYMENT_STATUS.PENDING);
 
+        setVal('f-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
+        setVal('f-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
+
         // Populate Occupational History
         setVal('f-profissao', pericia.profissao);
         setVal('f-tempo_funcao', pericia.tempo_funcao);
@@ -321,6 +324,9 @@ export const FormController = {
             data_pericia: document.getElementById('f-data_pericia').value,
             valor_honorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
             status_pagamento: document.getElementById('f-status_pagamento').value,
+
+            objetivo: document.getElementById('f-objetivo').value,
+            metodologia: document.getElementById('f-metodologia').value,
 
             anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
             exame_fisico: this.editors['exame_fisico'] ? this.editors['exame_fisico'].root.innerHTML : '',
