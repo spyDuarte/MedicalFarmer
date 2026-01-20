@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema profissional para gestão e elaboração de laudos médicos periciais.">
     <title>Sistema de Perícias Médicas (Web)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e40af">
@@ -56,8 +57,8 @@
             <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
             <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">Tem certeza?</p>
             <div class="flex justify-end gap-3">
-                <button id="modal-cancel" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
-                <button id="modal-confirm" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium">Confirmar</button>
+                <button id="modal-cancel" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium" aria-label="Cancelar ação">Cancelar</button>
+                <button id="modal-confirm" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium" aria-label="Confirmar ação">Confirmar</button>
             </div>
         </div>
     </div>
@@ -70,11 +71,11 @@
                 <canvas id="signature-canvas" width="340" height="150" class="w-full h-full object-contain"></canvas>
             </div>
             <div class="flex justify-between mt-2">
-                <button id="btn-clear-signature" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                <button id="btn-clear-signature" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1" aria-label="Limpar assinatura"><i class="fa-solid fa-eraser"></i> Limpar</button>
             </div>
             <div class="flex justify-end gap-3 mt-4">
-                <button id="btn-cancel-signature" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
-                <button id="btn-save-signature" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium">Salvar</button>
+                <button id="btn-cancel-signature" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium" aria-label="Cancelar assinatura">Cancelar</button>
+                <button id="btn-save-signature" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/30 font-medium" aria-label="Salvar assinatura">Salvar</button>
             </div>
         </div>
     </div>
@@ -85,20 +86,20 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-pencil"></i> Anotar Imagem</h3>
                 <div class="flex gap-2 items-center bg-gray-100 dark:bg-gray-700 p-1.5 rounded-lg">
-                    <button id="btn-annotate-pen" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm active" title="Caneta"><i class="fa-solid fa-pen"></i></button>
-                    <button id="btn-annotate-text" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm" title="Texto"><i class="fa-solid fa-font"></i></button>
+                    <button id="btn-annotate-pen" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm active" title="Caneta" aria-label="Ferramenta Caneta"><i class="fa-solid fa-pen"></i></button>
+                    <button id="btn-annotate-text" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm" title="Texto" aria-label="Ferramenta Texto"><i class="fa-solid fa-font"></i></button>
                     <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                    <button id="btn-annotate-clear" class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-red-500" title="Limpar"><i class="fa-solid fa-trash"></i></button>
-                    <input type="color" id="annotation-color" value="#ff0000" class="h-8 w-8 p-0 border-0 rounded cursor-pointer ml-2">
+                    <button id="btn-annotate-clear" class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-red-500" title="Limpar" aria-label="Limpar anotação"><i class="fa-solid fa-trash"></i></button>
+                    <input type="color" id="annotation-color" value="#ff0000" class="h-8 w-8 p-0 border-0 rounded cursor-pointer ml-2" aria-label="Seletor de cor">
                 </div>
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i class="fa-solid fa-times fa-lg"></i></button>
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" aria-label="Fechar modal de anotação"><i class="fa-solid fa-times fa-lg"></i></button>
             </div>
             <div class="flex-grow bg-gray-100 dark:bg-gray-900 overflow-hidden relative border border-gray-200 dark:border-gray-700 rounded-lg flex justify-center items-center">
                 <canvas id="annotation-canvas" class="shadow-lg"></canvas>
             </div>
             <div class="mt-4 flex justify-end gap-3">
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium">Cancelar</button>
-                <button id="btn-annotate-save" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-lg shadow-primary-500/30 font-medium">Salvar Anotação</button>
+                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium" aria-label="Cancelar anotação">Cancelar</button>
+                <button id="btn-annotate-save" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-lg shadow-primary-500/30 font-medium" aria-label="Salvar anotação">Salvar Anotação</button>
             </div>
         </div>
     </div>
@@ -120,32 +121,32 @@
         </div>
 
         <!-- Nav Links -->
-        <nav class="flex-grow py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-            <a href="#dashboard" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-chart-pie w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+        <nav class="flex-grow py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar" aria-label="Navegação Principal">
+            <a href="#dashboard" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Ir para Dashboard">
+                <i class="fa-solid fa-chart-pie w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Dashboard
             </a>
-            <a href="#nova" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-file-medical w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+            <a href="#nova" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Criar Nova Perícia">
+                <i class="fa-solid fa-file-medical w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Nova Perícia
             </a>
-            <a href="#calendar" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-calendar-alt w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+            <a href="#calendar" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Ver Calendário">
+                <i class="fa-solid fa-calendar-alt w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Calendário
             </a>
-            <a href="#financeiro" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-wallet w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+            <a href="#financeiro" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Ver Financeiro">
+                <i class="fa-solid fa-wallet w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Financeiro
             </a>
             <div class="pt-4 pb-2">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Configurações</p>
             </div>
-            <a href="#macros" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-file-invoice w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+            <a href="#macros" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Gerenciar Modelos de Texto">
+                <i class="fa-solid fa-file-invoice w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Modelos de Texto
             </a>
-            <a href="#settings" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all">
-                <i class="fa-solid fa-cog w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors"></i>
+            <a href="#settings" class="nav-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-white transition-all" aria-label="Preferências do Usuário">
+                <i class="fa-solid fa-cog w-6 text-center text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors" aria-hidden="true"></i>
                 Preferências
             </a>
         </nav>
@@ -171,7 +172,7 @@
     <div class="flex-1 flex flex-col h-full overflow-hidden relative">
         <!-- Top Header -->
         <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 lg:px-8 no-print">
-            <button id="btn-mobile-menu" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+            <button id="btn-mobile-menu" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none" aria-label="Abrir Menu">
                 <i class="fa-solid fa-bars text-xl"></i>
             </button>
 
@@ -180,7 +181,7 @@
 
             <div class="flex items-center gap-4">
                  <!-- Theme Toggle -->
-                <button id="btn-toggle-theme" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" title="Alternar Tema">
+                <button id="btn-toggle-theme" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" title="Alternar Tema" aria-label="Alternar Tema Escuro/Claro">
                     <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
                 </button>
             </div>
@@ -291,19 +292,19 @@
                         </h2>
                         <div class="flex gap-2 items-center flex-wrap justify-end">
                             <div class="flex items-center gap-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-1">
-                                <select id="template-selector" class="text-xs border-none bg-transparent dark:text-white focus:ring-0 cursor-pointer">
+                                    <select id="template-selector" class="text-xs border-none bg-transparent dark:text-white focus:ring-0 cursor-pointer" aria-label="Selecionar Template">
                                     <option value="">Carregar Template...</option>
                                 </select>
-                                <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+                                    <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template" aria-label="Salvar como Template"><i class="fa-solid fa-star"></i></button>
                             </div>
 
-                            <button id="btn-save-form" class="btn-primary flex items-center gap-2 text-sm px-4 py-2">
+                                <button id="btn-save-form" class="btn-primary flex items-center gap-2 text-sm px-4 py-2" aria-label="Salvar rascunho">
                                 <i class="fa-solid fa-save"></i> Salvar
                             </button>
-                            <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm">
+                                <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm" aria-label="Finalizar e visualizar laudo">
                                 <i class="fa-solid fa-check"></i> Finalizar
                             </button>
-                            <a href="#dashboard" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors">Voltar</a>
+                                <a href="#dashboard" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors" aria-label="Voltar para o Dashboard">Voltar</a>
                         </div>
                     </div>
 

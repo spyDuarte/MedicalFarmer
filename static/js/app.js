@@ -127,6 +127,6 @@ const MainController = {
     },
 };
 
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
     MainController.init();
-};
+});
