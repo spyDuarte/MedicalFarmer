@@ -5,7 +5,7 @@ import { CID10 } from '../cid_data.js';
 import { UI } from './ui.js';
 import { SpeechService } from './speech.js';
 import { ImageProcessor } from './image_processor.js';
-import { DB_KEYS, STATUS, PAYMENT_STATUS, DEFAULTS } from './constants.js';
+import { DB_KEYS, STATUS, PAYMENT_STATUS, DEFAULTS, UI_STRINGS } from './constants.js';
 
 /**
  * Controller for the Main Form (Pericia).
@@ -386,23 +386,9 @@ export const FormController = {
 
     saveForm(finalize = false) {
         const data = this.collectFormData();
-        let errors = [];
+        const { valid, errors } = this.validateData(data, finalize);
 
-        if (finalize) {
-            if (!data.numeroProcesso) errors.push("Número do Processo é obrigatório.");
-            if (!data.nomeAutor) errors.push("Nome do Autor é obrigatório.");
-            if (!data.cid) errors.push("Diagnóstico (CID) é obrigatório.");
-            if (!data.conclusao || data.conclusao === '<p><br></p>') errors.push("Conclusão é obrigatória.");
-        }
-
-        if (data.cpf && !Validator.cpf(data.cpf)) {
-            errors.push("CPF inválido.");
-            document.getElementById('f-cpf').classList.add('border-red-500');
-        } else {
-            document.getElementById('f-cpf').classList.remove('border-red-500');
-        }
-
-        if (errors.length > 0) {
+        if (!valid) {
             UI.Toast.show("Corrija os erros:\n" + errors.join('\n'), 'error');
             return;
         }
@@ -683,5 +669,60 @@ export const FormController = {
             document.getElementById('annotation-modal').classList.add('hidden');
             UI.Toast.show('Anotação salva.', 'success');
         });
+    },
+
+    /**
+     * Validates form data.
+     * @param {Object} data - The form data object.
+     * @param {boolean} finalize - Whether it's a final submission.
+     * @returns {Object} { valid: boolean, errors: Array }
+     */
+    validateData(data, finalize) {
+        let errors = [];
+        const setError = (id, hasError) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (hasError) {
+                el.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                el.setAttribute('aria-invalid', 'true');
+            } else {
+                el.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                el.removeAttribute('aria-invalid');
+            }
+        };
+
+        // Reset previous errors
+        ['f-numero_processo', 'f-nome_autor', 'f-cid', 'f-cpf'].forEach(id => setError(id, false));
+
+        if (finalize) {
+            if (!data.numeroProcesso) {
+                errors.push(UI_STRINGS.ERROR_PROCESS);
+                setError('f-numero_processo', true);
+            }
+            if (!data.nomeAutor) {
+                errors.push(UI_STRINGS.ERROR_AUTHOR);
+                setError('f-nome_autor', true);
+            }
+            if (!data.cid) {
+                errors.push(UI_STRINGS.ERROR_CID);
+                setError('f-cid', true);
+            }
+            if (!data.conclusao || data.conclusao === '<p><br></p>') {
+                errors.push(UI_STRINGS.ERROR_CONCLUSION);
+                // Rich text editors need different handling, usually a border around container
+                const q = document.getElementById('q-conclusao');
+                if(q) q.classList.add('border-red-500');
+            } else {
+                const q = document.getElementById('q-conclusao');
+                if(q) q.classList.remove('border-red-500');
+            }
+        }
+
+        if (data.cpf && !Validator.cpf(data.cpf)) {
+            errors.push(UI_STRINGS.ERROR_CPF);
+            setError('f-cpf', true);
+        }
+
+        return { valid: errors.length === 0, errors };
     }
 };
