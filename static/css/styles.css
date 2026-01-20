@@ -147,12 +147,41 @@
 
 
 @media print {
-    body { background-color: white !important; color: black !important; }
+    /* ISO 216: A4 Paper Size */
+    @page {
+        size: A4;
+        margin: 20mm 20mm 20mm 20mm; /* Standard 2cm margins */
+    }
+
+    body {
+        background-color: white !important;
+        color: black !important;
+        font-family: "Times New Roman", Times, serif !important; /* Formal Serif Font */
+        font-size: 12pt !important; /* Standard Document Font Size */
+        line-height: 1.5 !important; /* Standard Line Spacing */
+    }
+
+    /* Hide UI elements */
     .no-print { display: none !important; }
-    .print-break { page-break-before: always; }
+    .view-section { display: none; }
+    #view-print { display: block !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
 
     /* Ensure scrollbars are hidden in print */
     ::-webkit-scrollbar { display: none; }
+
+    /* Page Breaks */
+    .print-break { page-break-before: always; }
+    h2, h3 { break-after: avoid; page-break-after: avoid; }
+    p, div { break-inside: avoid; }
+
+    /* Typography Overrides for Print */
+    h1 { font-size: 16pt !important; margin-bottom: 24pt !important; }
+    h2 { font-size: 14pt !important; margin-top: 18pt !important; margin-bottom: 12pt !important; border-bottom: 1px solid black !important; }
+    h3 { font-size: 12pt !important; font-weight: bold !important; margin-top: 12pt !important; margin-bottom: 6pt !important; }
+    p { margin-bottom: 12pt !important; text-align: justify; }
+
+    /* Reset Tailwind Colors for Print */
+    .text-gray-500, .text-gray-400, .text-gray-600 { color: black !important; }
 }
 
 /* Custom Tab Styling */
