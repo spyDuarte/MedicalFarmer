@@ -476,25 +476,33 @@ export const FormController = {
             li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-1";
             const isImage = doc.originalName.match(/\.(jpg|jpeg|png|webp)$/i);
 
-            li.innerHTML = `
-                <div class="flex items-center gap-2 truncate">
-                    <span class="text-blue-600 dark:text-blue-400 truncate cursor-pointer doc-link" data-id="${doc.id}" data-name="${doc.originalName}">${doc.originalName}</span>
-                    ${isImage ? `<button class="text-gray-500 hover:text-blue-500 annotate-btn" data-id="${doc.id}" title="Anotar"><i class="fa-solid fa-paintbrush"></i></button>` : ''}
-                </div>
-                <button class="text-red-500 hover:text-red-700 delete-btn" data-id="${doc.id}"><i class="fa-solid fa-trash"></i></button>
-            `;
-            ul.appendChild(li);
-        });
+            // Safer DOM creation
+            const divLeft = document.createElement('div');
+            divLeft.className = "flex items-center gap-2 truncate";
 
-        // Add Listeners
-        ul.querySelectorAll('.doc-link').forEach(el => {
-            el.onclick = () => this.downloadFile(el.dataset.id, el.dataset.name);
-        });
-        ul.querySelectorAll('.annotate-btn').forEach(el => {
-            el.onclick = () => this.openAnnotation(el.dataset.id);
-        });
-        ul.querySelectorAll('.delete-btn').forEach(el => {
-            el.onclick = () => this.deleteFile(el.dataset.id);
+            const spanName = document.createElement('span');
+            spanName.className = "text-blue-600 dark:text-blue-400 truncate cursor-pointer doc-link";
+            spanName.textContent = doc.originalName; // Safe text
+            spanName.onclick = () => this.downloadFile(doc.id, doc.originalName);
+            divLeft.appendChild(spanName);
+
+            if (isImage) {
+                const btnAnnotate = document.createElement('button');
+                btnAnnotate.className = "text-gray-500 hover:text-blue-500";
+                btnAnnotate.title = "Anotar";
+                btnAnnotate.innerHTML = '<i class="fa-solid fa-paintbrush"></i>'; // Icon is safe
+                btnAnnotate.onclick = () => this.openAnnotation(doc.id);
+                divLeft.appendChild(btnAnnotate);
+            }
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = "text-red-500 hover:text-red-700";
+            btnDelete.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            btnDelete.onclick = () => this.deleteFile(doc.id);
+
+            li.appendChild(divLeft);
+            li.appendChild(btnDelete);
+            ul.appendChild(li);
         });
     },
 

@@ -1,5 +1,15 @@
 .hidden { display: none !important; }
 
+:root {
+    --color-primary: #3b82f6; /* blue-500 */
+    --color-primary-dark: #1d4ed8; /* blue-700 */
+    --color-success: #22c55e; /* green-500 */
+    --color-warning: #eab308; /* yellow-500 */
+    --color-danger: #ef4444; /* red-500 */
+    --color-text-main: #1f2937; /* gray-800 */
+    --color-text-light: #6b7280; /* gray-500 */
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
@@ -245,7 +255,7 @@
 
 /* Button Primary Utility */
 .btn-primary {
-    background-color: #2563eb;
+    background-color: var(--color-primary);
     color: white;
     font-weight: 600;
     border-radius: 0.5rem;
@@ -254,7 +264,7 @@
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-dark);
 }
 
 /* Button Secondary Utility */
