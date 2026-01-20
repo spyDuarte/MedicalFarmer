@@ -38,6 +38,17 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Navigation fallback for SPA (return index.html for non-file routes)
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            caches.match('/index.html')
+                .then(response => {
+                    return response || fetch(event.request).catch(() => caches.match('/index.html'));
+                })
+        );
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then((response) => response || fetch(event.request))

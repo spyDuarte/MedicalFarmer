@@ -61,52 +61,86 @@ export const Router = {
         // Hide all views
         document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
 
+        let currentView = null;
+
         switch (path) {
             case 'dashboard':
-                document.getElementById('view-dashboard').classList.remove('hidden');
+                currentView = document.getElementById('view-dashboard');
+                currentView.classList.remove('hidden');
                 DashboardController.render();
                 titleText = 'Dashboard';
                 break;
             case 'nova':
-                document.getElementById('view-form').classList.remove('hidden');
+                currentView = document.getElementById('view-form');
+                currentView.classList.remove('hidden');
                 FormController.renderForm(null);
                 titleText = 'Nova Perícia';
                 break;
             case 'editar':
-                document.getElementById('view-form').classList.remove('hidden');
+                if (!id || id === '') {
+                    window.location.hash = '#dashboard';
+                    return;
+                }
+                currentView = document.getElementById('view-form');
+                currentView.classList.remove('hidden');
                 FormController.renderForm(id);
                 titleText = 'Editar Perícia';
                 break;
             case 'macros':
-                document.getElementById('view-macros').classList.remove('hidden');
+                currentView = document.getElementById('view-macros');
+                currentView.classList.remove('hidden');
                 MacrosController.render();
                 titleText = 'Modelos de Texto';
                 break;
             case 'print':
-                document.getElementById('view-print').classList.remove('hidden');
+                if (!id) {
+                    window.location.hash = '#dashboard';
+                    return;
+                }
+                currentView = document.getElementById('view-print');
+                currentView.classList.remove('hidden');
                 PrintController.render(id);
                 titleText = 'Visualizar Impressão';
                 break;
             case 'settings':
-                document.getElementById('view-settings').classList.remove('hidden');
+                currentView = document.getElementById('view-settings');
+                currentView.classList.remove('hidden');
                 SettingsController.render();
                 titleText = 'Configurações';
                 break;
             case 'calendar':
-                document.getElementById('view-calendar').classList.remove('hidden');
+                currentView = document.getElementById('view-calendar');
+                currentView.classList.remove('hidden');
                 CalendarController.render();
                 titleText = 'Calendário';
                 break;
             case 'financeiro':
-                document.getElementById('view-finance').classList.remove('hidden');
+                currentView = document.getElementById('view-finance');
+                currentView.classList.remove('hidden');
                 FinanceController.render();
                 titleText = 'Financeiro';
                 break;
             default:
-                document.getElementById('view-dashboard').classList.remove('hidden');
+                // 404 Fallback to Dashboard
+                currentView = document.getElementById('view-dashboard');
+                currentView.classList.remove('hidden');
                 DashboardController.render();
         }
 
         if(titleEl) titleEl.textContent = titleText;
+
+        // Accessibility: Move focus to the view or title for screen readers
+        if (currentView) {
+            // Wait for DOM updates or animations
+            setTimeout(() => {
+                if (titleEl) {
+                    titleEl.setAttribute('tabindex', '-1');
+                    titleEl.focus({ preventScroll: true });
+                } else {
+                    currentView.setAttribute('tabindex', '-1');
+                    currentView.focus({ preventScroll: true });
+                }
+            }, 100);
+        }
     }
 };
