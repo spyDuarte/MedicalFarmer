@@ -72,3 +72,41 @@ export const Validator = {
         return true;
     }
 };
+
+/**
+ * Utility for International Formatting.
+ */
+export const Format = {
+    /**
+     * Formats a date string or object to the user's locale (default pt-BR).
+     * @param {string|Date} date
+     * @returns {string} Formatted date.
+     */
+    date(date) {
+        if (!date) return '-';
+        // Handle ISO strings that might come without time (YYYY-MM-DD)
+        // by appending T00:00:00 to prevent timezone offsets shifting the day
+        if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            date += 'T00:00:00';
+        }
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return '-';
+
+        return new Intl.DateTimeFormat('pt-BR').format(d);
+    },
+
+    /**
+     * Formats a number as currency (BRL).
+     * @param {number|string} value
+     * @returns {string} Formatted currency.
+     */
+    currency(value) {
+        const v = parseFloat(value);
+        if (isNaN(v)) return 'R$ 0,00';
+
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(v);
+    }
+};

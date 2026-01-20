@@ -1,5 +1,6 @@
 import { Storage } from './storage.js';
 import { STATUS, PAYMENT_STATUS } from './constants.js';
+import { Format } from './utils.js';
 
 /**
  * Controller for the Dashboard View.
@@ -82,10 +83,10 @@ export const DashboardController = {
                     <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nomeAutor || '-'}</p>
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200">
-                     ${p.dataPericia ? new Date(p.dataPericia + 'T00:00:00').toLocaleDateString('pt-BR') : '<span class="italic text-gray-400">Não agendado</span>'}
+                     ${p.dataPericia ? Format.date(p.dataPericia) : '<span class="italic text-gray-400">Não agendado</span>'}
                 </td>
                 <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                    <p class="font-mono text-gray-800 dark:text-gray-200">R$ ${parseFloat(p.valorHonorarios || 0).toFixed(2)}</p>
+                    <p class="font-mono text-gray-800 dark:text-gray-200">${Format.currency(p.valorHonorarios)}</p>
                     ${p.statusPagamento === PAYMENT_STATUS.PAID
                         ? `<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> ${PAYMENT_STATUS.PAID}</span>`
                         : `<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> ${PAYMENT_STATUS.PENDING}</span>`}
@@ -99,10 +100,10 @@ export const DashboardController = {
         });
 
         const elPending = document.getElementById('total-pendente');
-        if(elPending) elPending.innerText = `R$ ${totalPendente.toFixed(2)}`;
+        if(elPending) elPending.innerText = Format.currency(totalPendente);
 
         const elReceived = document.getElementById('total-recebido');
-        if(elReceived) elReceived.innerText = `R$ ${totalRecebido.toFixed(2)}`;
+        if(elReceived) elReceived.innerText = Format.currency(totalRecebido);
 
         this.renderCharts(stats);
     },
@@ -117,6 +118,10 @@ export const DashboardController = {
         if (this.statusChart) this.statusChart.destroy();
 
         const isDark = document.documentElement.classList.contains('dark');
+        // Use CSS variables if possible, but Chart.js needs explicit colors or canvas context.
+        // We will stick to hex for now but ensure they match our :root variables logically.
+        // --color-primary: #3b82f6
+        // --color-success: #22c55e
         const textColor = isDark ? '#e5e7eb' : '#374151';
 
         this.statusChart = new Chart(ctx, {

@@ -1,6 +1,7 @@
 import { Storage } from './storage.js';
 import { UI } from './ui.js';
 import { DEFAULTS } from './constants.js';
+import { Format } from './utils.js';
 
 /**
  * Controller for Printing and PDF Export.
@@ -45,7 +46,7 @@ export const PrintController = {
         setTxt('p-tipo_acao', pericia.tipoAcao || 'Trabalhista');
         setTxt('p-processo', pericia.numeroProcesso);
         setTxt('p-autor', pericia.nomeAutor);
-        setTxt('p-data', pericia.dataPericia ? new Date(pericia.dataPericia + 'T00:00:00').toLocaleDateString('pt-BR') : '___/___/____');
+        setTxt('p-data', pericia.dataPericia ? Format.date(pericia.dataPericia) : '___/___/____');
         setTxt('p-local_pericia', pericia.localPericia || '-');
         setTxt('p-assistentes', pericia.assistentes || '-');
 
@@ -58,7 +59,7 @@ export const PrintController = {
 
         let idDetails = `
             <strong>Nome:</strong> ${pericia.nomeAutor}<br>
-            <strong>Nascimento:</strong> ${pericia.dataNascimento ? new Date(pericia.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+            <strong>Nascimento:</strong> ${pericia.dataNascimento ? Format.date(pericia.dataNascimento) : '-'}
             (${age} anos)<br>
             <strong>RG:</strong> ${pericia.rg || '-'} | <strong>CPF:</strong> ${pericia.cpf || '-'}<br>
             <strong>Escolaridade:</strong> ${pericia.escolaridade || '-'}
@@ -76,7 +77,7 @@ export const PrintController = {
             <strong>Atividades/Riscos:</strong> ${pericia.descAtividades || '-'}
         `;
         document.getElementById('p-ocupacional').innerHTML = histOcup;
-        setTxt('p-data_acidente', pericia.dataAcidente ? new Date(pericia.dataAcidente + 'T00:00:00').toLocaleDateString('pt-BR') : '-');
+        setTxt('p-data_acidente', pericia.dataAcidente ? Format.date(pericia.dataAcidente) : '-');
         setTxt('p-epis', pericia.epis || 'Não informado/Não aplicável.');
 
         document.getElementById('p-anamnese').innerHTML = pericia.anamnese || 'Não informado.';
