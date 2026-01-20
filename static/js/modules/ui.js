@@ -249,25 +249,34 @@ export const UI = {
         toggle() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('btn-mobile-menu');
+
             if (sidebar) {
                  const isClosed = sidebar.classList.contains('-translate-x-full');
                  if (isClosed) {
                      sidebar.classList.remove('-translate-x-full');
                      if(overlay) overlay.classList.remove('hidden');
+                     if(btn) btn.setAttribute('aria-expanded', 'true');
                  } else {
                      sidebar.classList.add('-translate-x-full');
                      if(overlay) overlay.classList.add('hidden');
+                     if(btn) btn.setAttribute('aria-expanded', 'false');
                  }
             }
         },
         close() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
+            const btn = document.getElementById('btn-mobile-menu');
+
             if (sidebar) {
                 sidebar.classList.add('-translate-x-full');
             }
             if (overlay) {
                 overlay.classList.add('hidden');
+            }
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
             }
         },
         setActive(hash) {

@@ -10,22 +10,30 @@ import { UI } from './modules/ui.js';
 /**
  * Main Application Controller.
  * Bootstrap logic and Global Event Handling.
+ * @namespace MainController
  */
 const MainController = {
     /**
      * Initializes the application.
+     * Orchestrates the setup of UI themes, routing, and event binding for all modules.
+     * Catches and displays any initialization errors via Toast.
      */
     init() {
-        UI.Theme.init();
-        Router.init();
+        try {
+            UI.Theme.init();
+            Router.init();
 
-        // Bind Events across modules
-        this.bindGlobalEvents();
-        FormController.bindEvents();
-        SettingsController.bindEvents();
-        DashboardController.bindEvents();
-        PrintController.bindEvents();
-        MacrosController.bindEvents();
+            // Bind Events across modules
+            this.bindGlobalEvents();
+            FormController.bindEvents();
+            SettingsController.bindEvents();
+            DashboardController.bindEvents();
+            PrintController.bindEvents();
+            MacrosController.bindEvents();
+        } catch (error) {
+            console.error("Initialization Error:", error);
+            UI.Toast.show("Erro ao inicializar o sistema. Verifique o console.", 'error', 10000);
+        }
     },
 
     /**
