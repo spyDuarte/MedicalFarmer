@@ -193,6 +193,69 @@ export const DEFAULT_TEMPLATES = [
         }
     },
     {
+        id: 'tmpl_def_8',
+        title: "Modelo Reumatologia - Fibromialgia (ACR)",
+        data: {
+            profissao: "Auxiliar de Limpeza",
+            tempo_funcao: "6 anos",
+            desc_atividades: "Limpeza de pisos, vidros e banheiros.",
+            antecedentes: "Depressão e ansiedade em tratamento.",
+            exames_complementares: "Laboratoriais (Hemograma, VHS, PCR, Fator Reumatoide, FAN): Normais (utilizados para exclusão de diagnósticos diferenciais).",
+            discussao: "A Fibromialgia é uma síndrome dolorosa crônica não inflamatória. O diagnóstico é clínico, baseando-se nos critérios do Colégio Americano de Reumatologia (ACR 2010/2016): Índice de Dor Generalizada (WPI) e Escala de Gravidade de Sintomas (SSS). Não há evidência científica robusta de nexo causal direto com o trabalho, embora fatores psicossociais e ergonômicos possam atuar como agravantes sintomáticos.",
+            cid: "M79.7 - Fibromialgia",
+            nexo: "Não há nexo",
+            did: "",
+            dii: "",
+            parecer: "Incapaz temporariamente",
+            anamnese: "<p><strong>Queixa Principal:</strong> Dor no corpo todo.</p><p><strong>História da Doença Atual:</strong> Paciente relata quadro de dor difusa há mais de 3 anos, acometendo coluna cervical, lombar, ombros e quadris. Refere sono não reparador, fadiga intensa ao acordar e dificuldades cognitivas ('fibro fog'). Piora com frio e estresse.</p>",
+            exame_fisico: "<p><strong>Exame Físico Geral:</strong> Bom estado geral.</p><p><strong>Locomotor:</strong> Sem sinovites ou edemas articulares. Mobilidade articular preservada globalmente, porém dolorosa nos extremos. Presença de múltiplos 'tender points' positivos à digitopressão (controle > 4kg/cm²) em trapézios, epicôndilos laterais, trocânteres maiores e joelhos mediais.</p>",
+            conclusao: "<p>Quadro compatível com Fibromialgia. No momento, apresenta sintomatologia algica intensa que impede o exercício de atividades braçais pesadas. Não há nexo causal com o trabalho (doença multicausal). Incapacidade temporária para ajuste terapêutico.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>Fibromialgia (M79.7).</p><p><strong>2. Nexo?</strong><br>Não há nexo causal estabelecido (doença endógena/funcional).</p>"
+        }
+    },
+    {
+        id: 'tmpl_def_9',
+        title: "Modelo Psiquiatria - Burnout (CID-11)",
+        data: {
+            profissao: "Professor / Gestor",
+            tempo_funcao: "15 anos",
+            desc_atividades: "Gestão de equipe, cumprimento de prazos rígidos, alta demanda cognitiva.",
+            antecedentes: "Nega comorbidades prévias.",
+            exames_complementares: "Relatório Psicológico: Sugere esgotamento profissional.",
+            discussao: "A Síndrome de Burnout (QD85 no CID-11) é conceituada como um fenômeno ocupacional resultante de estresse crônico no local de trabalho que não foi gerenciado com êxito. Caracteriza-se por três dimensões: 1) Sentimentos de exaustão ou esgotamento de energia; 2) Aumento do distanciamento mental do próprio trabalho, ou sentimentos de negativismo ou cinismo relacionados ao próprio trabalho; 3) Redução da eficácia profissional.",
+            cid: "Z73.0 - Esgotamento (Burnout) [CID-10] / QD85 [CID-11]",
+            nexo: "Nexo Causal (Doença Ocupacional)",
+            did: "",
+            dii: "",
+            parecer: "Incapaz temporariamente",
+            anamnese: "<p><strong>Queixa Principal:</strong> Esgotamento mental.</p><p><strong>História da Doença Atual:</strong> Relata início insidioso de fadiga intensa, irritabilidade e sentimento de incapacidade profissional. Refere que 'não aguenta mais pensar no trabalho'. Apresenta insônia e sintomas físicos (cefaleia tensional) relacionados ao estresse laboral.</p><p><strong>História Ocupacional:</strong> Relata sobrecarga de trabalho, metas inatingíveis e falta de autonomia na tomada de decisões.</p>",
+            exame_fisico: "<p><strong>Exame Psíquico:</strong> Vigil, orientado. Discurso coerente, focado em temas laborais com carga afetiva negativa (ceticismo). Humor disfórico/irritado. Afeto modulante. Sem alterações sensoperceptivas. Cognição preservada, porém relata lapsos de memória por desatenção.</p>",
+            conclusao: "<p>Caracterizada a Síndrome de Burnout, com nexo causal direto com os fatores de risco psicossociais presentes no ambiente de trabalho. Há incapacidade total e temporária, necessitando de afastamento do agente estressor (trabalho atual) e psicoterapia.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>Síndrome de Burnout.</p><p><strong>2. Nexo?</strong><br>Sim, o Burnout é, por definição, um fenômeno ocupacional.</p>"
+        }
+    },
+    {
+        id: 'tmpl_def_10',
+        title: "Modelo Dor - SDRC / Sudeck (Budapeste)",
+        data: {
+            profissao: "Operador de Produção",
+            tempo_funcao: "3 anos",
+            desc_atividades: "Manuseio de peças.",
+            antecedentes: "Fratura de rádio distal direito há 6 meses (tratamento conservador).",
+            exames_complementares: "Cintilografia Óssea Trifásica: Hipercaptação difusa periarticular em punho e mão direita.",
+            discussao: "A Síndrome Dolorosa Regional Complexa (SDRC), antigamente Distrofia Simpática Reflexa, é diagnosticada pelos Critérios de Budapeste (IASP). Exige dor contínua desproporcional ao evento incitante e presença de sintomas/sinais em 3 de 4 categorias: Sensorial (hiperestesia), Vasomotor (assimetria temperatura/cor), Sudomotor/Edema e Motor/Trófico.",
+            cid: "G90.5 - Síndrome de dor regional complexa tipo I",
+            nexo: "Nexo Traumático (Acidente)",
+            did: "",
+            dii: "",
+            parecer: "Incapaz permanentemente (Parcial ou Total)",
+            anamnese: "<p><strong>Queixa Principal:</strong> Dor em queimação na mão direita e inchaço.</p><p><strong>História da Doença Atual:</strong> Após fratura de punho (acidente de trabalho), evoluiu com dor intensa, contínua, tipo 'queimação', que não melhora com repouso. Relata que a mão fica inchada e vermelha, com sensibilidade extrema ao toque (alodínia).</p>",
+            exame_fisico: "<p><strong>Membro Superior Direito:</strong></p><ul><li>Inspeção: Edema difuso em dorso da mão e dedos. Pele brilhante e com alteração de coloração (eritema/cianose). Unhas quebradiças.</li><li>Palpação: Diferença de temperatura (mais quente que o lado contralateral). Alodínia tátil (dor ao toque leve).</li><li>Mobilidade: Rigidez articular importante em punho e quirodáctilos, com limitação de flexo-extensão.</li><li>Força: Preensão abolida pela dor.</li></ul>",
+            conclusao: "<p>O quadro clínico preenche os Critérios de Budapeste para SDRC Tipo I. Trata-se de sequela de acidente, com prognóstico reservado e difícil reabilitação. Há incapacidade laborativa para atividades que exijam uso da mão direita.</p>",
+            quesitos: "<p><strong>1. Diagnóstico?</strong><br>SDRC Tipo I (G90.5).</p><p><strong>2. Nexo?</strong><br>Sim, decorrente do trauma (acidente de trabalho).</p>"
+        }
+    },
+    {
         id: 'tmpl_full_1',
         title: "Modelo Completo - Laudo Pericial",
         data: {
