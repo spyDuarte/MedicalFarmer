@@ -39,19 +39,28 @@ export const UI = {
             }
 
             toast.className = `${baseClasses} ${typeClasses}`;
-            toast.innerHTML = `
-                <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8">
-                    ${icon}
-                </div>
-                <div class="ml-3 text-sm font-normal">${message}</div>
-                <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" aria-label="Close">
-                    <span class="sr-only">Close</span>
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            `;
+
+            // Create elements safely to prevent XSS in message
+            const iconDiv = document.createElement('div');
+            iconDiv.className = "inline-flex items-center justify-center flex-shrink-0 w-8 h-8";
+            iconDiv.innerHTML = icon; // icon is internal constant, safe
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "ml-3 text-sm font-normal";
+            msgDiv.textContent = message; // Safe injection
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = "button";
+            closeBtn.className = "ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700";
+            closeBtn.setAttribute("aria-label", "Close");
+            closeBtn.innerHTML = '<span class="sr-only">Close</span><i class="fa-solid fa-times"></i>';
+
+            toast.appendChild(iconDiv);
+            toast.appendChild(msgDiv);
+            toast.appendChild(closeBtn);
 
             // Close button logic
-            toast.querySelector('button').onclick = () => {
+            closeBtn.onclick = () => {
                 toast.classList.remove('toast-enter');
                 toast.classList.add('toast-exit');
                 setTimeout(() => toast.remove(), 300);
