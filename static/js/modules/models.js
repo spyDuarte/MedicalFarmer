@@ -115,6 +115,17 @@ export class Pericia {
         this.rg = data.rg || "";
         this.escolaridade = data.escolaridade || "";
 
+        // Endereço do Periciado
+        this.endereco = {
+            cep: data.endereco?.cep || "",
+            logradouro: data.endereco?.logradouro || "",
+            numero: data.endereco?.numero || "",
+            complemento: data.endereco?.complemento || "",
+            bairro: data.endereco?.bairro || "",
+            cidade: data.endereco?.cidade || "",
+            uf: data.endereco?.uf || ""
+        };
+
         // Histórico Ocupacional
         this.profissao = data.profissao || "";
         this.tempoFuncao = data.tempoFuncao || data.tempo_funcao || "";
