@@ -1,7 +1,6 @@
 import { Storage } from './storage.js';
 import { Mask } from './utils.js';
 import { UI } from './ui.js';
-import { DB_KEYS } from './constants.js';
 
 /**
  * Controller for the Settings View.
@@ -47,21 +46,27 @@ export const SettingsController = {
      */
     render() {
         const s = Storage.getSettings();
-        document.getElementById('s-nome').value = s.nome || '';
-        document.getElementById('s-crm').value = s.crm || '';
-        document.getElementById('s-endereco').value = s.endereco || '';
-        document.getElementById('s-telefone').value = s.telefone || '';
+        const elNome = document.getElementById('s-nome');
+        const elCrm = document.getElementById('s-crm');
+        const elEndereco = document.getElementById('s-endereco');
+        const elTelefone = document.getElementById('s-telefone');
+
+        if(elNome) elNome.value = s.nome || '';
+        if(elCrm) elCrm.value = s.crm || '';
+        if(elEndereco) elEndereco.value = s.endereco || '';
+        if(elTelefone) elTelefone.value = s.telefone || '';
 
         // Render signature preview
         const container = document.querySelector('#view-settings .max-w-2xl');
         const oldPreview = document.getElementById('signature-preview');
         if(oldPreview) oldPreview.remove();
 
-        if (s.signature) {
+        if (s.signature && container) {
             const img = document.createElement('img');
             img.src = s.signature;
             img.id = 'signature-preview';
             img.className = 'mt-4 border rounded max-h-24 block mx-auto';
+            img.alt = 'Assinatura Digital';
             container.appendChild(img);
         }
     },
@@ -70,22 +75,33 @@ export const SettingsController = {
      * Saves the settings (excluding signature, which is handled separately).
      */
     save() {
+        const elNome = document.getElementById('s-nome');
+        const elCrm = document.getElementById('s-crm');
+        const elEndereco = document.getElementById('s-endereco');
+        const elTelefone = document.getElementById('s-telefone');
+
         const settings = {
-            nome: document.getElementById('s-nome').value,
-            crm: document.getElementById('s-crm').value,
-            endereco: document.getElementById('s-endereco').value,
-            telefone: document.getElementById('s-telefone').value,
+            nome: elNome ? elNome.value : '',
+            crm: elCrm ? elCrm.value : '',
+            endereco: elEndereco ? elEndereco.value : '',
+            telefone: elTelefone ? elTelefone.value : '',
             signature: Storage.getSettings().signature // preserve signature
         };
         Storage.saveSettings(settings);
         UI.Toast.show('Configurações salvas!', 'success');
+        this.render(); // Re-render to show updates or side effects
     },
 
     // --- Signature Modal ---
 
+    /**
+     * Opens the signature modal and initializes canvas.
+     */
     openSignatureModal() {
         const modal = document.getElementById('signature-modal');
         const canvas = document.getElementById('signature-canvas');
+        if (!modal || !canvas) return;
+
         this.sigCanvas = canvas;
         this.sigCtx = canvas.getContext('2d');
 
@@ -94,31 +110,81 @@ export const SettingsController = {
         this.sigCtx.strokeStyle = '#000';
 
         let drawing = false;
+
+        // Support Mouse and Touch events
         const getPos = (e) => {
             const rect = canvas.getBoundingClientRect();
-            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            let clientX, clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return { x: clientX - rect.left, y: clientY - rect.top };
         };
 
-        canvas.onmousedown = (e) => { drawing = true; this.sigCtx.beginPath(); this.sigCtx.moveTo(getPos(e).x, getPos(e).y); };
-        canvas.onmousemove = (e) => { if(drawing) { this.sigCtx.lineTo(getPos(e).x, getPos(e).y); this.sigCtx.stroke(); } };
-        canvas.onmouseup = () => { drawing = false; };
+        const startDraw = (e) => {
+            if(e.type === 'touchstart') e.preventDefault(); // Prevent scroll
+            drawing = true;
+            this.sigCtx.beginPath();
+            const pos = getPos(e);
+            this.sigCtx.moveTo(pos.x, pos.y);
+        };
+
+        const moveDraw = (e) => {
+            if (drawing) {
+                 if(e.type === 'touchmove') e.preventDefault();
+                 const pos = getPos(e);
+                 this.sigCtx.lineTo(pos.x, pos.y);
+                 this.sigCtx.stroke();
+            }
+        };
+
+        const endDraw = () => { drawing = false; };
+
+        canvas.onmousedown = startDraw;
+        canvas.ontouchstart = startDraw;
+
+        canvas.onmousemove = moveDraw;
+        canvas.ontouchmove = moveDraw;
+
+        canvas.onmouseup = endDraw;
+        canvas.ontouchend = endDraw;
+        canvas.onmouseleave = endDraw;
 
         modal.classList.remove('hidden');
         UI.Modal.trapFocus(modal);
     },
 
+    /**
+     * Clears the signature canvas.
+     */
     clearSignature() {
-        this.sigCtx.clearRect(0, 0, this.sigCanvas.width, this.sigCanvas.height);
+        if(this.sigCanvas && this.sigCtx) {
+            this.sigCtx.clearRect(0, 0, this.sigCanvas.width, this.sigCanvas.height);
+        }
     },
 
+    /**
+     * Saves the signature from canvas to settings.
+     */
     saveSignature() {
+        if(!this.sigCanvas) return;
+
         const dataUrl = this.sigCanvas.toDataURL('image/png');
         const s = Storage.getSettings();
         s.signature = dataUrl;
         Storage.saveSettings(s);
+
         const modal = document.getElementById('signature-modal');
-        modal.classList.add('hidden');
-        UI.Modal.releaseFocus(modal);
+        if(modal) {
+            modal.classList.add('hidden');
+            UI.Modal.releaseFocus(modal);
+        }
+
         this.render();
         UI.Toast.show('Assinatura salva!', 'success');
     }

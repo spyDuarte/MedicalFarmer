@@ -9,8 +9,19 @@ export const Binder = {
      * @param {HTMLElement} container - The DOM element containing the form fields.
      * @param {Object} model - The data object.
      * @param {boolean} [partial=false] - If true, only updates fields present in the model.
+     * @throws {Error} If container is not an HTMLElement.
      */
     bindToView(container, model, partial = false) {
+        if (!(container instanceof HTMLElement)) {
+            console.error('Binder: Container must be an HTMLElement');
+            return;
+        }
+        if (!model || typeof model !== 'object') {
+             // If model is null/undefined and partial is false, we might want to clear fields?
+             // But usually this means "don't bind".
+             return;
+        }
+
         const elements = container.querySelectorAll('[data-model]');
         elements.forEach(el => {
             const path = el.getAttribute('data-model');
@@ -35,12 +46,16 @@ export const Binder = {
      * @param {HTMLElement} container - The DOM element containing the form fields.
      * @param {Object} [baseModel={}] - Optional base object to merge data into.
      * @returns {Object} The populated data object.
+     * @throws {Error} If container is not an HTMLElement.
      */
     bindToModel(container, baseModel = {}) {
+        if (!(container instanceof HTMLElement)) {
+            throw new Error('Binder: Container must be an HTMLElement');
+        }
+
         const elements = container.querySelectorAll('[data-model]');
-        // Deep clone baseModel to avoid mutation side-effects if needed,
-        // but here we usually want to modify it or return a new one.
-        // We'll operate on the provided object directly or a new one.
+        // Shallow clone baseModel to avoid unexpected mutation of the original reference if reused elsewhere
+        // But for deep nested sets, we usually modify 'model' directly.
         const model = baseModel;
 
         elements.forEach(el => {
@@ -66,20 +81,30 @@ export const Binder = {
 
     /**
      * Helper to get nested value.
+     * @param {Object} obj
+     * @param {string} path
+     * @returns {*}
+     * @private
      */
     _getValue(obj, path) {
+        if (!path) return undefined;
         return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined) ? acc[part] : undefined, obj);
     },
 
     /**
      * Helper to set nested value.
+     * @param {Object} obj
+     * @param {string} path
+     * @param {*} value
+     * @private
      */
     _setValue(obj, path, value) {
+        if (!path) return;
         const parts = path.split('.');
         let current = obj;
         for (let i = 0; i < parts.length - 1; i++) {
             const part = parts[i];
-            if (!current[part]) current[part] = {};
+            if (!current[part] || typeof current[part] !== 'object') current[part] = {};
             current = current[part];
         }
         current[parts[parts.length - 1]] = value;

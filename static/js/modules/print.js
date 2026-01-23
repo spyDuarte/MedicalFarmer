@@ -55,7 +55,8 @@ export const PrintController = {
 
         // Helper for Age
         const dob = pericia.dataNascimento ? new Date(pericia.dataNascimento) : null;
-        const age = dob ? Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970) : '-';
+        // eslint-disable-next-line eqeqeq
+        const age = (dob && !isNaN(dob.getTime())) ? Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970) : '-';
 
         let idDetails = `
             <strong>Nome:</strong> ${pericia.nomeAutor}<br>
@@ -105,10 +106,10 @@ export const PrintController = {
 
         // Signature
         const sigImg = document.getElementById('print-signature');
-        if (s.signature) {
+        if (s.signature && sigImg) {
             sigImg.src = s.signature;
             sigImg.classList.remove('hidden');
-        } else {
+        } else if (sigImg) {
             sigImg.classList.add('hidden');
         }
     },
@@ -118,6 +119,8 @@ export const PrintController = {
      */
     exportPDF() {
         const element = document.getElementById('view-print');
+        if (!element) return;
+
         const opt = {
           margin:       [10, 10, 10, 10],
           filename:     `Laudo_${new Date().toISOString().slice(0,10)}.pdf`,
@@ -130,6 +133,14 @@ export const PrintController = {
         if(btnContainer) btnContainer.style.display = 'none';
 
         UI.Loading.show();
+        // eslint-disable-next-line no-undef
+        if (typeof html2pdf !== 'function') {
+             UI.Toast.show("Biblioteca PDF não carregada.", 'error');
+             UI.Loading.hide();
+             if(btnContainer) btnContainer.style.display = 'flex';
+             return;
+        }
+
         // eslint-disable-next-line no-undef
         html2pdf().set(opt).from(element).save().then(() => {
              if(btnContainer) btnContainer.style.display = 'flex';

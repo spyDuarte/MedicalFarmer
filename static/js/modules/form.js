@@ -35,22 +35,19 @@ export const FormController = {
      * Binds static event listeners for the form buttons.
      */
     bindEvents() {
-        // Buttons that exist in the static HTML structure
-        const btnSave = document.getElementById('btn-save-form');
-        if (btnSave) btnSave.addEventListener('click', () => this.saveForm(false));
+        const bind = (id, fn) => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('click', fn);
+        };
 
-        const btnFinalize = document.getElementById('btn-finalize-form');
-        if (btnFinalize) btnFinalize.addEventListener('click', () => this.saveForm(true));
-
-        const btnUpload = document.getElementById('btn-upload');
-        if (btnUpload) btnUpload.addEventListener('click', () => this.handleFileUpload());
-
-        const btnSaveTemplate = document.getElementById('btn-save-template');
-        if (btnSaveTemplate) btnSaveTemplate.addEventListener('click', () => this.saveAsTemplate());
+        bind('btn-save-form', () => this.saveForm(false));
+        bind('btn-finalize-form', () => this.saveForm(true));
+        bind('btn-upload', () => this.handleFileUpload());
+        bind('btn-save-template', () => this.saveAsTemplate());
 
         // Tab Navigation
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.id.replace('btn-', '')));
+            btn.addEventListener('click', (e) => this.switchTab(e.currentTarget.id.replace('btn-', '')));
         });
     },
 
@@ -60,7 +57,6 @@ export const FormController = {
      */
     renderForm(id) {
         this.currentPericiaId = id;
-        // Storage.getPericia now returns a Pericia instance with camelCase properties
         const pericia = id ? Storage.getPericia(id) : {};
 
         // Reset UI state
@@ -71,8 +67,7 @@ export const FormController = {
         const container = document.getElementById('view-form');
         Binder.bindToView(container, pericia);
 
-        // Handle defaults and special cases not covered directly by Binder/Model 1:1 mapping
-        // e.g. if model is empty/new, set defaults
+        // Handle defaults
         if (!id) {
             const defaults = {
                 tipoAcao: "Trabalhista",
@@ -89,26 +84,26 @@ export const FormController = {
             Binder.bindToView(container, defaults);
         }
 
-        // Handle specific fields that need formatting or complex logic
+        // Specific formatting
         if (pericia.dataPericia) {
-            document.getElementById('f-data_pericia').value = pericia.dataPericia.split('T')[0];
+            const dateInput = document.getElementById('f-data_pericia');
+            if(dateInput) dateInput.value = pericia.dataPericia.split('T')[0];
         }
 
         this.calcAge();
 
-        // Check for Auto-Save Draft
+        // Auto-Save Recovery
         const draft = localStorage.getItem(DB_KEYS.DRAFT);
         if (!id && draft) {
             UI.Modal.confirm('Existe um rascunho não salvo. Deseja recuperar?', () => {
                 const draftData = JSONUtils.parse(draft, null, 'rascunho');
                 if (!draftData) {
-                    UI.Toast.show('Não foi possível recuperar o rascunho. Os dados estão inválidos.', 'warning');
+                    UI.Toast.show('Não foi possível recuperar o rascunho.', 'warning');
                     return;
                 }
 
                 Binder.bindToView(container, draftData);
-
-                // Merge draft text fields into the pericia object for initQuill
+                // Merge draft text fields
                 pericia.anamnese = draftData.anamnese;
                 pericia.exameFisico = draftData.exameFisico;
                 pericia.conclusao = draftData.conclusao;
@@ -172,14 +167,19 @@ export const FormController = {
     },
 
     calcAge() {
-        const dobStr = document.getElementById('f-data_nascimento').value;
+        const dobInput = document.getElementById('f-data_nascimento');
         const display = document.getElementById('f-idade-display');
+        if(!dobInput || !display) return;
+
+        const dobStr = dobInput.value;
         if(dobStr) {
             const dob = new Date(dobStr);
-            const diff_ms = Date.now() - dob.getTime();
-            const age_dt = new Date(diff_ms);
-            const age = Math.abs(age_dt.getUTCFullYear() - 1970);
-            display.innerText = `${age} anos`;
+            if(!isNaN(dob.getTime())) {
+                const diff_ms = Date.now() - dob.getTime();
+                const age_dt = new Date(diff_ms);
+                const age = Math.abs(age_dt.getUTCFullYear() - 1970);
+                display.innerText = `${age} anos`;
+            }
         } else {
             display.innerText = '';
         }
@@ -189,6 +189,7 @@ export const FormController = {
         const query = e.target.value;
         const results = CID10.search(query);
         const ul = document.getElementById('cid-suggestions');
+        if(!ul) return;
 
         ul.innerHTML = '';
         if (results.length === 0) {
@@ -221,7 +222,6 @@ export const FormController = {
             const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
             const data = await response.json();
             if (!data.erro) {
-                // We can use Binder to set these if we create a partial model
                 const addressModel = {
                     endereco: {
                         logradouro: data.logradouro,
@@ -230,15 +230,15 @@ export const FormController = {
                         uf: data.uf
                     }
                 };
-                // Use partial=true to avoid clearing other fields
                 Binder.bindToView(document.getElementById('view-form'), addressModel, true);
-                document.getElementById('f-numero').focus();
+                const numInput = document.getElementById('f-numero');
+                if(numInput) numInput.focus();
                 this.autoSave();
             } else {
                  UI.Toast.show('CEP não encontrado.', 'warning');
             }
         } catch (e) {
-            console.error(e);
+            console.error('CEP Error:', e);
             UI.Toast.show('Erro ao buscar CEP.', 'error');
         } finally {
             if (loading) loading.classList.add('hidden');
@@ -287,7 +287,6 @@ export const FormController = {
         };
 
         createEditor('q-anamnese', 'anamnese');
-        // Note: The HTML ID is q-exame_fisico but the property is exameFisico
         createEditor('q-exame_fisico', 'exameFisico');
         createEditor('q-conclusao', 'conclusao');
         createEditor('q-quesitos', 'quesitos');
@@ -297,7 +296,6 @@ export const FormController = {
 
     populateMacroSelects() {
         const macros = Storage.getMacros();
-        // Updated keys map for editor dictionary
         const catMap = {
             'anamnese': 'anamnese',
             'exame_fisico': 'exameFisico',
@@ -316,11 +314,13 @@ export const FormController = {
                 sel.appendChild(opt);
             });
 
+            // Remove old listener if needed? (Not easy without stored reference)
+            // Just overwriting onchange property is simpler here than addEventListener for cleanup.
             sel.onchange = (e) => {
                 const id = e.target.value;
                 if(!id) return;
+                // eslint-disable-next-line eqeqeq
                 const m = macros.find(x => x.id == id);
-                // Use mapped key for editors array
                 const editorKey = catMap[cat];
                 if(m && this.editors[editorKey]) {
                     const range = this.editors[editorKey].getSelection(true);
@@ -333,20 +333,18 @@ export const FormController = {
     },
 
     collectFormData() {
-        // Use Binder to collect standard fields
         const container = document.getElementById('view-form');
         const data = Binder.bindToModel(container);
 
-        // Add ID if it exists
         if(this.currentPericiaId) data.id = this.currentPericiaId;
 
-        // Add rich text content (Quill)
+        // Add rich text content
         data.anamnese = this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '';
         data.exameFisico = this.editors['exameFisico'] ? this.editors['exameFisico'].root.innerHTML : '';
         data.conclusao = this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '';
         data.quesitos = this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '';
 
-        // Add documents array
+        // Preserve documents
         data.documents = this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : [];
 
         return data;
@@ -403,7 +401,6 @@ export const FormController = {
         }
 
         UI.Loading.show();
-
         const saveCallback = (blob) => this._saveFileToDB(blob, file.name);
 
         if (file.type.startsWith('image/')) {
@@ -425,9 +422,11 @@ export const FormController = {
                 pericia.documents.push({ id: fileId, originalName: originalName });
                 Storage.savePericia(pericia);
                 this.renderDocumentsList(pericia.documents);
-                document.getElementById('upload_document').value = "";
+                const input = document.getElementById('upload_document');
+                if(input) input.value = "";
                 UI.Toast.show('Arquivo anexado!', 'success');
             } catch (err) {
+                console.error(err);
                 UI.Toast.show('Erro ao salvar arquivo.', 'error');
             } finally {
                 UI.Loading.hide();
@@ -449,13 +448,12 @@ export const FormController = {
             li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-1";
             const isImage = doc.originalName.match(/\.(jpg|jpeg|png|webp)$/i);
 
-            // Safer DOM creation
             const divLeft = document.createElement('div');
             divLeft.className = "flex items-center gap-2 truncate";
 
             const spanName = document.createElement('span');
             spanName.className = "text-blue-600 dark:text-blue-400 truncate cursor-pointer doc-link";
-            spanName.textContent = doc.originalName; // Safe text
+            spanName.textContent = doc.originalName;
             spanName.onclick = () => this.downloadFile(doc.id, doc.originalName);
             divLeft.appendChild(spanName);
 
@@ -463,7 +461,7 @@ export const FormController = {
                 const btnAnnotate = document.createElement('button');
                 btnAnnotate.className = "text-gray-500 hover:text-blue-500";
                 btnAnnotate.title = "Anotar";
-                btnAnnotate.innerHTML = '<i class="fa-solid fa-paintbrush"></i>'; // Icon is safe
+                btnAnnotate.innerHTML = '<i class="fa-solid fa-paintbrush"></i>';
                 btnAnnotate.onclick = () => this.openAnnotation(doc.id);
                 divLeft.appendChild(btnAnnotate);
             }
@@ -471,6 +469,7 @@ export const FormController = {
             const btnDelete = document.createElement('button');
             btnDelete.className = "text-red-500 hover:text-red-700";
             btnDelete.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            // eslint-disable-next-line eqeqeq
             btnDelete.onclick = () => this.deleteFile(doc.id);
 
             li.appendChild(divLeft);
@@ -481,7 +480,7 @@ export const FormController = {
 
     async downloadFile(docId, name) {
         try {
-            const content = await FileDB.getFile(parseInt(docId));
+            const content = await FileDB.getFile(parseInt(docId, 10));
             if(content) {
                 const a = document.createElement('a');
                 a.href = content;
@@ -497,8 +496,9 @@ export const FormController = {
 
     deleteFile(docId) {
         UI.Modal.confirm('Excluir arquivo?', () => {
-            FileDB.deleteFile(parseInt(docId)).then(() => {
+            FileDB.deleteFile(parseInt(docId, 10)).then(() => {
                 const pericia = Storage.getPericia(this.currentPericiaId);
+                // eslint-disable-next-line eqeqeq
                 pericia.documents = pericia.documents.filter(d => d.id != docId);
                 Storage.savePericia(pericia);
                 this.renderDocumentsList(pericia.documents);
@@ -527,8 +527,10 @@ export const FormController = {
         const title = UI.Modal.prompt("Nome do Template:");
         if(!title) return;
         const data = this.collectFormData();
+        // Clear specific data
         delete data.id; delete data.numeroProcesso; delete data.nomeAutor;
         delete data.cpf; delete data.rg; delete data.dataNascimento; delete data.documents;
+
         Storage.addTemplate({ title, data });
         this.populateTemplateSelector();
         UI.Toast.show('Template salvo!', 'success');
@@ -537,15 +539,12 @@ export const FormController = {
     loadTemplate(id) {
         if(!id) return;
         UI.Modal.confirm("Carregar template? Isso substituirá os dados atuais.", () => {
+            // eslint-disable-next-line eqeqeq
             const t = Storage.getTemplates().find(x => x.id == id);
             if(t) {
-                // Legacy support: convert snake_case to camelCase if needed
                 const data = this._normalizeLegacyData(t.data);
-
-                // Use Binder to apply template data
                 Binder.bindToView(document.getElementById('view-form'), data);
 
-                // Handle rich text manually still
                 if (this.editors['anamnese']) this.editors['anamnese'].root.innerHTML = data.anamnese || '';
                 if (this.editors['exameFisico']) this.editors['exameFisico'].root.innerHTML = data.exameFisico || '';
                 if (this.editors['conclusao']) this.editors['conclusao'].root.innerHTML = data.conclusao || '';
@@ -557,7 +556,6 @@ export const FormController = {
 
     _normalizeLegacyData(data) {
         const newData = { ...data };
-        // Map common snake_case keys to camelCase
         const map = {
             'numero_processo': 'numeroProcesso',
             'nome_autor': 'nomeAutor',
@@ -588,7 +586,7 @@ export const FormController = {
     // --- Annotation ---
 
     async openAnnotation(docId) {
-        const content = await FileDB.getFile(parseInt(docId));
+        const content = await FileDB.getFile(parseInt(docId, 10));
         if (!content) return;
 
         const modal = document.getElementById('annotation-modal');
@@ -621,25 +619,45 @@ export const FormController = {
     initCanvasEvents() {
         if(this.canvas.getAttribute('data-init')) return;
         let drawing = false;
+
         const getPos = (e) => {
             const rect = this.canvas.getBoundingClientRect();
+            // Handle touch
+            if(e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+            }
             return { x: e.clientX - rect.left, y: e.clientY - rect.top };
         };
-        this.canvas.onmousedown = (e) => {
+
+        const start = (e) => {
+            if(e.type === 'touchstart') e.preventDefault();
             drawing = true;
             this.ctx.beginPath();
             const p = getPos(e);
             this.ctx.moveTo(p.x, p.y);
         };
-        this.canvas.onmousemove = (e) => {
+
+        const move = (e) => {
             if(!drawing) return;
+            if(e.type === 'touchmove') e.preventDefault();
             const p = getPos(e);
             this.ctx.lineWidth = 3;
             this.ctx.strokeStyle = document.getElementById('annotation-color').value;
             this.ctx.lineTo(p.x, p.y);
             this.ctx.stroke();
         };
-        this.canvas.onmouseup = () => drawing = false;
+
+        const end = () => drawing = false;
+
+        this.canvas.addEventListener('mousedown', start);
+        this.canvas.addEventListener('mousemove', move);
+        this.canvas.addEventListener('mouseup', end);
+        this.canvas.addEventListener('mouseleave', end);
+
+        this.canvas.addEventListener('touchstart', start);
+        this.canvas.addEventListener('touchmove', move);
+        this.canvas.addEventListener('touchend', end);
+
         this.canvas.setAttribute('data-init', 'true');
     },
 

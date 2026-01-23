@@ -7,8 +7,8 @@ export const UI = {
         /**
          * Shows a toast notification.
          * @param {string} message - The message to display.
-         * @param {string} type - 'info', 'success', 'error', or 'warning'.
-         * @param {number} duration - Duration in ms (default 3000).
+         * @param {string} [type='info'] - 'info', 'success', 'error', or 'warning'.
+         * @param {number} [duration=3000] - Duration in ms.
          */
         show(message, type = 'info', duration = 3000) {
             let container = document.getElementById('toast-container');
@@ -83,6 +83,10 @@ export const UI = {
         _previousActiveElement: null,
         _handleKeyDown: null,
 
+        /**
+         * Traps focus within the modal for accessibility.
+         * @param {HTMLElement} modal - The modal element.
+         */
         trapFocus(modal) {
              this._previousActiveElement = document.activeElement;
 
@@ -95,12 +99,12 @@ export const UI = {
                      if (e.shiftKey) {
                          if (document.activeElement === firstElement) {
                              e.preventDefault();
-                             lastElement.focus();
+                             if(lastElement) lastElement.focus();
                          }
                      } else {
                          if (document.activeElement === lastElement) {
                              e.preventDefault();
-                             firstElement.focus();
+                             if(firstElement) firstElement.focus();
                          }
                      }
                  } else if (e.key === 'Escape') {
@@ -113,10 +117,6 @@ export const UI = {
                              if(confirmBtn) confirmBtn.click();
                          }
                      }
-                     // For other modals (signature, annotation), let the controller handle ESC via its own listeners or assume they call releaseFocus/close on ESC if they want.
-                     // But strictly speaking, the trap should consume ESC or trigger close.
-                     // For now, we only implement ESC handling for custom-modal here to avoid side effects.
-                     // A better approach would be passing a onClose callback.
                  }
              };
 
@@ -124,6 +124,10 @@ export const UI = {
              if (firstElement) firstElement.focus();
         },
 
+        /**
+         * Releases focus trap and restores focus to previous element.
+         * @param {HTMLElement} modal - The modal element.
+         */
         releaseFocus(modal) {
              if (this._handleKeyDown) {
                  modal.removeEventListener('keydown', this._handleKeyDown);
@@ -139,7 +143,7 @@ export const UI = {
          * Shows a confirmation modal.
          * @param {string} message - The question.
          * @param {Function} onConfirm - Callback if confirmed.
-         * @param {string} title - Title of the modal.
+         * @param {string} [title="Confirmação"] - Title of the modal.
          */
         confirm(message, onConfirm, title = "Confirmação") {
             const modal = document.getElementById('custom-modal');
@@ -154,8 +158,8 @@ export const UI = {
             const btnConfirm = document.getElementById('modal-confirm');
             const btnCancel = document.getElementById('modal-cancel');
 
-            titleEl.innerText = title;
-            msgEl.innerText = message;
+            if(titleEl) titleEl.innerText = title;
+            if(msgEl) msgEl.innerText = message;
 
             // Clean old listeners
             const newConfirm = btnConfirm.cloneNode(true);
@@ -180,7 +184,7 @@ export const UI = {
         /**
          * Shows an alert modal.
          * @param {string} message - Message to display.
-         * @param {string} title - Title of the modal.
+         * @param {string} [title="Aviso"] - Title of the modal.
          */
         alert(message, title = "Aviso") {
              const modal = document.getElementById('custom-modal');
@@ -195,11 +199,11 @@ export const UI = {
              const btnConfirm = document.getElementById('modal-confirm');
              const btnCancel = document.getElementById('modal-cancel');
 
-             titleEl.innerText = title;
-             msgEl.innerText = message;
+             if(titleEl) titleEl.innerText = title;
+             if(msgEl) msgEl.innerText = message;
 
              // Hide cancel button for alert
-             btnCancel.classList.add('hidden');
+             if(btnCancel) btnCancel.classList.add('hidden');
 
              // Clean listeners
              const newConfirm = btnConfirm.cloneNode(true);
@@ -209,7 +213,7 @@ export const UI = {
              newConfirm.onclick = () => {
                  modal.classList.add('hidden');
                  this.releaseFocus(modal);
-                 btnCancel.classList.remove('hidden'); // Restore for next use
+                 if(btnCancel) btnCancel.classList.remove('hidden'); // Restore for next use
                  newConfirm.innerText = "Confirmar"; // Restore
              };
 
@@ -220,7 +224,7 @@ export const UI = {
         /**
          * Prompts the user for input.
          * @param {string} message
-         * @param {string} defaultValue
+         * @param {string} [defaultValue=""]
          * @returns {string|null} The user input or null.
          */
         prompt(message, defaultValue = "") {
@@ -289,6 +293,9 @@ export const UI = {
     },
 
     Sidebar: {
+        /**
+         * Initializes sidebar interactions.
+         */
         init() {
             const btn = document.getElementById('btn-mobile-menu');
             const overlay = document.getElementById('sidebar-overlay');
@@ -315,6 +322,9 @@ export const UI = {
                 });
             });
         },
+        /**
+         * Toggles sidebar visibility.
+         */
         toggle() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -333,6 +343,9 @@ export const UI = {
                  }
             }
         },
+        /**
+         * Closes the sidebar.
+         */
         close() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -348,6 +361,10 @@ export const UI = {
                 btn.setAttribute('aria-expanded', 'false');
             }
         },
+        /**
+         * Sets the active navigation link based on the current hash.
+         * @param {string} hash - The current URL hash.
+         */
         setActive(hash) {
             const links = document.querySelectorAll('.nav-link');
             // Default to dashboard if root
@@ -355,8 +372,6 @@ export const UI = {
 
             links.forEach(link => {
                 const href = link.getAttribute('href');
-                // Check if hash starts with href (to handle sub-routes if any, though exact match is safer for now)
-                // Also handle #dashboard as default
 
                 let isActive = false;
                 if (href === '#dashboard' && (currentHash === '' || currentHash === '#dashboard')) {

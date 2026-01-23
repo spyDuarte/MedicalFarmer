@@ -31,13 +31,15 @@ export const Router = {
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
-                if (!document.getElementById('view-form').classList.contains('hidden')) {
+                const formView = document.getElementById('view-form');
+                if (formView && !formView.classList.contains('hidden')) {
                     FormController.saveForm();
                 }
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
                 e.preventDefault();
-                if (!document.getElementById('view-print').classList.contains('hidden')) {
+                const printView = document.getElementById('view-print');
+                if (printView && !printView.classList.contains('hidden')) {
                     window.print();
                 }
             }
@@ -66,14 +68,18 @@ export const Router = {
         switch (path) {
             case 'dashboard':
                 currentView = document.getElementById('view-dashboard');
-                currentView.classList.remove('hidden');
-                DashboardController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    DashboardController.render();
+                }
                 titleText = 'Dashboard';
                 break;
             case 'nova':
                 currentView = document.getElementById('view-form');
-                currentView.classList.remove('hidden');
-                FormController.renderForm(null);
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    FormController.renderForm(null);
+                }
                 titleText = 'Nova Perícia';
                 break;
             case 'editar':
@@ -82,14 +88,18 @@ export const Router = {
                     return;
                 }
                 currentView = document.getElementById('view-form');
-                currentView.classList.remove('hidden');
-                FormController.renderForm(id);
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    FormController.renderForm(id);
+                }
                 titleText = 'Editar Perícia';
                 break;
             case 'macros':
                 currentView = document.getElementById('view-macros');
-                currentView.classList.remove('hidden');
-                MacrosController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    MacrosController.render();
+                }
                 titleText = 'Modelos de Texto';
                 break;
             case 'print':
@@ -98,33 +108,43 @@ export const Router = {
                     return;
                 }
                 currentView = document.getElementById('view-print');
-                currentView.classList.remove('hidden');
-                PrintController.render(id);
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    PrintController.render(id);
+                }
                 titleText = 'Visualizar Impressão';
                 break;
             case 'settings':
                 currentView = document.getElementById('view-settings');
-                currentView.classList.remove('hidden');
-                SettingsController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    SettingsController.render();
+                }
                 titleText = 'Configurações';
                 break;
             case 'calendar':
                 currentView = document.getElementById('view-calendar');
-                currentView.classList.remove('hidden');
-                CalendarController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    CalendarController.render();
+                }
                 titleText = 'Calendário';
                 break;
             case 'financeiro':
                 currentView = document.getElementById('view-finance');
-                currentView.classList.remove('hidden');
-                FinanceController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    FinanceController.render();
+                }
                 titleText = 'Financeiro';
                 break;
             default:
                 // 404 Fallback to Dashboard
                 currentView = document.getElementById('view-dashboard');
-                currentView.classList.remove('hidden');
-                DashboardController.render();
+                if(currentView) {
+                    currentView.classList.remove('hidden');
+                    DashboardController.render();
+                }
         }
 
         if(titleEl) titleEl.textContent = titleText;
