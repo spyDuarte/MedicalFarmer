@@ -9,7 +9,7 @@ def test_refactor_features():
 
         import os
         cwd = os.getcwd()
-        page.goto(f"file://{cwd}/index.html")
+        page.goto(f"file://{os.path.join(cwd, 'frontend', 'index.html')}")
 
         # 1. Navigation Check (Router Module)
         print("Checking Dashboard Load...")

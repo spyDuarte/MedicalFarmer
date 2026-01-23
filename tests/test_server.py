@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 
 def test_refactor_features():
     # Start HTTP Server
-    server = subprocess.Popen([sys.executable, "-m", "http.server", "8000"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    server = subprocess.Popen([sys.executable, "-m", "http.server", "8000"], cwd="frontend", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(2) # wait for start
 
     try:
