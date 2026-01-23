@@ -110,3 +110,27 @@ export const Format = {
         }).format(v);
     }
 };
+
+/**
+ * Utility for safe JSON parsing.
+ */
+export const JSONUtils = {
+    /**
+     * Safely parses a JSON string with fallback and logging.
+     * @param {string|null|undefined} value
+     * @param {*} fallback
+     * @param {string} context
+     * @returns {*}
+     */
+    parse(value, fallback, context = 'JSON') {
+        if (value === null || value === undefined || value === '') return fallback;
+        if (typeof value !== 'string') return fallback;
+
+        try {
+            return JSON.parse(value);
+        } catch (error) {
+            console.warn(`Falha ao interpretar ${context}. Usando valor padrão.`, error);
+            return fallback;
+        }
+    }
+};

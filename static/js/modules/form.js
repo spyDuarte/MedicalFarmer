@@ -1,5 +1,5 @@
 import { Storage } from './storage.js';
-import { Mask, Validator } from './utils.js';
+import { Mask, Validator, JSONUtils } from './utils.js';
 import { FileDB } from './db.js';
 import { CID10 } from '../cid_data.js';
 import { UI } from './ui.js';
@@ -122,7 +122,11 @@ export const FormController = {
         const draft = localStorage.getItem(DB_KEYS.DRAFT);
         if (!id && draft) {
             UI.Modal.confirm('Existe um rascunho não salvo. Deseja recuperar?', () => {
-                const draftData = JSON.parse(draft);
+                const draftData = JSONUtils.parse(draft, null, 'rascunho');
+                if (!draftData) {
+                    UI.Toast.show('Não foi possível recuperar o rascunho. Os dados estão inválidos.', 'warning');
+                    return;
+                }
                 // Apply draft values
                 // Note: draftData will have camelCase keys because collectFormData generates camelCase
                 Object.keys(draftData).forEach(key => {
