@@ -1,14 +1,14 @@
-
 /**
  * Utility for Input Masking.
  */
 export const Mask = {
     /**
      * Masks a value as CPF (000.000.000-00).
-     * @param {string} value
-     * @returns {string} Masked CPF.
+     * @param {string} value - The input value.
+     * @returns {string} The masked CPF string.
      */
     cpf(value) {
+        if (typeof value !== 'string') return '';
         return value
             .replace(/\D/g, '')
             .replace(/(\d{3})(\d)/, '$1.$2')
@@ -19,10 +19,11 @@ export const Mask = {
 
     /**
      * Masks a value as CNPJ (00.000.000/0000-00).
-     * @param {string} value
-     * @returns {string} Masked CNPJ.
+     * @param {string} value - The input value.
+     * @returns {string} The masked CNPJ string.
      */
     cnpj(value) {
+        if (typeof value !== 'string') return '';
         return value
             .replace(/\D/g, '')
             .replace(/^(\d{2})(\d)/, '$1.$2')
@@ -34,10 +35,11 @@ export const Mask = {
 
     /**
      * Masks a value as CEP (00000-000).
-     * @param {string} value
-     * @returns {string} Masked CEP.
+     * @param {string} value - The input value.
+     * @returns {string} The masked CEP string.
      */
     cep(value) {
+        if (typeof value !== 'string') return '';
         return value
             .replace(/\D/g, '')
             .replace(/^(\d{5})(\d)/, '$1-$2')
@@ -46,10 +48,11 @@ export const Mask = {
 
     /**
      * Masks a value as Phone ( (00) 00000-0000 ).
-     * @param {string} value
-     * @returns {string} Masked Phone.
+     * @param {string} value - The input value.
+     * @returns {string} The masked Phone string.
      */
     phone(value) {
+        if (typeof value !== 'string') return '';
         return value
             .replace(/\D/g, '')
             .replace(/(\d{2})(\d)/, '($1) $2')
@@ -59,11 +62,13 @@ export const Mask = {
 
     /**
      * Masks a value as Currency (0.00).
-     * @param {string} value
-     * @returns {string} Formatted currency string.
+     * @param {string|number} value - The input value.
+     * @returns {string} The formatted currency string.
      */
     currency(value) {
-        let v = value.replace(/\D/g, '');
+        if (value === null || value === undefined) return '0.00';
+        const strValue = String(value);
+        let v = strValue.replace(/\D/g, '');
         v = (parseFloat(v) / 100).toFixed(2);
         return isNaN(v) ? '0.00' : v;
     }
@@ -75,74 +80,84 @@ export const Mask = {
 export const Validator = {
     /**
      * Validates a CPF number using Mod11 algorithm.
-     * @param {string} cpf
-     * @returns {boolean} True if valid.
+     * @param {string} cpf - The CPF string to validate.
+     * @returns {boolean} True if the CPF is valid, false otherwise.
      */
     cpf(cpf) {
-        cpf = cpf.replace(/[^\d]+/g, '');
-        if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+        if (typeof cpf !== 'string') return false;
+        const cleanCpf = cpf.replace(/[^\d]+/g, '');
+        if (cleanCpf.length !== 11 || /^(\d)\1+$/.test(cleanCpf)) return false;
 
         let sum = 0;
         let remainder;
 
-        for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
+        for (let i = 1; i <= 9; i++) {
+            sum += parseInt(cleanCpf.substring(i - 1, i), 10) * (11 - i);
+        }
         remainder = (sum * 10) % 11;
         if ((remainder === 10) || (remainder === 11)) remainder = 0;
-        if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+        if (remainder !== parseInt(cleanCpf.substring(9, 10), 10)) return false;
 
         sum = 0;
-        for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
+        for (let i = 1; i <= 10; i++) {
+            sum += parseInt(cleanCpf.substring(i - 1, i), 10) * (12 - i);
+        }
         remainder = (sum * 10) % 11;
         if ((remainder === 10) || (remainder === 11)) remainder = 0;
-        if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+        if (remainder !== parseInt(cleanCpf.substring(10, 11), 10)) return false;
 
         return true;
     },
 
     /**
      * Validates a CNPJ number.
-     * @param {string} cnpj
-     * @returns {boolean} True if valid.
+     * @param {string} cnpj - The CNPJ string to validate.
+     * @returns {boolean} True if the CNPJ is valid, false otherwise.
      */
     cnpj(cnpj) {
-        cnpj = cnpj.replace(/[^\d]+/g, '');
-        if(cnpj === '') return false;
-        if (cnpj.length !== 14) return false;
+        if (typeof cnpj !== 'string') return false;
+        const cleanCnpj = cnpj.replace(/[^\d]+/g, '');
+        if (cleanCnpj === '') return false;
+        if (cleanCnpj.length !== 14) return false;
         // Eliminate known invalid CNPJs
-        if (/^(\d)\1+$/.test(cnpj)) return false;
+        if (/^(\d)\1+$/.test(cleanCnpj)) return false;
 
-        let tamanho = cnpj.length - 2;
-        let numeros = cnpj.substring(0,tamanho);
-        let digitos = cnpj.substring(tamanho);
-        let soma = 0;
-        let pos = tamanho - 7;
-        for (let i = tamanho; i >= 1; i--) {
-          soma += numeros.charAt(tamanho - i) * pos--;
-          if (pos < 2) pos = 9;
-        }
-        let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-        if (resultado !== parseInt(digitos.charAt(0))) return false;
+        let size = cleanCnpj.length - 2;
+        let numbers = cleanCnpj.substring(0, size);
+        const digits = cleanCnpj.substring(size);
+        let sum = 0;
+        let pos = size - 7;
 
-        tamanho = tamanho + 1;
-        numeros = cnpj.substring(0,tamanho);
-        soma = 0;
-        pos = tamanho - 7;
-        for (let i = tamanho; i >= 1; i--) {
-          soma += numeros.charAt(tamanho - i) * pos--;
-          if (pos < 2) pos = 9;
+        for (let i = size; i >= 1; i--) {
+            sum += parseInt(numbers.charAt(size - i), 10) * pos--;
+            if (pos < 2) pos = 9;
         }
-        resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-        if (resultado !== parseInt(digitos.charAt(1))) return false;
+
+        let result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+        if (result !== parseInt(digits.charAt(0), 10)) return false;
+
+        size = size + 1;
+        numbers = cleanCnpj.substring(0, size);
+        sum = 0;
+        pos = size - 7;
+        for (let i = size; i >= 1; i--) {
+            sum += parseInt(numbers.charAt(size - i), 10) * pos--;
+            if (pos < 2) pos = 9;
+        }
+
+        result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+        if (result !== parseInt(digits.charAt(1), 10)) return false;
 
         return true;
     },
 
     /**
      * Validates an Email address.
-     * @param {string} email
-     * @returns {boolean} True if valid.
+     * @param {string} email - The email string to validate.
+     * @returns {boolean} True if the email is valid, false otherwise.
      */
     email(email) {
+        if (typeof email !== 'string') return false;
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
     }
@@ -154,28 +169,32 @@ export const Validator = {
 export const Format = {
     /**
      * Formats a date string or object to the user's locale (default pt-BR).
-     * @param {string|Date} date
-     * @returns {string} Formatted date.
+     * @param {string|Date} date - The date to format.
+     * @returns {string} Formatted date string or '-' if invalid.
      */
     date(date) {
         if (!date) return '-';
+        let d = date;
+
         // Handle ISO strings that might come without time (YYYY-MM-DD)
         // by appending T00:00:00 to prevent timezone offsets shifting the day
         if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            date += 'T00:00:00';
+            d = date + 'T00:00:00';
         }
-        const d = new Date(date);
-        if (isNaN(d.getTime())) return '-';
 
-        return new Intl.DateTimeFormat('pt-BR').format(d);
+        const dateObj = new Date(d);
+        if (isNaN(dateObj.getTime())) return '-';
+
+        return new Intl.DateTimeFormat('pt-BR').format(dateObj);
     },
 
     /**
      * Formats a number as currency (BRL).
-     * @param {number|string} value
-     * @returns {string} Formatted currency.
+     * @param {number|string} value - The numeric value to format.
+     * @returns {string} Formatted currency string.
      */
     currency(value) {
+        if (value === null || value === undefined) return 'R$ 0,00';
         const v = parseFloat(value);
         if (isNaN(v)) return 'R$ 0,00';
 
@@ -192,10 +211,10 @@ export const Format = {
 export const JSONUtils = {
     /**
      * Safely parses a JSON string with fallback and logging.
-     * @param {string|null|undefined} value
-     * @param {*} fallback
-     * @param {string} context
-     * @returns {*}
+     * @param {string|null|undefined} value - The JSON string.
+     * @param {*} fallback - The fallback value if parsing fails.
+     * @param {string} [context='JSON'] - Context identifier for logging.
+     * @returns {*} The parsed object or the fallback value.
      */
     parse(value, fallback, context = 'JSON') {
         if (value === null || value === undefined || value === '') return fallback;
@@ -204,7 +223,7 @@ export const JSONUtils = {
         try {
             return JSON.parse(value);
         } catch (error) {
-            console.warn(`Falha ao interpretar ${context}. Usando valor padrão.`, error);
+            console.warn(`Failed to parse ${context}. Using default value.`, error);
             return fallback;
         }
     }
@@ -218,7 +237,7 @@ export const Utils = {
      * Debounces a function.
      * @param {Function} func - The function to debounce.
      * @param {number} wait - The delay in milliseconds.
-     * @returns {Function}
+     * @returns {Function} The debounced function.
      */
     debounce(func, wait) {
         let timeout;
@@ -231,8 +250,8 @@ export const Utils = {
 
     /**
      * Deep clones an object.
-     * @param {Object} obj
-     * @returns {Object}
+     * @param {*} obj - The object to clone.
+     * @returns {*} The cloned object.
      */
     deepClone(obj) {
         if (obj === null || typeof obj !== 'object') return obj;
