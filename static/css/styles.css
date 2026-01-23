@@ -155,6 +155,14 @@
     color: #e5e7eb;
 }
 
+/* ISO 216 A4 Screen Preview */
+#view-print {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 2rem auto;
+    max-width: none; /* Override Tailwind */
+}
 
 @media print {
     /* ISO 216: A4 Paper Size */
@@ -174,7 +182,15 @@
     /* Hide UI elements */
     .no-print { display: none !important; }
     .view-section { display: none; }
-    #view-print { display: block !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
+    #view-print {
+        display: block !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+    }
 
     /* Ensure scrollbars are hidden in print */
     ::-webkit-scrollbar { display: none; }

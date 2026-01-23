@@ -7,7 +7,7 @@
     <title>Sistema de Perícias Médicas (Web)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e40af">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: blob: data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.quilljs.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none';">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -44,7 +44,7 @@
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans h-screen flex overflow-hidden transition-colors duration-200">
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" role="alert" aria-live="polite" class="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Modals -->
     <!-- Confirmation Modal -->
@@ -236,9 +236,9 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-search"></i>
                             </span>
-                            <input type="text" id="search-input" placeholder="Buscar perícia..." class="pl-10 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-all">
+                            <input type="text" id="search-input" aria-label="Buscar perícia" placeholder="Buscar perícia..." class="pl-10 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-all">
                         </div>
-                        <select id="status-filter" class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white bg-white">
+                        <select id="status-filter" aria-label="Filtrar por Status" class="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white bg-white">
                             <option value="">Todos Status</option>
                             <option value="Aguardando">Aguardando</option>
                             <option value="Agendado">Agendado</option>
@@ -246,18 +246,18 @@
                             <option value="Concluido">Concluído</option>
                         </select>
                         <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
-                            <input type="date" id="date-start" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
+                            <input type="date" id="date-start" aria-label="Data inicial" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
                             <span class="text-gray-400 text-xs">até</span>
-                            <input type="date" id="date-end" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
+                            <input type="date" id="date-end" aria-label="Data final" class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 p-1">
                         </div>
                     </div>
                     <div class="flex gap-2">
-                         <button id="btn-export-backup" class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                         <button id="btn-export-backup" aria-label="Fazer Backup" class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                             <i class="fa-solid fa-download"></i> Backup
                         </button>
                         <label class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
                             <i class="fa-solid fa-upload"></i> Restaurar
-                            <input type="file" id="input-import-backup" class="hidden" accept=".json,.enc">
+                            <input type="file" id="input-import-backup" aria-label="Importar arquivo de backup" class="hidden" accept=".json,.enc">
                         </label>
                          <button class="text-gray-400 cursor-not-allowed px-3 py-2 rounded-lg text-sm font-medium" title="Em breve">
                             <i class="fa-solid fa-star"></i> Templates
@@ -516,8 +516,8 @@
                                 <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 mb-4">
                                     <h4 class="font-bold text-sm mb-3 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos</h4>
                                     <div class="flex gap-2 mb-4">
-                                        <input type="file" id="upload_document" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
-                                        <button id="btn-upload" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded shadow-sm transition-colors"><i class="fa-solid fa-upload"></i></button>
+                                        <input type="file" id="upload_document" aria-label="Selecionar arquivo para upload" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+                                        <button id="btn-upload" aria-label="Enviar arquivo" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded shadow-sm transition-colors"><i class="fa-solid fa-upload"></i></button>
                                     </div>
                                     <ul id="documents-list-ul" class="space-y-2"></ul>
                                 </div>
