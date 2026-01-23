@@ -6,6 +6,7 @@ import { UI } from './ui.js';
 import { SpeechService } from './speech.js';
 import { ImageProcessor } from './image_processor.js';
 import { DB_KEYS, STATUS, PAYMENT_STATUS, DEFAULTS, UI_STRINGS } from './constants.js';
+import { Binder } from './binder.js';
 
 /**
  * Controller for the Main Form (Pericia).
@@ -66,68 +67,34 @@ export const FormController = {
         this.switchTab('tab-identificacao');
         this.populateTemplateSelector();
 
-        const setVal = (fieldId, val) => {
-            const el = document.getElementById(fieldId);
-            if(el) el.value = val || '';
-        };
+        // Use Binder to populate fields
+        const container = document.getElementById('view-form');
+        Binder.bindToView(container, pericia);
 
-        // Populate Identification Fields
-        setVal('f-numero_processo', pericia.numeroProcesso);
-        setVal('f-vara', pericia.vara);
-        setVal('f-tipo_acao', pericia.tipoAcao || "Trabalhista");
-        setVal('f-nome_autor', pericia.nomeAutor);
-        setVal('f-data_nascimento', pericia.dataNascimento);
-        setVal('f-cpf', pericia.cpf);
-        setVal('f-rg', pericia.rg);
-        setVal('f-escolaridade', pericia.escolaridade);
-        setVal('f-estado_civil', pericia.estadoCivil);
-        setVal('f-ctps', pericia.ctps);
-        setVal('f-cnh', pericia.cnh);
-        setVal('f-mao_dominante', pericia.maoDominante || "Destro");
-        this.calcAge();
-
-        // Populate Address
-        if (pericia.endereco) {
-            setVal('f-cep', pericia.endereco.cep);
-            setVal('f-logradouro', pericia.endereco.logradouro);
-            setVal('f-numero', pericia.endereco.numero);
-            setVal('f-complemento', pericia.endereco.complemento);
-            setVal('f-bairro', pericia.endereco.bairro);
-            setVal('f-cidade', pericia.endereco.cidade);
-            setVal('f-uf', pericia.endereco.uf);
+        // Handle defaults and special cases not covered directly by Binder/Model 1:1 mapping
+        // e.g. if model is empty/new, set defaults
+        if (!id) {
+            const defaults = {
+                tipoAcao: "Trabalhista",
+                maoDominante: "Destro",
+                objetivo: DEFAULTS.OBJETIVO,
+                metodologia: DEFAULTS.METODOLOGIA,
+                assistentes: "Ausentes",
+                statusPagamento: PAYMENT_STATUS.PENDING,
+                prognostico: "Bom",
+                necessidadeAssistencia: "Não",
+                nexo: DEFAULTS.NEXO,
+                parecer: DEFAULTS.PARECER
+            };
+            Binder.bindToView(container, defaults);
         }
 
-        // Populate Status/Finance
-        setVal('f-data_pericia', pericia.dataPericia ? pericia.dataPericia.split('T')[0] : '');
-        setVal('f-valor_honorarios', pericia.valorHonorarios || 0);
-        setVal('f-status_pagamento', pericia.statusPagamento || PAYMENT_STATUS.PENDING);
+        // Handle specific fields that need formatting or complex logic
+        if (pericia.dataPericia) {
+            document.getElementById('f-data_pericia').value = pericia.dataPericia.split('T')[0];
+        }
 
-        setVal('f-objetivo', pericia.objetivo || DEFAULTS.OBJETIVO);
-        setVal('f-metodologia', pericia.metodologia || DEFAULTS.METODOLOGIA);
-        setVal('f-local_pericia', pericia.localPericia || "");
-        setVal('f-assistentes', pericia.assistentes || "Ausentes");
-
-        // Populate Occupational History
-        setVal('f-data_acidente', pericia.dataAcidente);
-        setVal('f-profissao', pericia.profissao);
-        setVal('f-tempo_funcao', pericia.tempoFuncao);
-        setVal('f-desc_atividades', pericia.descAtividades);
-        setVal('f-epis', pericia.epis);
-        setVal('f-antecedentes', pericia.antecedentes);
-        setVal('f-historico_previdenciario', pericia.historicoPrevidenciario);
-
-        setVal('f-exames_complementares', pericia.examesComplementares);
-
-        // Populate Conclusion
-        setVal('f-discussao', pericia.discussao);
-        setVal('f-cid', pericia.cid);
-        setVal('f-nexo', pericia.nexo || DEFAULTS.NEXO);
-        setVal('f-did', pericia.did);
-        setVal('f-dii', pericia.dii);
-        setVal('f-parecer', pericia.parecer || DEFAULTS.PARECER);
-        setVal('f-prognostico', pericia.prognostico || "Bom");
-        setVal('f-necessidade_assistencia', pericia.necessidadeAssistencia || "Não");
-        setVal('f-bibliografia', pericia.bibliografia);
+        this.calcAge();
 
         // Check for Auto-Save Draft
         const draft = localStorage.getItem(DB_KEYS.DRAFT);
@@ -138,19 +105,8 @@ export const FormController = {
                     UI.Toast.show('Não foi possível recuperar o rascunho. Os dados estão inválidos.', 'warning');
                     return;
                 }
-                // Apply draft values
-                // Note: draftData will have camelCase keys because collectFormData generates camelCase
-                Object.keys(draftData).forEach(key => {
-                    // Mapping camelCase keys back to HTML IDs (snake-ish)
-                    // This is a bit tricky, so we might need a map.
-                    // Or we just check known keys.
-                    let htmlId = 'f-' + key.replace(/([A-Z])/g, "_$1").toLowerCase(); // simple converter
-                    // Exception: numeroProcesso -> f-numero_processo
 
-                    if (document.getElementById(htmlId)) {
-                        setVal(htmlId, draftData[key]);
-                    }
-                });
+                Binder.bindToView(container, draftData);
 
                 // Merge draft text fields into the pericia object for initQuill
                 pericia.anamnese = draftData.anamnese;
@@ -265,10 +221,17 @@ export const FormController = {
             const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
             const data = await response.json();
             if (!data.erro) {
-                document.getElementById('f-logradouro').value = data.logradouro;
-                document.getElementById('f-bairro').value = data.bairro;
-                document.getElementById('f-cidade').value = data.localidade;
-                document.getElementById('f-uf').value = data.uf;
+                // We can use Binder to set these if we create a partial model
+                const addressModel = {
+                    endereco: {
+                        logradouro: data.logradouro,
+                        bairro: data.bairro,
+                        cidade: data.localidade,
+                        uf: data.uf
+                    }
+                };
+                // Use partial=true to avoid clearing other fields
+                Binder.bindToView(document.getElementById('view-form'), addressModel, true);
                 document.getElementById('f-numero').focus();
                 this.autoSave();
             } else {
@@ -370,67 +333,23 @@ export const FormController = {
     },
 
     collectFormData() {
-        return {
-            id: this.currentPericiaId,
-            numeroProcesso: document.getElementById('f-numero_processo').value,
-            vara: document.getElementById('f-vara').value,
-            tipoAcao: document.getElementById('f-tipo_acao').value,
-            nomeAutor: document.getElementById('f-nome_autor').value,
+        // Use Binder to collect standard fields
+        const container = document.getElementById('view-form');
+        const data = Binder.bindToModel(container);
 
-            dataNascimento: document.getElementById('f-data_nascimento').value,
-            cpf: document.getElementById('f-cpf').value,
-            rg: document.getElementById('f-rg').value,
-            escolaridade: document.getElementById('f-escolaridade').value,
-            estadoCivil: document.getElementById('f-estado_civil').value,
-            ctps: document.getElementById('f-ctps').value,
-            cnh: document.getElementById('f-cnh').value,
-            maoDominante: document.getElementById('f-mao_dominante').value,
+        // Add ID if it exists
+        if(this.currentPericiaId) data.id = this.currentPericiaId;
 
-            endereco: {
-                cep: document.getElementById('f-cep').value,
-                logradouro: document.getElementById('f-logradouro').value,
-                numero: document.getElementById('f-numero').value,
-                complemento: document.getElementById('f-complemento').value,
-                bairro: document.getElementById('f-bairro').value,
-                cidade: document.getElementById('f-cidade').value,
-                uf: document.getElementById('f-uf').value
-            },
+        // Add rich text content (Quill)
+        data.anamnese = this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '';
+        data.exameFisico = this.editors['exameFisico'] ? this.editors['exameFisico'].root.innerHTML : '';
+        data.conclusao = this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '';
+        data.quesitos = this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '';
 
-            dataAcidente: document.getElementById('f-data_acidente').value,
-            profissao: document.getElementById('f-profissao').value,
-            tempoFuncao: document.getElementById('f-tempo_funcao').value,
-            descAtividades: document.getElementById('f-desc_atividades').value,
-            epis: document.getElementById('f-epis').value,
-            antecedentes: document.getElementById('f-antecedentes').value,
-            historicoPrevidenciario: document.getElementById('f-historico_previdenciario').value,
+        // Add documents array
+        data.documents = this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : [];
 
-            examesComplementares: document.getElementById('f-exames_complementares').value,
-            discussao: document.getElementById('f-discussao').value,
-            cid: document.getElementById('f-cid').value,
-            nexo: document.getElementById('f-nexo').value,
-            did: document.getElementById('f-did').value,
-            dii: document.getElementById('f-dii').value,
-            parecer: document.getElementById('f-parecer').value,
-            prognostico: document.getElementById('f-prognostico').value,
-            necessidadeAssistencia: document.getElementById('f-necessidade_assistencia').value,
-            bibliografia: document.getElementById('f-bibliografia').value,
-
-            dataPericia: document.getElementById('f-data_pericia').value,
-            valorHonorarios: parseFloat(document.getElementById('f-valor_honorarios').value || 0),
-            statusPagamento: document.getElementById('f-status_pagamento').value,
-
-            objetivo: document.getElementById('f-objetivo').value,
-            metodologia: document.getElementById('f-metodologia').value,
-            localPericia: document.getElementById('f-local_pericia').value,
-            assistentes: document.getElementById('f-assistentes').value,
-
-            anamnese: this.editors['anamnese'] ? this.editors['anamnese'].root.innerHTML : '',
-            exameFisico: this.editors['exameFisico'] ? this.editors['exameFisico'].root.innerHTML : '',
-            conclusao: this.editors['conclusao'] ? this.editors['conclusao'].root.innerHTML : '',
-            quesitos: this.editors['quesitos'] ? this.editors['quesitos'].root.innerHTML : '',
-
-            documents: this.currentPericiaId ? (Storage.getPericia(this.currentPericiaId).documents || []) : []
-        };
+        return data;
     },
 
     autoSave: Utils.debounce(function() {
@@ -620,44 +539,50 @@ export const FormController = {
         UI.Modal.confirm("Carregar template? Isso substituirá os dados atuais.", () => {
             const t = Storage.getTemplates().find(x => x.id == id);
             if(t) {
-                const data = t.data;
-                // Reverse mapping or direct assignment?
-                // Templates saved with NEW version will have camelCase keys.
-                // Templates saved with OLD version will have snake_case keys.
-                // We should handle both or rely on manual mapping.
-                // Since we just refactored, old templates in storage are snake_case.
-                // But wait, Storage doesn't migrate Templates!
+                // Legacy support: convert snake_case to camelCase if needed
+                const data = this._normalizeLegacyData(t.data);
 
-                // I should probably add migration for templates in Storage, but let's handle it gracefully here.
+                // Use Binder to apply template data
+                Binder.bindToView(document.getElementById('view-form'), data);
 
-                const map = {
-                    numeroProcesso: 'f-numero_processo',
-                    numero_processo: 'f-numero_processo', // Legacy support
-                    vara: 'f-vara',
-                    tipoAcao: 'f-tipo_acao',
-                    tipo_acao: 'f-tipo_acao',
-                    // ... and so on
-                };
-
-                // Better strategy: Use the camelCase to ID converter used in draft logic
-                Object.keys(data).forEach(key => {
-                    let htmlId = 'f-' + key.replace(/([A-Z])/g, "_$1").toLowerCase();
-                    if (key === 'numeroProcesso') htmlId = 'f-numero_processo'; // Edge case
-
-                    // Legacy snake_case keys just work naturally with 'f-' prefix usually
-                    if (key.includes('_')) htmlId = 'f-' + key;
-
-                    const el = document.getElementById(htmlId);
-                    if(el) el.value = data[key] || '';
-                });
-
+                // Handle rich text manually still
                 if (this.editors['anamnese']) this.editors['anamnese'].root.innerHTML = data.anamnese || '';
-                if (this.editors['exameFisico']) this.editors['exameFisico'].root.innerHTML = data.exameFisico || data.exame_fisico || '';
+                if (this.editors['exameFisico']) this.editors['exameFisico'].root.innerHTML = data.exameFisico || '';
                 if (this.editors['conclusao']) this.editors['conclusao'].root.innerHTML = data.conclusao || '';
                 if (this.editors['quesitos']) this.editors['quesitos'].root.innerHTML = data.quesitos || '';
             }
         });
         document.getElementById('template-selector').value = "";
+    },
+
+    _normalizeLegacyData(data) {
+        const newData = { ...data };
+        // Map common snake_case keys to camelCase
+        const map = {
+            'numero_processo': 'numeroProcesso',
+            'nome_autor': 'nomeAutor',
+            'data_nascimento': 'dataNascimento',
+            'estado_civil': 'estadoCivil',
+            'mao_dominante': 'maoDominante',
+            'data_pericia': 'dataPericia',
+            'valor_honorarios': 'valorHonorarios',
+            'status_pagamento': 'statusPagamento',
+            'local_pericia': 'localPericia',
+            'data_acidente': 'dataAcidente',
+            'tempo_funcao': 'tempoFuncao',
+            'desc_atividades': 'descAtividades',
+            'historico_previdenciario': 'historicoPrevidenciario',
+            'exames_complementares': 'examesComplementares',
+            'exame_fisico': 'exameFisico',
+            'necessidade_assistencia': 'necessidadeAssistencia'
+        };
+
+        Object.keys(data).forEach(key => {
+            if (map[key] && !newData[map[key]]) {
+                newData[map[key]] = data[key];
+            }
+        });
+        return newData;
     },
 
     // --- Annotation ---
