@@ -7,7 +7,7 @@
     <title>Sistema de Perícias Médicas (Web)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e40af">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.quilljs.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.quilljs.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: blob:; connect-src 'self' https://viacep.com.br; object-src 'none';">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -331,15 +331,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div class="form-group">
                                         <label class="form-label" for="f-numero_processo">Processo <span class="text-red-500">*</span></label>
-                                        <input id="f-numero_processo" type="text" class="form-input" required>
+                                        <input id="f-numero_processo" data-model="numeroProcesso" type="text" class="form-input" required>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-vara">Vara / Comarca</label>
-                                        <input id="f-vara" type="text" class="form-input">
+                                        <input id="f-vara" data-model="vara" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-tipo_acao">Natureza da Ação</label>
-                                        <select id="f-tipo_acao" class="form-select">
+                                        <select id="f-tipo_acao" data-model="tipoAcao" class="form-select">
                                             <option value="Trabalhista">Trabalhista</option>
                                             <option value="Cível">Cível</option>
                                             <option value="Previdenciária">Previdenciária</option>
@@ -355,12 +355,12 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                     <div class="form-group">
                                         <label class="form-label" for="f-nome_autor">Nome Completo <span class="text-red-500">*</span></label>
-                                        <input id="f-nome_autor" type="text" class="form-input" required>
+                                        <input id="f-nome_autor" data-model="nomeAutor" type="text" class="form-input" required>
                                     </div>
                                     <div class="flex gap-4">
                                         <div class="w-1/2 form-group">
                                             <label class="form-label" for="f-data_nascimento">Data Nasc.</label>
-                                            <input id="f-data_nascimento" type="date" class="form-input">
+                                            <input id="f-data_nascimento" data-model="dataNascimento" type="date" class="form-input">
                                         </div>
                                         <div class="w-1/2 flex items-end pb-2">
                                             <span id="f-idade-display" class="text-primary-600 dark:text-primary-400 font-bold text-lg"></span>
@@ -370,15 +370,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                                     <div class="form-group">
                                         <label class="form-label" for="f-cpf">CPF</label>
-                                        <input id="f-cpf" type="text" class="form-input">
+                                        <input id="f-cpf" data-model="cpf" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-rg">RG / Documento</label>
-                                        <input id="f-rg" type="text" class="form-input">
+                                        <input id="f-rg" data-model="rg" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-escolaridade">Escolaridade</label>
-                                        <select id="f-escolaridade" class="form-select">
+                                        <select id="f-escolaridade" data-model="escolaridade" class="form-select">
                                             <option value="">Selecione...</option>
                                             <option value="Fundamental Incompleto">Fundamental Incompleto</option>
                                             <option value="Fundamental Completo">Fundamental Completo</option>
@@ -390,15 +390,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div class="form-group">
                                         <label class="form-label" for="f-estado_civil">Estado Civil</label>
-                                        <input id="f-estado_civil" type="text" class="form-input">
+                                        <input id="f-estado_civil" data-model="estadoCivil" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-ctps">CTPS (Série/Nº)</label>
-                                        <input id="f-ctps" type="text" class="form-input">
+                                        <input id="f-ctps" data-model="ctps" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-mao_dominante">Mão Dominante</label>
-                                        <select id="f-mao_dominante" class="form-select">
+                                        <select id="f-mao_dominante" data-model="maoDominante" class="form-select">
                                             <option value="Destro">Destro</option>
                                             <option value="Canhoto">Canhoto</option>
                                             <option value="Ambidestro">Ambidestro</option>
@@ -407,7 +407,7 @@
                                 </div>
                                 <div class="form-group mt-4">
                                      <label class="form-label" for="f-cnh">CNH (Categoria)</label>
-                                     <input id="f-cnh" type="text" class="form-input" placeholder="Ex: B">
+                                     <input id="f-cnh" data-model="cnh" type="text" class="form-input" placeholder="Ex: B">
                                 </div>
 
                                 <div class="mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
@@ -415,32 +415,32 @@
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                                         <div class="form-group relative">
                                             <label class="form-label" for="f-cep">CEP</label>
-                                            <input id="f-cep" type="text" class="form-input" placeholder="00000-000">
+                                            <input id="f-cep" data-model="endereco.cep" type="text" class="form-input" placeholder="00000-000">
                                             <span id="cep-loading" class="absolute right-3 top-9 hidden"><i class="fa-solid fa-spinner fa-spin text-primary-500"></i></span>
                                         </div>
                                         <div class="form-group md:col-span-2">
                                             <label class="form-label" for="f-logradouro">Logradouro</label>
-                                            <input id="f-logradouro" type="text" class="form-input">
+                                            <input id="f-logradouro" data-model="endereco.logradouro" type="text" class="form-input">
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="f-numero">Número</label>
-                                            <input id="f-numero" type="text" class="form-input">
+                                            <input id="f-numero" data-model="endereco.numero" type="text" class="form-input">
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div class="form-group">
                                             <label class="form-label" for="f-complemento">Complemento</label>
-                                            <input id="f-complemento" type="text" class="form-input">
+                                            <input id="f-complemento" data-model="endereco.complemento" type="text" class="form-input">
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="f-bairro">Bairro</label>
-                                            <input id="f-bairro" type="text" class="form-input">
+                                            <input id="f-bairro" data-model="endereco.bairro" type="text" class="form-input">
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label" for="f-cidade_uf">Cidade/UF</label>
                                             <div class="flex gap-2">
-                                                <input id="f-cidade" type="text" class="form-input flex-grow" placeholder="Cidade">
-                                                <input id="f-uf" type="text" class="form-input w-16" placeholder="UF" maxlength="2">
+                                                <input id="f-cidade" data-model="endereco.cidade" type="text" class="form-input flex-grow" placeholder="Cidade">
+                                                <input id="f-uf" data-model="endereco.uf" type="text" class="form-input w-16" placeholder="UF" maxlength="2">
                                             </div>
                                         </div>
                                     </div>
@@ -452,15 +452,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                      <div class="form-group">
                                         <label class="form-label" for="f-data_pericia">Data Perícia</label>
-                                        <input id="f-data_pericia" type="date" class="form-input">
+                                        <input id="f-data_pericia" data-model="dataPericia" type="date" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-valor_honorarios">Honorários (R$)</label>
-                                        <input id="f-valor_honorarios" type="number" step="0.01" class="form-input">
+                                        <input id="f-valor_honorarios" data-model="valorHonorarios" type="number" step="0.01" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-status_pagamento">Pagamento</label>
-                                        <select id="f-status_pagamento" class="form-select">
+                                        <select id="f-status_pagamento" data-model="statusPagamento" class="form-select">
                                             <option value="Pendente">Pendente</option>
                                             <option value="Pago">Pago</option>
                                         </select>
@@ -469,11 +469,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                                      <div class="form-group">
                                         <label class="form-label" for="f-local_pericia">Local da Perícia</label>
-                                        <input id="f-local_pericia" type="text" class="form-input" placeholder="Ex: Consultório, Hospital...">
+                                        <input id="f-local_pericia" data-model="localPericia" type="text" class="form-input" placeholder="Ex: Consultório, Hospital...">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-assistentes">Assistentes Técnicos</label>
-                                        <input id="f-assistentes" type="text" class="form-input" value="Ausentes">
+                                        <input id="f-assistentes" data-model="assistentes" type="text" class="form-input" value="Ausentes">
                                     </div>
                                 </div>
                             </div>
@@ -483,11 +483,11 @@
                                 <div class="space-y-4">
                                      <div class="form-group">
                                         <label class="form-label" for="f-objetivo">Objetivo</label>
-                                        <textarea id="f-objetivo" class="form-textarea h-20"></textarea>
+                                        <textarea id="f-objetivo" data-model="objetivo" class="form-textarea h-20"></textarea>
                                     </div>
                                      <div class="form-group">
                                         <label class="form-label" for="f-metodologia">Metodologia</label>
-                                        <textarea id="f-metodologia" class="form-textarea h-20"></textarea>
+                                        <textarea id="f-metodologia" data-model="metodologia" class="form-textarea h-20"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -499,25 +499,25 @@
                                 <h3 class="section-title">Histórico Ocupacional</h3>
                                 <div class="form-group mb-4">
                                     <label class="form-label" for="f-data_acidente">Data do Acidente / Fato</label>
-                                    <input id="f-data_acidente" type="date" class="form-input md:w-1/3">
+                                    <input id="f-data_acidente" data-model="dataAcidente" type="date" class="form-input md:w-1/3">
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                     <div class="form-group">
                                         <label class="form-label" for="f-profissao">Profissão / Cargo Atual</label>
-                                        <input id="f-profissao" type="text" class="form-input">
+                                        <input id="f-profissao" data-model="profissao" type="text" class="form-input">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-tempo_funcao">Tempo na Função</label>
-                                        <input id="f-tempo_funcao" type="text" class="form-input">
+                                        <input id="f-tempo_funcao" data-model="tempoFuncao" type="text" class="form-input">
                                     </div>
                                 </div>
                                 <div class="form-group mb-4">
                                     <label class="form-label" for="f-desc_atividades">Descrição das Atividades e Riscos</label>
-                                    <textarea id="f-desc_atividades" class="form-textarea h-24"></textarea>
+                                    <textarea id="f-desc_atividades" data-model="descAtividades" class="form-textarea h-24"></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="f-epis">EPIs (Equipamentos de Proteção Individual)</label>
-                                    <textarea id="f-epis" class="form-textarea h-16" placeholder="Descreva os EPIs utilizados e o fornecimento..."></textarea>
+                                    <textarea id="f-epis" data-model="epis" class="form-textarea h-16" placeholder="Descreva os EPIs utilizados e o fornecimento..."></textarea>
                                 </div>
                             </div>
 
@@ -531,12 +531,12 @@
 
                             <div class="section-block">
                                 <label class="section-title block mb-2" for="f-antecedentes">Antecedentes Pessoais e Familiares</label>
-                                <textarea id="f-antecedentes" class="form-textarea h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
+                                <textarea id="f-antecedentes" data-model="antecedentes" class="form-textarea h-24" placeholder="Comorbidades, cirurgias prévias, hábitos, histórico familiar..."></textarea>
                             </div>
 
                             <div class="section-block">
                                 <label class="section-title block mb-2" for="f-historico_previdenciario">Histórico Previdenciário</label>
-                                <textarea id="f-historico_previdenciario" class="form-textarea h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
+                                <textarea id="f-historico_previdenciario" data-model="historicoPrevidenciario" class="form-textarea h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
                             </div>
                         </div>
 
@@ -563,7 +563,7 @@
 
                                 <div class="form-group">
                                     <label class="form-label" for="f-exames_complementares">Descrição dos Exames Complementares</label>
-                                    <textarea id="f-exames_complementares" class="form-textarea h-32" placeholder="Data - Tipo - Resultado..."></textarea>
+                                    <textarea id="f-exames_complementares" data-model="examesComplementares" class="form-textarea h-32" placeholder="Data - Tipo - Resultado..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -572,7 +572,7 @@
                         <div id="tab-conclusao" class="tab-content hidden space-y-6">
                             <div class="section-block">
                                 <label class="section-title block mb-2" for="f-discussao">Discussão Médico-Legal</label>
-                                <textarea id="f-discussao" class="form-textarea h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
+                                <textarea id="f-discussao" data-model="discussao" class="form-textarea h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
                             </div>
 
                             <div class="section-block">
@@ -580,12 +580,12 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div class="relative form-group">
                                         <label class="form-label" for="f-cid">Diagnóstico (CID-10) <span class="text-red-500">*</span></label>
-                                        <input id="f-cid" type="text" class="form-input" placeholder="Digite código ou nome..." autocomplete="off" required>
+                                        <input id="f-cid" data-model="cid" type="text" class="form-input" placeholder="Digite código ou nome..." autocomplete="off" required>
                                         <ul id="cid-suggestions" class="absolute z-50 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden mt-1"></ul>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-nexo">Nexo Causal</label>
-                                        <select id="f-nexo" class="form-select">
+                                        <select id="f-nexo" data-model="nexo" class="form-select">
                                             <option value="Não há nexo">Não há nexo</option>
                                             <option value="Nexo Causal Típico (Trabalho)">Nexo Causal Típico (Trabalho)</option>
                                             <option value="Nexo Concausal (Agravamento)">Nexo Concausal (Agravamento)</option>
@@ -597,15 +597,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                                     <div class="form-group">
                                         <label class="form-label" for="f-did">DID (Início Doença)</label>
-                                        <input id="f-did" type="text" class="form-input" placeholder="dd/mm/aaaa">
+                                        <input id="f-did" data-model="did" type="text" class="form-input" placeholder="dd/mm/aaaa">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-dii">DII (Início Incapacidade)</label>
-                                        <input id="f-dii" type="text" class="form-input" placeholder="dd/mm/aaaa ou 'Não há'">
+                                        <input id="f-dii" data-model="dii" type="text" class="form-input" placeholder="dd/mm/aaaa ou 'Não há'">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-parecer">Parecer Final</label>
-                                        <select id="f-parecer" class="form-select">
+                                        <select id="f-parecer" data-model="parecer" class="form-select">
                                             <option value="Apto">Apto / Capaz</option>
                                             <option value="Incapaz Temporariamente (Total)">Incapaz Temporariamente (Total)</option>
                                             <option value="Incapaz Permanentemente (Total)">Incapaz Permanentemente (Total)</option>
@@ -617,7 +617,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="form-group">
                                         <label class="form-label" for="f-prognostico">Prognóstico</label>
-                                        <select id="f-prognostico" class="form-select">
+                                        <select id="f-prognostico" data-model="prognostico" class="form-select">
                                             <option value="Bom">Bom</option>
                                             <option value="Reservado">Reservado</option>
                                             <option value="Ruim">Ruim</option>
@@ -626,7 +626,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="f-necessidade_assistencia">Necessita de Assistência de Terceiros?</label>
-                                        <select id="f-necessidade_assistencia" class="form-select">
+                                        <select id="f-necessidade_assistencia" data-model="necessidadeAssistencia" class="form-select">
                                             <option value="Não">Não</option>
                                             <option value="Sim - Parcial">Sim - Parcial</option>
                                             <option value="Sim - Permanente">Sim - Permanente</option>
@@ -645,7 +645,7 @@
 
                             <div class="section-block">
                                 <label class="section-title block mb-2" for="f-bibliografia">Bibliografia / Referências</label>
-                                <textarea id="f-bibliografia" class="form-textarea h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
+                                <textarea id="f-bibliografia" data-model="bibliografia" class="form-textarea h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
                             </div>
                         </div>
 

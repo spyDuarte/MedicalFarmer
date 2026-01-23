@@ -34,23 +34,15 @@ export const DashboardController = {
     },
 
     /**
-     * Renders the dashboard table and charts based on filters.
+     * Filters pericias based on current filter state.
      */
-    render() {
-        const pericias = Storage.getPericias();
-        const tbody = document.getElementById('dashboard-table-body');
-        if(!tbody) return;
-        tbody.innerHTML = '';
-
-        let totalRecebido = 0;
-        let totalPendente = 0;
-
+    filterPericias(pericias) {
         const search = document.getElementById('search-input').value.toLowerCase();
         const statusFilter = document.getElementById('status-filter').value;
         const dateStart = document.getElementById('date-start').value;
         const dateEnd = document.getElementById('date-end').value;
 
-        const filtered = pericias.filter(p => {
+        return pericias.filter(p => {
              // Access camelCase properties
              const matchesSearch = !search ||
                  (p.numeroProcesso && p.numeroProcesso.toLowerCase().includes(search)) ||
@@ -70,7 +62,21 @@ export const DashboardController = {
 
              return matchesSearch && matchesStatus && matchesDate;
         }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
 
+    /**
+     * Renders the dashboard table and charts based on filters.
+     */
+    render() {
+        const pericias = Storage.getPericias();
+        const tbody = document.getElementById('dashboard-table-body');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        const filtered = this.filterPericias(pericias);
+
+        let totalRecebido = 0;
+        let totalPendente = 0;
         const stats = {};
         Object.values(STATUS).forEach(s => stats[s] = 0);
 
