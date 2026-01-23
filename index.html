@@ -48,7 +48,7 @@
 
     <!-- Modals -->
     <!-- Confirmation Modal -->
-    <div id="custom-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all scale-100 border border-gray-100 dark:border-gray-700">
             <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
             <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">Tem certeza?</p>
@@ -60,14 +60,14 @@
     </div>
 
     <!-- Signature Modal -->
-    <div id="signature-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="signature-modal" role="dialog" aria-modal="true" aria-labelledby="signature-title" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all border border-gray-100 dark:border-gray-700">
-            <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Assinatura Digital</h3>
+            <h3 id="signature-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Assinatura Digital</h3>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white h-40 flex justify-center items-center cursor-crosshair relative">
                 <canvas id="signature-canvas" width="340" height="150" class="w-full h-full object-contain"></canvas>
             </div>
             <div class="flex justify-between mt-2">
-                <button id="btn-clear-signature" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1" aria-label="Limpar assinatura"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                <button id="btn-clear-signature" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1" aria-label="Limpar assinatura"><i class="fa-solid fa-eraser" aria-hidden="true"></i> Limpar</button>
             </div>
             <div class="flex justify-end gap-3 mt-4">
                 <button id="btn-cancel-signature" class="btn-secondary" aria-label="Cancelar assinatura">Cancelar</button>
@@ -77,24 +77,24 @@
     </div>
 
     <!-- Image Annotation Modal -->
-    <div id="annotation-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm">
+    <div id="annotation-modal" role="dialog" aria-modal="true" aria-labelledby="annotation-title" class="fixed inset-0 z-[80] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-pencil"></i> Anotar Imagem</h3>
+                <h3 id="annotation-title" class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Anotar Imagem</h3>
                 <div class="flex gap-2 items-center bg-gray-100 dark:bg-gray-700 p-1.5 rounded-lg">
-                    <button id="btn-annotate-pen" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm active" title="Caneta" aria-label="Ferramenta Caneta"><i class="fa-solid fa-pen"></i></button>
-                    <button id="btn-annotate-text" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm" title="Texto" aria-label="Ferramenta Texto"><i class="fa-solid fa-font"></i></button>
+                    <button id="btn-annotate-pen" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm active" title="Caneta" aria-label="Ferramenta Caneta"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+                    <button id="btn-annotate-text" class="tool-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-600 shadow-sm" title="Texto" aria-label="Ferramenta Texto"><i class="fa-solid fa-font" aria-hidden="true"></i></button>
                     <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                    <button id="btn-annotate-clear" class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-red-500" title="Limpar" aria-label="Limpar anotação"><i class="fa-solid fa-trash"></i></button>
+                    <button id="btn-annotate-clear" class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-red-500" title="Limpar" aria-label="Limpar anotação"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     <input type="color" id="annotation-color" value="#ff0000" class="h-8 w-8 p-0 border-0 rounded cursor-pointer ml-2" aria-label="Seletor de cor">
                 </div>
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" aria-label="Fechar modal de anotação"><i class="fa-solid fa-times fa-lg"></i></button>
+                <button id="btn-close-annotation-x" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" aria-label="Fechar modal de anotação"><i class="fa-solid fa-times fa-lg" aria-hidden="true"></i></button>
             </div>
             <div class="flex-grow bg-gray-100 dark:bg-gray-900 overflow-hidden relative border border-gray-200 dark:border-gray-700 rounded-lg flex justify-center items-center">
                 <canvas id="annotation-canvas" class="shadow-lg"></canvas>
             </div>
             <div class="mt-4 flex justify-end gap-3">
-                <button onclick="document.getElementById('annotation-modal').classList.add('hidden')" class="btn-secondary" aria-label="Cancelar anotação">Cancelar</button>
+                <button id="btn-close-annotation-cancel" class="btn-secondary" aria-label="Cancelar anotação">Cancelar</button>
                 <button id="btn-annotate-save" class="btn-primary" aria-label="Salvar anotação">Salvar Anotação</button>
             </div>
         </div>
@@ -111,7 +111,7 @@
         <!-- Logo -->
         <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
             <a href="#dashboard" class="text-xl font-bold flex items-center gap-2 text-primary-700 dark:text-primary-400">
-                <i class="fa-solid fa-scale-balanced text-2xl"></i>
+                <i class="fa-solid fa-scale-balanced text-2xl" aria-hidden="true"></i>
                 <span>Perito<span class="font-light text-gray-600 dark:text-gray-300">Sys</span></span>
             </a>
         </div>
@@ -151,7 +151,7 @@
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
              <div class="flex items-center gap-3">
                  <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 font-bold">
-                     <i class="fa-solid fa-user-doctor"></i>
+                     <i class="fa-solid fa-user-doctor" aria-hidden="true"></i>
                  </div>
                  <div class="flex-1 min-w-0">
                      <p class="text-sm font-medium text-gray-900 dark:text-white truncate">Dr. Perito</p>
@@ -169,7 +169,7 @@
         <!-- Top Header -->
         <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 lg:px-8 no-print">
             <button id="btn-mobile-menu" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="Abrir Menu" aria-expanded="false">
-                <i class="fa-solid fa-bars text-xl"></i>
+                <i class="fa-solid fa-bars text-xl" aria-hidden="true"></i>
             </button>
 
             <!-- Page Title (Dynamic) -->
@@ -178,7 +178,7 @@
             <div class="flex items-center gap-4">
                  <!-- Theme Toggle -->
                 <button id="btn-toggle-theme" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" title="Alternar Tema" aria-label="Alternar Tema Escuro/Claro">
-                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg" aria-hidden="true"></i>
                 </button>
             </div>
         </header>
@@ -196,7 +196,7 @@
                              <div class="flex items-center justify-between mb-4">
                                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pendente</h3>
                                  <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-yellow-600 dark:text-yellow-400">
-                                     <i class="fa-solid fa-clock"></i>
+                                     <i class="fa-solid fa-clock" aria-hidden="true"></i>
                                  </div>
                              </div>
                              <p id="total-pendente" class="text-2xl font-bold text-gray-800 dark:text-gray-100" aria-live="polite">R$ 0.00</p>
@@ -210,7 +210,7 @@
                              <div class="flex items-center justify-between mb-4">
                                  <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Recebido</h3>
                                  <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-                                     <i class="fa-solid fa-check"></i>
+                                     <i class="fa-solid fa-check" aria-hidden="true"></i>
                                  </div>
                              </div>
                              <p id="total-recebido" class="text-2xl font-bold text-gray-800 dark:text-gray-100" aria-live="polite">R$ 0.00</p>
@@ -234,7 +234,7 @@
                     <div class="flex flex-wrap gap-3 w-full md:w-auto items-center">
                          <div class="relative w-full md:w-64">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-search"></i>
+                                <i class="fa-solid fa-search" aria-hidden="true"></i>
                             </span>
                             <input type="text" id="search-input" aria-label="Buscar perícia" placeholder="Buscar perícia..." class="pl-10 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-all">
                         </div>
@@ -253,14 +253,14 @@
                     </div>
                     <div class="flex gap-2">
                          <button id="btn-export-backup" aria-label="Fazer Backup" class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-download"></i> Backup
+                            <i class="fa-solid fa-download" aria-hidden="true"></i> Backup
                         </button>
                         <label class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-upload"></i> Restaurar
+                            <i class="fa-solid fa-upload" aria-hidden="true"></i> Restaurar
                             <input type="file" id="input-import-backup" aria-label="Importar arquivo de backup" class="hidden" accept=".json,.enc">
                         </label>
                          <button class="text-gray-400 cursor-not-allowed px-3 py-2 rounded-lg text-sm font-medium" title="Em breve">
-                            <i class="fa-solid fa-star"></i> Templates
+                            <i class="fa-solid fa-star" aria-hidden="true"></i> Templates
                         </button>
                     </div>
                 </div>
@@ -290,21 +290,21 @@
                     <!-- Form Header -->
                     <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-20">
                         <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                             <i class="fa-solid fa-pen-to-square text-primary-600"></i> Editor de Perícia
+                             <i class="fa-solid fa-pen-to-square text-primary-600" aria-hidden="true"></i> Editor de Perícia
                         </h2>
                         <div class="flex gap-2 items-center flex-wrap justify-end">
                             <div class="flex items-center gap-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-1">
                                     <select id="template-selector" class="text-xs border-none bg-transparent dark:text-white focus:ring-0 cursor-pointer" aria-label="Selecionar Template">
                                     <option value="">Carregar Template...</option>
                                 </select>
-                                    <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template" aria-label="Salvar como Template"><i class="fa-solid fa-star"></i></button>
+                                    <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template" aria-label="Salvar como Template"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
                             </div>
 
                                 <button id="btn-save-form" class="btn-primary flex items-center gap-2 text-sm px-4 py-2" aria-label="Salvar rascunho">
-                                <i class="fa-solid fa-save"></i> Salvar
+                                <i class="fa-solid fa-save" aria-hidden="true"></i> Salvar
                             </button>
                                 <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm" aria-label="Finalizar e visualizar laudo">
-                                <i class="fa-solid fa-check"></i> Finalizar
+                                <i class="fa-solid fa-check" aria-hidden="true"></i> Finalizar
                             </button>
                                 <a href="#dashboard" class="btn-secondary text-sm flex items-center" aria-label="Voltar para o Dashboard">Voltar</a>
                         </div>
@@ -312,11 +312,11 @@
 
                     <!-- Tabs Navigation -->
                     <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-2 space-x-1 overflow-x-auto bg-gray-50 dark:bg-gray-800">
-                        <button class="tab-btn active" id="btn-tab-identificacao"><i class="fa-solid fa-id-card mr-2"></i> Identificação</button>
-                        <button class="tab-btn inactive" id="btn-tab-historico"><i class="fa-solid fa-history mr-2"></i> Histórico</button>
-                        <button class="tab-btn inactive" id="btn-tab-exame"><i class="fa-solid fa-user-md mr-2"></i> Exame</button>
-                        <button class="tab-btn inactive" id="btn-tab-conclusao"><i class="fa-solid fa-gavel mr-2"></i> Conclusão</button>
-                        <button class="tab-btn inactive" id="btn-tab-quesitos"><i class="fa-solid fa-question-circle mr-2"></i> Quesitos</button>
+                        <button class="tab-btn active" id="btn-tab-identificacao"><i class="fa-solid fa-id-card mr-2" aria-hidden="true"></i> Identificação</button>
+                        <button class="tab-btn inactive" id="btn-tab-historico"><i class="fa-solid fa-history mr-2" aria-hidden="true"></i> Histórico</button>
+                        <button class="tab-btn inactive" id="btn-tab-exame"><i class="fa-solid fa-user-md mr-2" aria-hidden="true"></i> Exame</button>
+                        <button class="tab-btn inactive" id="btn-tab-conclusao"><i class="fa-solid fa-gavel mr-2" aria-hidden="true"></i> Conclusão</button>
+                        <button class="tab-btn inactive" id="btn-tab-quesitos"><i class="fa-solid fa-question-circle mr-2" aria-hidden="true"></i> Quesitos</button>
                     </div>
 
                     <div class="p-6 md:p-8 bg-white dark:bg-gray-800">
@@ -517,7 +517,7 @@
                                     <h4 class="font-bold text-sm mb-3 text-gray-600 dark:text-gray-300">Anexar Exames/Laudos</h4>
                                     <div class="flex gap-2 mb-4">
                                         <input type="file" id="upload_document" aria-label="Selecionar arquivo para upload" class="text-sm border dark:border-gray-600 rounded w-full dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
-                                        <button id="btn-upload" aria-label="Enviar arquivo" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded shadow-sm transition-colors"><i class="fa-solid fa-upload"></i></button>
+                                        <button id="btn-upload" aria-label="Enviar arquivo" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded shadow-sm transition-colors"><i class="fa-solid fa-upload" aria-hidden="true"></i></button>
                                     </div>
                                     <ul id="documents-list-ul" class="space-y-2"></ul>
                                 </div>
@@ -625,7 +625,7 @@
             <!-- SETTINGS VIEW -->
             <div id="view-settings" class="view-section hidden max-w-2xl mx-auto">
                  <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 border border-gray-100 dark:border-gray-700">
-                    <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-cog text-gray-400"></i> Configurações do Perito</h1>
+                    <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fa-solid fa-cog text-gray-400" aria-hidden="true"></i> Configurações do Perito</h1>
 
                     <div class="space-y-4">
                         <div class="form-group">
@@ -648,7 +648,7 @@
 
                     <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
                         <button id="btn-open-signature" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-pen-nib"></i> Adicionar / Alterar Assinatura Digital
+                            <i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Adicionar / Alterar Assinatura Digital
                         </button>
                     </div>
 
@@ -819,7 +819,7 @@
                 </div>
 
                 <div class="fixed bottom-4 right-4 no-print flex gap-2">
-                    <button id="btn-export-pdf" class="bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 font-bold flex items-center gap-2 transition-transform transform hover:scale-105"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
+                    <button id="btn-export-pdf" class="bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 font-bold flex items-center gap-2 transition-transform transform hover:scale-105"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Baixar PDF</button>
                     <button id="btn-print-native" class="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 font-bold transition-transform transform hover:scale-105">Imprimir</button>
                     <button id="btn-close-print" class="bg-gray-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-gray-600 transition-transform transform hover:scale-105">Fechar</button>
                 </div>
@@ -842,8 +842,8 @@
                             <canvas id="chart-finance-status"></canvas>
                         </div>
                         <div class="flex justify-around mt-4 text-sm font-bold">
-                            <span class="text-green-600 dark:text-green-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs"></i> Pago: <span id="fin-total-paid">R$ 0,00</span></span>
-                            <span class="text-yellow-600 dark:text-yellow-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs"></i> Pendente: <span id="fin-total-pending">R$ 0,00</span></span>
+                            <span class="text-green-600 dark:text-green-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs" aria-hidden="true"></i> Pago: <span id="fin-total-paid">R$ 0,00</span></span>
+                            <span class="text-yellow-600 dark:text-yellow-400 flex items-center gap-1"><i class="fa-solid fa-circle text-xs" aria-hidden="true"></i> Pendente: <span id="fin-total-pending">R$ 0,00</span></span>
                         </div>
                     </div>
 

@@ -68,6 +68,21 @@ const MainController = {
 
         const btnAnnotateSave = document.getElementById('btn-annotate-save');
         if(btnAnnotateSave) btnAnnotateSave.addEventListener('click', () => FormController.saveAnnotation());
+
+        // Annotation Modal Close
+        const btnCloseAnnotateX = document.getElementById('btn-close-annotation-x');
+        if (btnCloseAnnotateX) btnCloseAnnotateX.addEventListener('click', () => {
+             const modal = document.getElementById('annotation-modal');
+             modal.classList.add('hidden');
+             UI.Modal.releaseFocus(modal);
+        });
+
+        const btnCloseAnnotateCancel = document.getElementById('btn-close-annotation-cancel');
+        if (btnCloseAnnotateCancel) btnCloseAnnotateCancel.addEventListener('click', () => {
+             const modal = document.getElementById('annotation-modal');
+             modal.classList.add('hidden');
+             UI.Modal.releaseFocus(modal);
+        });
     },
 
     /**

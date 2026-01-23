@@ -638,6 +638,7 @@ export const FormController = {
 
             modal.classList.remove('hidden');
             this.initCanvasEvents();
+            UI.Modal.trapFocus(modal);
         };
         img.src = content;
     },
@@ -678,7 +679,9 @@ export const FormController = {
         FileDB.saveFile(fileId, dataUrl).then(() => {
             Storage.savePericia(pericia);
             this.renderDocumentsList(pericia.documents);
-            document.getElementById('annotation-modal').classList.add('hidden');
+            const modal = document.getElementById('annotation-modal');
+            modal.classList.add('hidden');
+            UI.Modal.releaseFocus(modal);
             UI.Toast.show('Anotação salva.', 'success');
         });
     },

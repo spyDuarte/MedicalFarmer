@@ -29,7 +29,11 @@ export const SettingsController = {
         if (btnSigSave) btnSigSave.addEventListener('click', () => this.saveSignature());
 
         const btnSigCancel = document.getElementById('btn-cancel-signature');
-        if (btnSigCancel) btnSigCancel.addEventListener('click', () => document.getElementById('signature-modal').classList.add('hidden'));
+        if (btnSigCancel) btnSigCancel.addEventListener('click', () => {
+            const modal = document.getElementById('signature-modal');
+            modal.classList.add('hidden');
+            UI.Modal.releaseFocus(modal);
+        });
 
         // Input Masks
         const telInput = document.getElementById('s-telefone');
@@ -100,6 +104,7 @@ export const SettingsController = {
         canvas.onmouseup = () => { drawing = false; };
 
         modal.classList.remove('hidden');
+        UI.Modal.trapFocus(modal);
     },
 
     clearSignature() {
@@ -111,7 +116,9 @@ export const SettingsController = {
         const s = Storage.getSettings();
         s.signature = dataUrl;
         Storage.saveSettings(s);
-        document.getElementById('signature-modal').classList.add('hidden');
+        const modal = document.getElementById('signature-modal');
+        modal.classList.add('hidden');
+        UI.Modal.releaseFocus(modal);
         this.render();
         UI.Toast.show('Assinatura salva!', 'success');
     }
