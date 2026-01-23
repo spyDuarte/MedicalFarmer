@@ -80,6 +80,61 @@ export const UI = {
     },
 
     Modal: {
+        _previousActiveElement: null,
+        _handleKeyDown: null,
+
+        trapFocus(modal) {
+             this._previousActiveElement = document.activeElement;
+
+             const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+             const firstElement = focusableElements[0];
+             const lastElement = focusableElements[focusableElements.length - 1];
+
+             this._handleKeyDown = (e) => {
+                 if (e.key === 'Tab') {
+                     if (e.shiftKey) {
+                         if (document.activeElement === firstElement) {
+                             e.preventDefault();
+                             lastElement.focus();
+                         }
+                     } else {
+                         if (document.activeElement === lastElement) {
+                             e.preventDefault();
+                             firstElement.focus();
+                         }
+                     }
+                 } else if (e.key === 'Escape') {
+                     // Check if it is the custom modal (handled internally here)
+                     if (modal.id === 'custom-modal') {
+                         const cancelBtn = modal.querySelector('#modal-cancel');
+                         if (cancelBtn && !cancelBtn.classList.contains('hidden')) cancelBtn.click();
+                         else {
+                             const confirmBtn = modal.querySelector('#modal-confirm');
+                             if(confirmBtn) confirmBtn.click();
+                         }
+                     }
+                     // For other modals (signature, annotation), let the controller handle ESC via its own listeners or assume they call releaseFocus/close on ESC if they want.
+                     // But strictly speaking, the trap should consume ESC or trigger close.
+                     // For now, we only implement ESC handling for custom-modal here to avoid side effects.
+                     // A better approach would be passing a onClose callback.
+                 }
+             };
+
+             modal.addEventListener('keydown', this._handleKeyDown);
+             if (firstElement) firstElement.focus();
+        },
+
+        releaseFocus(modal) {
+             if (this._handleKeyDown) {
+                 modal.removeEventListener('keydown', this._handleKeyDown);
+                 this._handleKeyDown = null;
+             }
+             if (this._previousActiveElement) {
+                 this._previousActiveElement.focus();
+                 this._previousActiveElement = null;
+             }
+        },
+
         /**
          * Shows a confirmation modal.
          * @param {string} message - The question.
@@ -110,13 +165,16 @@ export const UI = {
 
             newConfirm.onclick = () => {
                 modal.classList.add('hidden');
+                this.releaseFocus(modal);
                 onConfirm();
             };
             newCancel.onclick = () => {
                 modal.classList.add('hidden');
+                this.releaseFocus(modal);
             };
 
             modal.classList.remove('hidden');
+            this.trapFocus(modal);
         },
 
         /**
@@ -150,11 +208,13 @@ export const UI = {
              newConfirm.innerText = "OK";
              newConfirm.onclick = () => {
                  modal.classList.add('hidden');
+                 this.releaseFocus(modal);
                  btnCancel.classList.remove('hidden'); // Restore for next use
                  newConfirm.innerText = "Confirmar"; // Restore
              };
 
              modal.classList.remove('hidden');
+             this.trapFocus(modal);
         },
 
         /**
