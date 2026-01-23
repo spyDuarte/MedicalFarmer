@@ -12,6 +12,7 @@ export const SpeechService = {
      * @param {HTMLElement} btn - The button element to toggle styles.
      */
     toggle(quill, btn) {
+        // eslint-disable-next-line no-undef
         if (!('webkitSpeechRecognition' in window)) {
             UI.Modal.alert("Navegador não suporta reconhecimento de voz.");
             return;
@@ -24,6 +25,7 @@ export const SpeechService = {
             return;
         }
 
+        // eslint-disable-next-line no-undef
         this.recognition = new webkitSpeechRecognition();
         this.recognition.lang = 'pt-BR';
         this.recognition.continuous = true;
@@ -54,6 +56,11 @@ export const SpeechService = {
                     quill.insertText(quill.getLength(), transcript);
                 }
             }
+        };
+
+        this.recognition.onerror = (event) => {
+            console.error('SpeechService: Error occurred in recognition: ' + event.error);
+            this.recognition.stop();
         };
 
         this.recognition.start();

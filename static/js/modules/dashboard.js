@@ -8,6 +8,7 @@ import { UI } from './ui.js';
  * Handles chart rendering and table filtering.
  */
 export const DashboardController = {
+    /** @type {Chart|null} */
     statusChart: null,
 
     /**
@@ -35,12 +36,20 @@ export const DashboardController = {
 
     /**
      * Filters pericias based on current filter state.
+     * @param {Array} pericias - List of pericias.
+     * @returns {Array} Filtered list.
      */
     filterPericias(pericias) {
-        const search = document.getElementById('search-input').value.toLowerCase();
-        const statusFilter = document.getElementById('status-filter').value;
-        const dateStart = document.getElementById('date-start').value;
-        const dateEnd = document.getElementById('date-end').value;
+        if (!Array.isArray(pericias)) return [];
+
+        const searchInput = document.getElementById('search-input');
+        const search = searchInput ? searchInput.value.toLowerCase() : '';
+        const statusSelect = document.getElementById('status-filter');
+        const statusFilter = statusSelect ? statusSelect.value : '';
+        const dateStartInput = document.getElementById('date-start');
+        const dateStart = dateStartInput ? dateStartInput.value : '';
+        const dateEndInput = document.getElementById('date-end');
+        const dateEnd = dateEndInput ? dateEndInput.value : '';
 
         return pericias.filter(p => {
              // Access camelCase properties
@@ -53,10 +62,18 @@ export const DashboardController = {
              let matchesDate = true;
              if (dateStart || dateEnd) {
                  const pDate = p.dataPericia ? new Date(p.dataPericia) : null;
-                 if (!pDate) matchesDate = false;
+                 if (!pDate || isNaN(pDate.getTime())) matchesDate = false;
                  else {
-                     if (dateStart && pDate < new Date(dateStart)) matchesDate = false;
-                     if (dateEnd && pDate > new Date(dateEnd)) matchesDate = false;
+                     // Normalize time for comparison
+                     const pTime = pDate.getTime();
+                     if (dateStart) {
+                         const dStart = new Date(dateStart).getTime();
+                         if (!isNaN(dStart) && pTime < dStart) matchesDate = false;
+                     }
+                     if (dateEnd) {
+                         const dEnd = new Date(dateEnd).getTime();
+                         if (!isNaN(dEnd) && pTime > dEnd) matchesDate = false;
+                     }
                  }
              }
 
@@ -75,14 +92,14 @@ export const DashboardController = {
 
         const filtered = this.filterPericias(pericias);
 
-        let totalRecebido = 0;
-        let totalPendente = 0;
+        let totalReceived = 0;
+        let totalPending = 0;
         const stats = {};
         Object.values(STATUS).forEach(s => stats[s] = 0);
 
         filtered.forEach(p => {
-            if (p.statusPagamento === PAYMENT_STATUS.PAID) totalRecebido += parseFloat(p.valorHonorarios || 0);
-            else totalPendente += parseFloat(p.valorHonorarios || 0);
+            if (p.statusPagamento === PAYMENT_STATUS.PAID) totalReceived += parseFloat(p.valorHonorarios || 0);
+            else totalPending += parseFloat(p.valorHonorarios || 0);
 
             if (stats[p.status] !== undefined) stats[p.status]++;
 
@@ -113,10 +130,10 @@ export const DashboardController = {
         });
 
         const elPending = document.getElementById('total-pendente');
-        if(elPending) elPending.innerText = Format.currency(totalPendente);
+        if(elPending) elPending.innerText = Format.currency(totalPending);
 
         const elReceived = document.getElementById('total-recebido');
-        if(elReceived) elReceived.innerText = Format.currency(totalRecebido);
+        if(elReceived) elReceived.innerText = Format.currency(totalReceived);
 
         this.renderCharts(stats);
     },
@@ -128,15 +145,13 @@ export const DashboardController = {
     renderCharts(stats) {
         const ctx = document.getElementById('chart-status');
         if (!ctx) return;
+        // eslint-disable-next-line no-undef
         if (this.statusChart) this.statusChart.destroy();
 
         const isDark = document.documentElement.classList.contains('dark');
-        // Use CSS variables if possible, but Chart.js needs explicit colors or canvas context.
-        // We will stick to hex for now but ensure they match our :root variables logically.
-        // --color-primary: #3b82f6
-        // --color-success: #22c55e
         const textColor = isDark ? '#e5e7eb' : '#374151';
 
+        // eslint-disable-next-line no-undef
         this.statusChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -173,6 +188,9 @@ export const DashboardController = {
         return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${status}</span>`;
     },
 
+    /**
+     * Exports data to CSV.
+     */
     exportToCSV() {
         const pericias = Storage.getPericias();
         if (pericias.length === 0) {

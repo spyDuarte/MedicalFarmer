@@ -2,65 +2,29 @@
 import { DEFAULTS } from './constants.js';
 
 /**
- * @typedef {Object} Processo
- * @property {string} numero - Número do processo
- * @property {string} vara - Vara judicial
- * @property {string} uf - Unidade Federativa
- * @property {string} comarca - Comarca
+ * @typedef {Object} DocumentMetadata
+ * @property {string|number} id - Unique file identifier.
+ * @property {string} originalName - Original file name.
  */
 
 /**
- * @typedef {Object} Partes
- * @property {string} autor - Nome do autor
- * @property {string} reu - Nome do réu
+ * @typedef {Object} Address
+ * @property {string} cep - ZIP code.
+ * @property {string} logradouro - Street name.
+ * @property {string} numero - Number.
+ * @property {string} complemento - Complement.
+ * @property {string} bairro - Neighborhood.
+ * @property {string} cidade - City.
+ * @property {string} uf - State (2 chars).
  */
 
 /**
- * @typedef {Object} Datas
- * @property {string|null} nomeacao - Data da nomeação (ISO 8601)
- * @property {string|null} diligencia - Data da diligência (ISO 8601)
- * @property {string|null} entrega - Data da entrega do laudo (ISO 8601)
- */
-
-/**
- * @typedef {Object} DocumentoMetadata
- * @property {string} id - Identificador único do arquivo
- * @property {string} originalName - Nome do arquivo
- * @property {number} tamanho - Tamanho em bytes
- * @property {string} tipo - Tipo MIME
- * @property {string} dataUpload - Data do upload (ISO 8601)
- */
-
-/**
- * @typedef {Object} Quesito
- * @property {string} id - ID único do quesito
- * @property {string} texto - O texto da pergunta
- * @property {string} [resposta] - A resposta dada (opcional inicialmente)
- */
-
-/**
- * @typedef {Object} Quesitos
- * @property {Quesito[]} juizo - Quesitos do Juízo
- * @property {Quesito[]} autor - Quesitos do Autor
- * @property {Quesito[]} reu - Quesitos do Réu
- */
-
-/**
- * @typedef {Object} Conclusao
- * @property {string} texto - Texto da conclusão
- * @property {boolean} nexoCausal - Se há nexo causal
- * @property {string} [diagnostico] - CID ou diagnóstico
- * @property {string} [did] - Data de Início da Doença
- * @property {string} [dii] - Data de Início da Incapacidade
- */
-
-/**
- * Classe que representa um modelo de Caso Pericial completo.
+ * Class representing a complete Forensic Case Model.
  */
 export class Pericia {
     /**
-     * Cria uma nova instância de Pericia.
-     * @param {Object} [data={}] - Dados iniciais para popular o modelo
+     * Creates a new Pericia instance.
+     * @param {Object} [data={}] - Initial data to populate the model.
      */
     constructor(data = {}) {
         /** @type {string|number} */
@@ -69,7 +33,7 @@ export class Pericia {
         /** @type {string} */
         this.createdAt = data.createdAt || data.created_at || new Date().toISOString();
 
-        /** @type {string} - Status do laudo (e.g. "Em Andamento", "Concluído") */
+        /** @type {string} - Case status (e.g., "Em Andamento", "Concluído"). */
         this.status = data.status || "Aguardando";
 
         /** @type {string} */
@@ -108,14 +72,14 @@ export class Pericia {
         /** @type {string} */
         this.cnh = data.cnh || "";
 
-        // Dados Pessoais Flat (para facilitar binding)
+        // Personal Data (Flat structure for Binder compatibility)
         this.nomeAutor = data.nomeAutor || data.nome_autor || "";
         this.dataNascimento = data.dataNascimento || data.data_nascimento || "";
         this.cpf = data.cpf || "";
         this.rg = data.rg || "";
         this.escolaridade = data.escolaridade || "";
 
-        // Endereço do Periciado
+        /** @type {Address} */
         this.endereco = {
             cep: data.endereco?.cep || "",
             logradouro: data.endereco?.logradouro || "",
@@ -126,7 +90,7 @@ export class Pericia {
             uf: data.endereco?.uf || ""
         };
 
-        // Histórico Ocupacional
+        // Occupational History
         this.profissao = data.profissao || "";
         this.tempoFuncao = data.tempoFuncao || data.tempo_funcao || "";
         this.descAtividades = data.descAtividades || data.desc_atividades || "";
@@ -141,81 +105,54 @@ export class Pericia {
         /** @type {string} */
         this.necessidadeAssistencia = data.necessidadeAssistencia || data.necessidade_assistencia || "Não";
 
-        // Financeiro
+        // Financial Data
         this.dataPericia = data.dataPericia || data.data_pericia || "";
         this.valorHonorarios = data.valorHonorarios || data.valor_honorarios || 0;
         this.statusPagamento = data.statusPagamento || data.status_pagamento || "Pendente";
 
-        // Campos de Texto Rico
+        // Rich Text Fields (HTML)
         this.anamnese = data.anamnese || "";
         this.exameFisico = data.exameFisico || data.exame_fisico || "";
         this.examesComplementares = data.examesComplementares || data.exames_complementares || "";
         this.discussao = data.discussao || "";
-        this.conclusao = data.conclusao || ""; // Texto HTML
+        this.conclusao = data.conclusao || "";
 
-        // Conclusão Estruturada
+        // Structured Conclusion Data
         this.cid = data.cid || "";
         this.nexo = data.nexo || "";
         this.did = data.did || "";
         this.dii = data.dii || "";
         this.parecer = data.parecer || "Apto";
 
-        /** @type {Processo} */
-        this.processo = {
-            numero: data.processo?.numero || data.numeroProcesso || data.numero_processo || "", // Fallback
-            vara: data.processo?.vara || data.vara || "",
-            uf: data.processo?.uf || "",
-            comarca: data.processo?.comarca || ""
-        };
+        // Process Data
+        this.numeroProcesso = data.numeroProcesso || data.numero_processo || "";
+        this.vara = data.vara || "";
 
-        // Flat properties for compatibility with existing UI logic if needed,
-        // but prefer using the structured objects or flat ones above.
-        // We exposed flat properties for author/process above to match current FormController logic.
-        this.numeroProcesso = this.processo.numero;
-        this.vara = this.processo.vara;
-
-        /** @type {DocumentoMetadata[]} */
+        /** @type {DocumentMetadata[]} */
         const rawDocs = data.documents || data.documentos;
         this.documents = Array.isArray(rawDocs) ? rawDocs.map(d => ({
-            ...d,
-            originalName: d.originalName || d.original_name // Migrate on load
+            id: d.id,
+            originalName: d.originalName || d.original_name // Normalization
         })) : [];
 
-        /** @type {Quesitos} */
-        this.quesitos = {
-            juizo: Array.isArray(data.quesitos?.juizo) ? data.quesitos.juizo : [],
-            autor: Array.isArray(data.quesitos?.autor) ? data.quesitos.autor : [],
-            reu: Array.isArray(data.quesitos?.reu) ? data.quesitos.reu : []
-        };
-        // If 'quesitos' came as a string (HTML), it overrides the object structure in some legacy contexts,
-        // but here we keep strict separation. If 'quesitos' is a string in data, it goes to 'this.quesitosHTML' maybe?
-        // The current app uses 'quesitos' as a HTML string in the FormController!
-        // "quesitos: this.editors['quesitos'].root.innerHTML"
-        // So 'quesitos' property is actually a STRING in the current app, not an object.
-        // I will fix this definition to match reality.
-        if (typeof data.quesitos === 'string') {
-             this.quesitos = data.quesitos;
-        } else if (!this.quesitos || typeof this.quesitos === 'object') {
-             // If it was an object (from the Type definition I saw earlier), convert to string or keep?
-             // The previous model defined it as an object, but form.js saved it as HTML string.
-             // I will assume it is a STRING for the text editor.
-             this.quesitos = typeof data.quesitos === 'string' ? data.quesitos : "";
-        }
+        // Questions (Quesitos) - Stored as HTML string in current implementation
+        this.quesitos = (typeof data.quesitos === 'string') ? data.quesitos : "";
     }
 
     /**
-     * Adiciona um documento à lista de anexos.
-     * @param {DocumentoMetadata} doc
+     * Adds a document to the list.
+     * @param {DocumentMetadata} doc
      */
-    addDocumento(doc) {
+    addDocument(doc) {
         this.documents.push(doc);
     }
 
     /**
-     * Remove um documento pelo ID.
-     * @param {string} id
+     * Removes a document by ID.
+     * @param {string|number} id
      */
-    removeDocumento(id) {
-        this.documents = this.documents.filter(d => d.id !== id);
+    removeDocument(id) {
+        // eslint-disable-next-line eqeqeq
+        this.documents = this.documents.filter(d => d.id != id);
     }
 }
