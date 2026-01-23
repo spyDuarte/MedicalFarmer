@@ -130,8 +130,8 @@ async function runTests() {
     console.log('--- Starting Storage & DB Tests ---');
 
     // Dynamic Import after Mocks
-    const { Storage } = await import('../../frontend/static/js/modules/storage.js');
-    const { FileDB } = await import('../../frontend/static/js/modules/db.js');
+    const { Storage } = await import('../../static/js/modules/storage.js');
+    const { FileDB } = await import('../../static/js/modules/db.js');
 
     // Reset State
     localStorage.clear();

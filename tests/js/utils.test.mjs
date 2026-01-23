@@ -1,5 +1,5 @@
 
-import { Mask, Validator, Format, JSONUtils, Utils } from '../../frontend/static/js/modules/utils.js';
+import { Mask, Validator, Format, JSONUtils, Utils } from '../../static/js/modules/utils.js';
 
 // Simple Test Runner
 let passed = 0;
