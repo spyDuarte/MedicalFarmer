@@ -41,10 +41,9 @@ self.addEventListener('fetch', (event) => {
     // Navigation fallback for SPA (return index.html for non-file routes)
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            caches.match('/index.html')
-                .then(response => {
-                    return response || fetch(event.request).catch(() => caches.match('/index.html'));
-                })
+            caches.match('./index.html').then((response) => {
+                return response || fetch(event.request).catch(() => caches.match('./index.html'));
+            })
         );
         return;
     }
