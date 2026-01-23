@@ -2,6 +2,7 @@ import { FileDB } from './db.js';
 import { DEFAULT_MACROS, DEFAULT_TEMPLATES } from './default_data.js';
 import { DB_KEYS } from './constants.js';
 import { Pericia } from './models.js';
+import { JSONUtils } from './utils.js';
 
 /**
  * Storage module for handling LocalStorage and IndexedDB interactions.
@@ -40,7 +41,8 @@ export const Storage = {
         try {
             const raw = localStorage.getItem(DB_KEYS.PERICIAS);
             if (!raw) return;
-            let pericias = JSON.parse(raw);
+            let pericias = JSONUtils.parse(raw, [], 'perícias');
+            if (!Array.isArray(pericias)) return;
             let modified = false;
 
             pericias = pericias.map(p => {
@@ -72,7 +74,8 @@ export const Storage = {
      * @returns {Array} List of pericias.
      */
     getPericias() {
-        const list = JSON.parse(localStorage.getItem(DB_KEYS.PERICIAS) || '[]');
+        const list = JSONUtils.parse(localStorage.getItem(DB_KEYS.PERICIAS), [], 'perícias');
+        if (!Array.isArray(list)) return [];
         // Ensure they are proper objects (in case migration didn't run or new fields added)
         return list.map(p => new Pericia(p));
     },
@@ -138,7 +141,8 @@ export const Storage = {
      * @returns {Array} List of macros.
      */
     getMacros() {
-        return JSON.parse(localStorage.getItem(DB_KEYS.MACROS) || '[]');
+        const macros = JSONUtils.parse(localStorage.getItem(DB_KEYS.MACROS), [], 'macros');
+        return Array.isArray(macros) ? macros : [];
     },
 
     /**
@@ -169,7 +173,8 @@ export const Storage = {
      * @returns {Object} Settings object.
      */
     getSettings() {
-        return JSON.parse(localStorage.getItem(DB_KEYS.SETTINGS) || '{}');
+        const settings = JSONUtils.parse(localStorage.getItem(DB_KEYS.SETTINGS), {}, 'configurações');
+        return settings && typeof settings === 'object' ? settings : {};
     },
 
     /**
@@ -187,7 +192,8 @@ export const Storage = {
      * @returns {Array} List of templates.
      */
     getTemplates() {
-        return JSON.parse(localStorage.getItem(DB_KEYS.TEMPLATES) || '[]');
+        const templates = JSONUtils.parse(localStorage.getItem(DB_KEYS.TEMPLATES), [], 'modelos');
+        return Array.isArray(templates) ? templates : [];
     },
 
     /**
