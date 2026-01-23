@@ -18,6 +18,33 @@ export const Mask = {
     },
 
     /**
+     * Masks a value as CNPJ (00.000.000/0000-00).
+     * @param {string} value
+     * @returns {string} Masked CNPJ.
+     */
+    cnpj(value) {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{2})(\d)/, '$1.$2')
+            .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+            .replace(/\.(\d{3})(\d)/, '.$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    },
+
+    /**
+     * Masks a value as CEP (00000-000).
+     * @param {string} value
+     * @returns {string} Masked CEP.
+     */
+    cep(value) {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{3})\d+?$/, '$1');
+    },
+
+    /**
      * Masks a value as Phone ( (00) 00000-0000 ).
      * @param {string} value
      * @returns {string} Masked Phone.
@@ -70,6 +97,54 @@ export const Validator = {
         if (remainder !== parseInt(cpf.substring(10, 11))) return false;
 
         return true;
+    },
+
+    /**
+     * Validates a CNPJ number.
+     * @param {string} cnpj
+     * @returns {boolean} True if valid.
+     */
+    cnpj(cnpj) {
+        cnpj = cnpj.replace(/[^\d]+/g, '');
+        if(cnpj === '') return false;
+        if (cnpj.length !== 14) return false;
+        // Eliminate known invalid CNPJs
+        if (/^(\d)\1+$/.test(cnpj)) return false;
+
+        let tamanho = cnpj.length - 2;
+        let numeros = cnpj.substring(0,tamanho);
+        let digitos = cnpj.substring(tamanho);
+        let soma = 0;
+        let pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+          soma += numeros.charAt(tamanho - i) * pos--;
+          if (pos < 2) pos = 9;
+        }
+        let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+        tamanho = tamanho + 1;
+        numeros = cnpj.substring(0,tamanho);
+        soma = 0;
+        pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+          soma += numeros.charAt(tamanho - i) * pos--;
+          if (pos < 2) pos = 9;
+        }
+        resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado !== parseInt(digitos.charAt(1))) return false;
+
+        return true;
+    },
+
+    /**
+     * Validates an Email address.
+     * @param {string} email
+     * @returns {boolean} True if valid.
+     */
+    email(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     }
 };
 
@@ -132,5 +207,49 @@ export const JSONUtils = {
             console.warn(`Falha ao interpretar ${context}. Usando valor padrão.`, error);
             return fallback;
         }
+    }
+};
+
+/**
+ * General Utilities.
+ */
+export const Utils = {
+    /**
+     * Debounces a function.
+     * @param {Function} func - The function to debounce.
+     * @param {number} wait - The delay in milliseconds.
+     * @returns {Function}
+     */
+    debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    },
+
+    /**
+     * Deep clones an object.
+     * @param {Object} obj
+     * @returns {Object}
+     */
+    deepClone(obj) {
+        if (obj === null || typeof obj !== 'object') return obj;
+
+        if (obj instanceof Date) {
+            return new Date(obj.getTime());
+        }
+
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.deepClone(item));
+        }
+        const cloned = {};
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                cloned[key] = this.deepClone(obj[key]);
+            }
+        }
+        return cloned;
     }
 };

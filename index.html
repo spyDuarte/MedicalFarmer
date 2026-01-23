@@ -252,6 +252,9 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
+                        <button id="btn-export-csv" aria-label="Exportar Planilha" class="text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV
+                        </button>
                          <button id="btn-export-backup" aria-label="Fazer Backup" class="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                             <i class="fa-solid fa-download" aria-hidden="true"></i> Backup
                         </button>
@@ -405,6 +408,42 @@
                                 <div class="form-group mt-4">
                                      <label class="form-label" for="f-cnh">CNH (Categoria)</label>
                                      <input id="f-cnh" type="text" class="form-input" placeholder="Ex: B">
+                                </div>
+
+                                <div class="mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
+                                    <h4 class="font-bold text-sm mb-3 text-gray-600 dark:text-gray-300">Endereço Residencial</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+                                        <div class="form-group relative">
+                                            <label class="form-label" for="f-cep">CEP</label>
+                                            <input id="f-cep" type="text" class="form-input" placeholder="00000-000">
+                                            <span id="cep-loading" class="absolute right-3 top-9 hidden"><i class="fa-solid fa-spinner fa-spin text-primary-500"></i></span>
+                                        </div>
+                                        <div class="form-group md:col-span-2">
+                                            <label class="form-label" for="f-logradouro">Logradouro</label>
+                                            <input id="f-logradouro" type="text" class="form-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="f-numero">Número</label>
+                                            <input id="f-numero" type="text" class="form-input">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="f-complemento">Complemento</label>
+                                            <input id="f-complemento" type="text" class="form-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="f-bairro">Bairro</label>
+                                            <input id="f-bairro" type="text" class="form-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="f-cidade_uf">Cidade/UF</label>
+                                            <div class="flex gap-2">
+                                                <input id="f-cidade" type="text" class="form-input flex-grow" placeholder="Cidade">
+                                                <input id="f-uf" type="text" class="form-input w-16" placeholder="UF" maxlength="2">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

@@ -1,6 +1,7 @@
 import { Storage } from './storage.js';
 import { STATUS, PAYMENT_STATUS } from './constants.js';
-import { Format } from './utils.js';
+import { Format, Utils } from './utils.js';
+import { UI } from './ui.js';
 
 /**
  * Controller for the Dashboard View.
@@ -13,17 +14,23 @@ export const DashboardController = {
      * Binds events for dashboard filters.
      */
     bindEvents() {
-        const filters = ['status-filter', 'date-start', 'date-end', 'search-input'];
+        const filters = ['status-filter', 'date-start', 'date-end'];
         filters.forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                if(id === 'search-input') {
-                    el.addEventListener('keyup', () => this.render());
-                } else {
-                    el.addEventListener('change', () => this.render());
-                }
+                el.addEventListener('change', () => this.render());
             }
         });
+
+        const searchInput = document.getElementById('search-input');
+        if(searchInput) {
+            searchInput.addEventListener('keyup', Utils.debounce(() => this.render(), 300));
+        }
+
+        const btnExportCsv = document.getElementById('btn-export-csv');
+        if(btnExportCsv) {
+            btnExportCsv.addEventListener('click', () => this.exportToCSV());
+        }
     },
 
     /**
@@ -158,5 +165,48 @@ export const DashboardController = {
         };
         const cls = classes[status] || 'bg-gray-200 text-gray-900';
         return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${status}</span>`;
+    },
+
+    exportToCSV() {
+        const pericias = Storage.getPericias();
+        if (pericias.length === 0) {
+            UI.Toast.show('Não há dados para exportar.', 'warning');
+            return;
+        }
+
+        const escapeCsv = (val) => {
+            if (val === null || val === undefined) return '';
+            const str = String(val);
+            if (str.includes('"') || str.includes(';')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+
+        const headers = ['ID', 'Data Criação', 'Status', 'Processo', 'Autor', 'Data Perícia', 'Honorários', 'Status Pagamento', 'Cidade', 'UF'];
+        const rows = pericias.map(p => [
+            escapeCsv(p.id),
+            escapeCsv(p.createdAt.split('T')[0]),
+            escapeCsv(p.status),
+            escapeCsv(p.numeroProcesso),
+            escapeCsv(p.nomeAutor),
+            escapeCsv(p.dataPericia ? p.dataPericia.split('T')[0] : ''),
+            escapeCsv((p.valorHonorarios || 0).toString().replace('.', ',')),
+            escapeCsv(p.statusPagamento),
+            escapeCsv(p.endereco?.cidade),
+            escapeCsv(p.endereco?.uf)
+        ]);
+
+        let csvContent = "data:text/csv;charset=utf-8,"
+            + headers.join(";") + "\n"
+            + rows.map(e => e.join(";")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `pericias_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 };

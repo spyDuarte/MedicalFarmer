@@ -1,5 +1,5 @@
 import { Storage } from './storage.js';
-import { Mask, Validator, JSONUtils } from './utils.js';
+import { Mask, Validator, JSONUtils, Utils } from './utils.js';
 import { FileDB } from './db.js';
 import { CID10 } from '../cid_data.js';
 import { UI } from './ui.js';
@@ -86,6 +86,17 @@ export const FormController = {
         setVal('f-mao_dominante', pericia.maoDominante || "Destro");
         this.calcAge();
 
+        // Populate Address
+        if (pericia.endereco) {
+            setVal('f-cep', pericia.endereco.cep);
+            setVal('f-logradouro', pericia.endereco.logradouro);
+            setVal('f-numero', pericia.endereco.numero);
+            setVal('f-complemento', pericia.endereco.complemento);
+            setVal('f-bairro', pericia.endereco.bairro);
+            setVal('f-cidade', pericia.endereco.cidade);
+            setVal('f-uf', pericia.endereco.uf);
+        }
+
         // Populate Status/Finance
         setVal('f-data_pericia', pericia.dataPericia ? pericia.dataPericia.split('T')[0] : '');
         setVal('f-valor_honorarios', pericia.valorHonorarios || 0);
@@ -165,6 +176,10 @@ export const FormController = {
             el.oninput = (e) => {
                 this.autoSave();
                 if(el.id === 'f-cpf') e.target.value = Mask.cpf(e.target.value);
+                if(el.id === 'f-cep') {
+                    e.target.value = Mask.cep(e.target.value);
+                    if (e.target.value.length === 9) this.handleCEPSearch(e.target.value);
+                }
                 if(el.id === 'f-cid') this.handleCIDSearch(e);
             };
             el.onchange = (e) => {
@@ -237,6 +252,34 @@ export const FormController = {
             ul.appendChild(li);
         });
         ul.classList.remove('hidden');
+    },
+
+    async handleCEPSearch(cep) {
+        const cleanCep = cep.replace(/\D/g, '');
+        if (cleanCep.length !== 8) return;
+
+        const loading = document.getElementById('cep-loading');
+        if (loading) loading.classList.remove('hidden');
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+            const data = await response.json();
+            if (!data.erro) {
+                document.getElementById('f-logradouro').value = data.logradouro;
+                document.getElementById('f-bairro').value = data.bairro;
+                document.getElementById('f-cidade').value = data.localidade;
+                document.getElementById('f-uf').value = data.uf;
+                document.getElementById('f-numero').focus();
+                this.autoSave();
+            } else {
+                 UI.Toast.show('CEP não encontrado.', 'warning');
+            }
+        } catch (e) {
+            console.error(e);
+            UI.Toast.show('Erro ao buscar CEP.', 'error');
+        } finally {
+            if (loading) loading.classList.add('hidden');
+        }
     },
 
     initQuill(pericia) {
@@ -343,6 +386,16 @@ export const FormController = {
             cnh: document.getElementById('f-cnh').value,
             maoDominante: document.getElementById('f-mao_dominante').value,
 
+            endereco: {
+                cep: document.getElementById('f-cep').value,
+                logradouro: document.getElementById('f-logradouro').value,
+                numero: document.getElementById('f-numero').value,
+                complemento: document.getElementById('f-complemento').value,
+                bairro: document.getElementById('f-bairro').value,
+                cidade: document.getElementById('f-cidade').value,
+                uf: document.getElementById('f-uf').value
+            },
+
             dataAcidente: document.getElementById('f-data_acidente').value,
             profissao: document.getElementById('f-profissao').value,
             tempoFuncao: document.getElementById('f-tempo_funcao').value,
@@ -380,13 +433,10 @@ export const FormController = {
         };
     },
 
-    autoSave() {
-        if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
-        this.autoSaveTimeout = setTimeout(() => {
-            const data = this.collectFormData();
-            localStorage.setItem(DB_KEYS.DRAFT, JSON.stringify(data));
-        }, 2000);
-    },
+    autoSave: Utils.debounce(function() {
+        const data = this.collectFormData();
+        localStorage.setItem(DB_KEYS.DRAFT, JSON.stringify(data));
+    }, 2000),
 
     saveForm(finalize = false) {
         const data = this.collectFormData();
