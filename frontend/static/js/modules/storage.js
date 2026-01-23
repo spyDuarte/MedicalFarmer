@@ -12,26 +12,30 @@ export const Storage = {
      * Initializes the storage with default data if empty.
      */
     init() {
-        if (!localStorage.getItem(DB_KEYS.PERICIAS)) {
-            localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify([]));
-        }
-        if (!localStorage.getItem(DB_KEYS.TEMPLATES)) {
-            localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(DEFAULT_TEMPLATES));
-        }
-        if (!localStorage.getItem(DB_KEYS.MACROS)) {
-            localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(DEFAULT_MACROS));
-        }
-        if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
-            const defaultSettings = {
-                nome: "Dr. Perito Judicial",
-                crm: "CRM-XX 00000",
-                endereco: "",
-                telefone: ""
-            };
-            localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(defaultSettings));
-        }
+        try {
+            if (!localStorage.getItem(DB_KEYS.PERICIAS)) {
+                localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify([]));
+            }
+            if (!localStorage.getItem(DB_KEYS.TEMPLATES)) {
+                localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(DEFAULT_TEMPLATES));
+            }
+            if (!localStorage.getItem(DB_KEYS.MACROS)) {
+                localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(DEFAULT_MACROS));
+            }
+            if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
+                const defaultSettings = {
+                    nome: "Dr. Perito Judicial",
+                    crm: "CRM-XX 00000",
+                    endereco: "",
+                    telefone: ""
+                };
+                localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(defaultSettings));
+            }
 
-        this.migrateData();
+            this.migrateData();
+        } catch (error) {
+            console.error('Storage: Init failed', error);
+        }
     },
 
     /**
@@ -41,7 +45,7 @@ export const Storage = {
         try {
             const raw = localStorage.getItem(DB_KEYS.PERICIAS);
             if (!raw) return;
-            let pericias = JSONUtils.parse(raw, [], 'perícias');
+            let pericias = JSONUtils.parse(raw, [], 'pericias');
             if (!Array.isArray(pericias)) return;
             let modified = false;
 
@@ -51,19 +55,18 @@ export const Storage = {
                     modified = true;
                     // The Pericia constructor handles the mapping from snake_case to camelCase
                     const newModel = new Pericia(p);
-                    // Return the plain object, not the class instance, to avoid serialization issues?
-                    // Class instance stringifies fine usually.
+                    // Return the plain object, not the class instance
                     return { ...newModel };
                 }
                 return p;
             });
 
             if (modified) {
-                console.info("Migrating data to CamelCase standards...");
+                console.info("Storage: Migrating data to CamelCase standards...");
                 localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
             }
         } catch (e) {
-            console.error("Migration failed", e);
+            console.error("Storage: Migration failed", e);
         }
     },
 
@@ -74,9 +77,9 @@ export const Storage = {
      * @returns {Array} List of pericias.
      */
     getPericias() {
-        const list = JSONUtils.parse(localStorage.getItem(DB_KEYS.PERICIAS), [], 'perícias');
+        const list = JSONUtils.parse(localStorage.getItem(DB_KEYS.PERICIAS), [], 'pericias');
         if (!Array.isArray(list)) return [];
-        // Ensure they are proper objects (in case migration didn't run or new fields added)
+        // Ensure they are proper objects
         return list.map(p => new Pericia(p));
     },
 
@@ -87,6 +90,7 @@ export const Storage = {
      */
     getPericia(id) {
         const pericias = this.getPericias();
+        // eslint-disable-next-line eqeqeq
         return pericias.find(p => p.id == id);
     },
 
@@ -94,18 +98,22 @@ export const Storage = {
      * Saves or updates a pericia.
      * @param {Object} pericia - The pericia object.
      * @returns {Object} The saved pericia.
+     * @throws {Error} If quota exceeded or invalid data.
      */
     savePericia(pericia) {
+        if (!pericia) throw new Error('Pericia data is required');
+
         // Ensure we are saving the Clean Model
         const model = new Pericia(pericia);
         const pericias = this.getPericias();
 
         if (model.id) {
+            // eslint-disable-next-line eqeqeq
             const index = pericias.findIndex(p => p.id == model.id);
             if (index !== -1) {
                 pericias[index] = model; // Update
             } else {
-                pericias.push(model); // Should not happen often if ID exists
+                pericias.push(model);
             }
         } else {
             model.id = Date.now();
@@ -117,9 +125,10 @@ export const Storage = {
             localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
-                throw new Error('Limite de armazenamento excedido! Tente remover arquivos anexados.');
+                throw new Error('Storage limit exceeded! Try removing attached files.');
             }
-            throw e;
+            console.error('Storage: Save failed', e);
+            throw new Error('Failed to save pericia');
         }
         return model;
     },
@@ -130,6 +139,7 @@ export const Storage = {
      */
     deletePericia(id) {
         let pericias = this.getPericias();
+        // eslint-disable-next-line eqeqeq
         pericias = pericias.filter(p => p.id != id);
         localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(pericias));
     },
@@ -150,6 +160,7 @@ export const Storage = {
      * @param {Object} macro - The macro object.
      */
     addMacro(macro) {
+        if (!macro || !macro.titulo || !macro.conteudo) return;
         const macros = this.getMacros();
         macro.id = Date.now();
         macros.push(macro);
@@ -162,6 +173,7 @@ export const Storage = {
      */
     deleteMacro(id) {
          let macros = this.getMacros();
+         // eslint-disable-next-line eqeqeq
          macros = macros.filter(m => m.id != id);
          localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(macros));
     },
@@ -173,7 +185,7 @@ export const Storage = {
      * @returns {Object} Settings object.
      */
     getSettings() {
-        const settings = JSONUtils.parse(localStorage.getItem(DB_KEYS.SETTINGS), {}, 'configurações');
+        const settings = JSONUtils.parse(localStorage.getItem(DB_KEYS.SETTINGS), {}, 'settings');
         return settings && typeof settings === 'object' ? settings : {};
     },
 
@@ -182,6 +194,7 @@ export const Storage = {
      * @param {Object} settings - The settings object.
      */
     saveSettings(settings) {
+        if (!settings) return;
         localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settings));
     },
 
@@ -192,7 +205,7 @@ export const Storage = {
      * @returns {Array} List of templates.
      */
     getTemplates() {
-        const templates = JSONUtils.parse(localStorage.getItem(DB_KEYS.TEMPLATES), [], 'modelos');
+        const templates = JSONUtils.parse(localStorage.getItem(DB_KEYS.TEMPLATES), [], 'templates');
         return Array.isArray(templates) ? templates : [];
     },
 
@@ -201,6 +214,7 @@ export const Storage = {
      * @param {Object} template - The template object.
      */
     addTemplate(template) {
+        if (!template || !template.title || !template.data) return;
         const templates = this.getTemplates();
         template.id = Date.now();
         templates.push(template);
@@ -213,6 +227,7 @@ export const Storage = {
      */
     deleteTemplate(id) {
         let templates = this.getTemplates();
+        // eslint-disable-next-line eqeqeq
         templates = templates.filter(t => t.id != id);
         localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(templates));
     },
@@ -221,8 +236,9 @@ export const Storage = {
 
     /**
      * Generates a backup object containing all data.
-     * @param {string|null} password - Optional password for encryption.
+     * @param {string|null} [password=null] - Optional password for encryption.
      * @returns {Promise<{filename: string, content: string}>} The backup data.
+     * @throws {Error} If encryption fails or file export fails.
      */
     async getExportData(password = null) {
         // Collect local storage data
@@ -239,19 +255,22 @@ export const Storage = {
             const files = await FileDB.getAllFiles();
             data.files = files; // Array of {id, content}
         } catch (e) {
-            throw new Error("Não foi possível exportar os anexos.");
+            console.error(e);
+            throw new Error("Failed to export attachments.");
         }
 
         let jsonString = JSON.stringify(data, null, 2);
         let filename = `backup_pericias_${new Date().toISOString().slice(0,10)}.json`;
 
         if (password) {
-            if (window.CryptoJS) {
+            // eslint-disable-next-line no-undef
+            if (typeof window !== 'undefined' && window.CryptoJS) {
+                // eslint-disable-next-line no-undef
                 const encrypted = window.CryptoJS.AES.encrypt(jsonString, password).toString();
                 jsonString = encrypted;
                 filename += ".enc";
             } else {
-                throw new Error("Biblioteca de criptografia não carregada.");
+                throw new Error("Encryption library not loaded.");
             }
         }
 
@@ -261,8 +280,9 @@ export const Storage = {
     /**
      * Restores data from a backup string.
      * @param {string} content - The JSON string (or encrypted string).
-     * @param {string|null} password - Password for decryption.
+     * @param {string|null} [password=null] - Password for decryption.
      * @returns {Promise<boolean>} True if successful.
+     * @throws {Error} If decryption fails or data is invalid.
      */
     async processImportData(content, password = null) {
         let data;
@@ -272,30 +292,28 @@ export const Storage = {
             data = JSON.parse(content);
         } catch (e) {
             // If failed, maybe it's encrypted
-            if (password && window.CryptoJS) {
+            // eslint-disable-next-line no-undef
+            if (password && typeof window !== 'undefined' && window.CryptoJS) {
                 try {
+                    // eslint-disable-next-line no-undef
                     const bytes = window.CryptoJS.AES.decrypt(content, password);
+                    // eslint-disable-next-line no-undef
                     const decryptedData = bytes.toString(window.CryptoJS.enc.Utf8);
-                    if (!decryptedData) throw new Error("Senha incorreta");
+                    if (!decryptedData) throw new Error("Incorrect password");
                     data = JSON.parse(decryptedData);
                 } catch (decryptError) {
-                    throw new Error("Falha na descriptografia: Senha incorreta ou arquivo corrompido.");
+                    throw new Error("Decryption failed: Incorrect password or corrupted file.");
                 }
             } else {
-                if (!password) throw new Error("Arquivo parece criptografado ou inválido, mas nenhuma senha foi fornecida.");
-                 throw new Error("Falha ao ler arquivo: " + e.message);
+                if (!password) throw new Error("File appears encrypted or invalid, but no password was provided.");
+                 throw new Error("Failed to read file: " + e.message);
             }
         }
 
         // Validate structure
-        if (!data.pericias && !data.settings) throw new Error("Arquivo de backup inválido.");
+        if (!data || (!data.pericias && !data.settings)) throw new Error("Invalid backup file.");
 
         // Restore LocalStorage
-        // Note: Imported data might be in old format. We save it as is, and let 'migrateData' handle it on reload,
-        // OR we migrate it right now.
-        // Let's rely on 'init()' calling migrateData() on reload, but to be safe, we can run migration here if we wanted.
-        // But since 'init' runs on page load, and we reload page after import (in app.js), it should be fine.
-
         if(data.pericias) localStorage.setItem(DB_KEYS.PERICIAS, JSON.stringify(data.pericias));
         if(data.macros) localStorage.setItem(DB_KEYS.MACROS, JSON.stringify(data.macros));
         if(data.templates) localStorage.setItem(DB_KEYS.TEMPLATES, JSON.stringify(data.templates));
@@ -313,4 +331,5 @@ export const Storage = {
     }
 };
 
+// Initialize handled by app.js primarily, but safe to call here if side-effects controlled
 Storage.init();
