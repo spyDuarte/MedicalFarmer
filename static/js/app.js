@@ -5,6 +5,7 @@ import { SettingsController } from './modules/settings.js';
 import { PrintController } from './modules/print.js';
 import { DashboardController } from './modules/dashboard.js';
 import { MacrosController } from './modules/macros.js';
+import { TemplatesController } from './modules/templates.js';
 import { UI } from './modules/ui.js';
 
 /**
@@ -30,6 +31,7 @@ const MainController = {
             DashboardController.bindEvents();
             PrintController.bindEvents();
             MacrosController.bindEvents();
+            TemplatesController.bindEvents();
         } catch (error) {
             console.error("Initialization Error:", error);
             UI.Toast.show("Erro ao inicializar o sistema. Verifique o console.", 'error', 10000);

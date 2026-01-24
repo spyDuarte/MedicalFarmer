@@ -59,6 +59,28 @@
         </div>
     </div>
 
+    <!-- Templates Manager Modal -->
+    <div id="templates-modal" role="dialog" aria-modal="true" aria-labelledby="templates-title" class="fixed inset-0 z-[75] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col border border-gray-100 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <h3 id="templates-title" class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-primary-500"></i> Meus Templates
+                </h3>
+                <button id="btn-close-templates" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i class="fa-solid fa-times fa-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-grow bg-white dark:bg-gray-800">
+                <div id="templates-list" class="space-y-3">
+                    <!-- Templates will be injected here -->
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-b-xl border-t border-gray-100 dark:border-gray-700 text-center">
+                 <p class="text-xs text-gray-500 dark:text-gray-400">Para criar um novo template, preencha o formulário e use o botão <i class="fa-solid fa-star text-yellow-500"></i> no editor.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Signature Modal -->
     <div id="signature-modal" role="dialog" aria-modal="true" aria-labelledby="signature-title" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform transition-all border border-gray-100 dark:border-gray-700">
@@ -277,7 +299,7 @@
                             <i class="fa-solid fa-upload" aria-hidden="true"></i> Restaurar
                             <input type="file" id="input-import-backup" aria-label="Importar arquivo de backup" class="hidden" accept=".json,.enc">
                         </label>
-                         <button class="text-gray-400 cursor-not-allowed px-3 py-2 rounded-lg text-sm font-medium" title="Em breve">
+                         <button id="btn-open-templates" class="text-yellow-600 dark:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2" title="Gerenciar Templates">
                             <i class="fa-solid fa-star" aria-hidden="true"></i> Templates
                         </button>
                     </div>
