@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env
+venv/
+env/
+node_modules/
+npm_output.log
+tests/screenshots/
+backend/instance/
+backend/__pycache__/

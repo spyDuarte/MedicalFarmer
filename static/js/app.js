@@ -50,39 +50,6 @@ const MainController = {
 
         const inputImport = document.getElementById('input-import-backup');
         if(inputImport) inputImport.addEventListener('change', (e) => this.handleImport(e));
-
-        // Annotation Tool (Global Modal) - Bridges to FormController
-        const btnAnnotatePen = document.getElementById('btn-annotate-pen');
-        if(btnAnnotatePen) btnAnnotatePen.addEventListener('click', () => { FormController.currentTool = 'pen'; });
-
-        const btnAnnotateText = document.getElementById('btn-annotate-text');
-        if(btnAnnotateText) btnAnnotateText.addEventListener('click', () => { FormController.currentTool = 'text'; });
-
-        const btnAnnotateClear = document.getElementById('btn-annotate-clear');
-        if(btnAnnotateClear) btnAnnotateClear.addEventListener('click', () => {
-             const canvas = document.getElementById('annotation-canvas');
-             const ctx = canvas.getContext('2d');
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             if(FormController.currentImage) ctx.drawImage(FormController.currentImage, 0, 0, canvas.width, canvas.height);
-        });
-
-        const btnAnnotateSave = document.getElementById('btn-annotate-save');
-        if(btnAnnotateSave) btnAnnotateSave.addEventListener('click', () => FormController.saveAnnotation());
-
-        // Annotation Modal Close
-        const btnCloseAnnotateX = document.getElementById('btn-close-annotation-x');
-        if (btnCloseAnnotateX) btnCloseAnnotateX.addEventListener('click', () => {
-             const modal = document.getElementById('annotation-modal');
-             modal.classList.add('hidden');
-             UI.Modal.releaseFocus(modal);
-        });
-
-        const btnCloseAnnotateCancel = document.getElementById('btn-close-annotation-cancel');
-        if (btnCloseAnnotateCancel) btnCloseAnnotateCancel.addEventListener('click', () => {
-             const modal = document.getElementById('annotation-modal');
-             modal.classList.add('hidden');
-             UI.Modal.releaseFocus(modal);
-        });
     },
 
     /**

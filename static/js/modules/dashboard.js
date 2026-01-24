@@ -187,11 +187,18 @@ export const DashboardController = {
             tbody.appendChild(tr);
         });
 
-        // Update Sort Icons
-        document.querySelectorAll('.sortable i').forEach(i => i.className = 'fa-solid fa-sort text-gray-300 ml-1');
-        const activeTh = document.querySelector(`.sortable[data-sort="${this.currentSort.field}"] i`);
+        // Update Sort Icons & Aria Attributes
+        document.querySelectorAll('.sortable').forEach(th => {
+            const icon = th.querySelector('i');
+            if(icon) icon.className = 'fa-solid fa-sort text-gray-300 ml-1';
+            th.setAttribute('aria-sort', 'none');
+        });
+
+        const activeTh = document.querySelector(`.sortable[data-sort="${this.currentSort.field}"]`);
         if(activeTh) {
-            activeTh.className = `fa-solid fa-sort-${this.currentSort.direction === 'asc' ? 'up' : 'down'} text-primary-500 ml-1`;
+            const icon = activeTh.querySelector('i');
+            if(icon) icon.className = `fa-solid fa-sort-${this.currentSort.direction === 'asc' ? 'up' : 'down'} text-primary-500 ml-1`;
+            activeTh.setAttribute('aria-sort', this.currentSort.direction === 'asc' ? 'ascending' : 'descending');
         }
 
         const elPending = document.getElementById('total-pendente');
