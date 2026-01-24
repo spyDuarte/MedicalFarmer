@@ -316,7 +316,7 @@ export const UI = {
             // Close sidebar on mobile when link clicked
             links.forEach(link => {
                 link.addEventListener('click', () => {
-                   if (window.innerWidth < 768) { // md breakpoint
+                   if (window.innerWidth < 1024) { // lg breakpoint
                        this.close();
                    }
                 });

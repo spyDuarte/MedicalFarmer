@@ -49,7 +49,7 @@
     <!-- Modals -->
     <!-- Confirmation Modal -->
     <div id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all scale-100 border border-gray-100 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform transition-all scale-100 border border-gray-100 dark:border-gray-700">
             <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmação</h3>
             <p id="modal-message" class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">Tem certeza?</p>
             <div class="flex justify-end gap-3">
@@ -61,7 +61,7 @@
 
     <!-- Signature Modal -->
     <div id="signature-modal" role="dialog" aria-modal="true" aria-labelledby="signature-title" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 transform transition-all border border-gray-100 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform transition-all border border-gray-100 dark:border-gray-700">
             <h3 id="signature-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Assinatura Digital</h3>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white h-40 flex justify-center items-center cursor-crosshair relative">
                 <canvas id="signature-canvas" width="340" height="150" class="w-full h-full object-contain"></canvas>
@@ -107,7 +107,7 @@
     </div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="bg-white dark:bg-gray-800 w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 absolute inset-y-0 left-0 z-40 transform -translate-x-full md:relative md:translate-x-0 no-print">
+    <aside id="sidebar" class="bg-white dark:bg-gray-800 w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 absolute inset-y-0 left-0 z-40 transform -translate-x-full lg:relative lg:translate-x-0 no-print">
         <!-- Logo -->
         <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
             <a href="#dashboard" class="text-xl font-bold flex items-center gap-2 text-primary-700 dark:text-primary-400">
@@ -162,13 +162,13 @@
     </aside>
 
     <!-- Overlay for mobile sidebar -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden glass-effect"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden glass-effect"></div>
 
     <!-- Main Content Wrapper -->
     <div class="flex-1 flex flex-col h-full overflow-hidden relative">
         <!-- Top Header -->
         <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 lg:px-8 no-print">
-            <button id="btn-mobile-menu" class="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="Abrir Menu" aria-expanded="false">
+            <button id="btn-mobile-menu" class="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="Abrir Menu" aria-expanded="false">
                 <i class="fa-solid fa-bars text-xl" aria-hidden="true"></i>
             </button>
 

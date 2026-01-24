@@ -114,6 +114,8 @@ export const SettingsController = {
         // Support Mouse and Touch events
         const getPos = (e) => {
             const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
             let clientX, clientY;
 
             if (e.touches && e.touches.length > 0) {
@@ -123,7 +125,10 @@ export const SettingsController = {
                 clientX = e.clientX;
                 clientY = e.clientY;
             }
-            return { x: clientX - rect.left, y: clientY - rect.top };
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
         };
 
         const startDraw = (e) => {
