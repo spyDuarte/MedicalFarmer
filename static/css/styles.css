@@ -37,6 +37,14 @@
     background: #6b7280;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
 /* Glass Effect */
 .glass-effect {
     backdrop-filter: blur(8px);
@@ -118,12 +126,13 @@
     border-radius: 0.75rem;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* deeper shadow */
 }
 
 .dark .section-block {
     background-color: #1f2937; /* gray-800 */
     border-color: #374151; /* gray-700 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .section-title {
@@ -133,6 +142,18 @@
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #e5e7eb; /* gray-200 */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 1.25em;
+    background-color: var(--color-primary);
+    border-radius: 2px;
 }
 
 .dark .section-title {
@@ -212,7 +233,7 @@
 
 /* Custom Tab Styling */
 .tab-btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     font-weight: 600;
     font-size: 0.875rem;
     outline: none;
@@ -220,11 +241,15 @@
     white-space: nowrap;
     border-bottom: 2px solid transparent;
     color: #6b7280; /* gray-500 */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.7;
 }
 
 .tab-btn:hover {
     color: #374151; /* gray-700 */
-    background-color: rgba(0,0,0,0.02);
+    opacity: 1;
 }
 
 .dark .tab-btn {
@@ -233,19 +258,57 @@
 
 .dark .tab-btn:hover {
     color: #e5e7eb; /* gray-200 */
-    background-color: rgba(255,255,255,0.05);
 }
 
 .tab-btn.active {
     color: #2563eb; /* blue-600 */
     border-bottom-color: #2563eb;
-    background-color: white;
+    background-color: transparent;
+    opacity: 1;
 }
 
 .dark .tab-btn.active {
     color: #60a5fa; /* blue-400 */
     border-bottom-color: #60a5fa;
-    background-color: #1f2937; /* gray-800 */
+    background-color: transparent;
+}
+
+.tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background-color: #f3f4f6; /* gray-100 */
+    color: #6b7280; /* gray-500 */
+    transition: all 0.2s;
+}
+
+.dark .tab-icon {
+    background-color: #374151; /* gray-700 */
+    color: #9ca3af; /* gray-400 */
+}
+
+.tab-btn:hover .tab-icon {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.dark .tab-btn:hover .tab-icon {
+    background-color: #4b5563;
+    color: #e5e7eb;
+}
+
+.tab-btn.active .tab-icon {
+    /* Styled via group-[.active] classes in HTML for specific colors, or generic here */
+    background-color: #eff6ff; /* blue-50 */
+    color: #2563eb; /* blue-600 */
+}
+
+.dark .tab-btn.active .tab-icon {
+    background-color: rgba(59, 130, 246, 0.2); /* blue-500/20 */
+    color: #60a5fa; /* blue-400 */
 }
 
 /* Mic Button */
@@ -276,11 +339,12 @@
     font-weight: 600;
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 .btn-primary:hover {
     background-color: var(--color-primary-dark);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
 }
 
 /* Button Secondary Utility */
