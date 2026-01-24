@@ -288,41 +288,67 @@
             </div>
 
             <!-- FORM VIEW -->
-            <div id="view-form" class="view-section hidden max-w-5xl mx-auto">
-                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col h-full">
-                    <!-- Form Header -->
-                    <div class="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-20">
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                             <i class="fa-solid fa-pen-to-square text-primary-600" aria-hidden="true"></i> Editor de Perícia
-                        </h2>
-                        <div class="flex gap-2 items-center flex-wrap justify-end">
-                            <div class="flex items-center gap-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-1">
-                                    <select id="template-selector" class="text-xs border-none bg-transparent dark:text-white focus:ring-0 cursor-pointer" aria-label="Selecionar Template">
+            <div id="view-form" class="view-section hidden max-w-6xl mx-auto pb-20">
+                <!-- Sticky Header -->
+                <div class="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700 mb-6 transition-all duration-300">
+                    <div class="px-4 py-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-primary-100 dark:bg-primary-900/50 rounded-lg text-primary-600 dark:text-primary-400">
+                                <i class="fa-solid fa-file-medical text-lg" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight">Editor de Perícia</h2>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" id="form-status-indicator">Preenchimento em andamento</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <div class="hidden md:flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1">
+                                <select id="template-selector" class="text-xs border-none bg-transparent dark:text-gray-300 focus:ring-0 cursor-pointer w-40" aria-label="Selecionar Template">
                                     <option value="">Carregar Template...</option>
                                 </select>
-                                    <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 px-2" title="Salvar como Template" aria-label="Salvar como Template"><i class="fa-solid fa-star" aria-hidden="true"></i></button>
+                                <button id="btn-save-template" class="text-yellow-500 hover:text-yellow-600 p-1 hover:bg-yellow-50 rounded" title="Salvar como Template" aria-label="Salvar como Template">
+                                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                </button>
                             </div>
 
-                                <button id="btn-save-form" class="btn-primary flex items-center gap-2 text-sm px-4 py-2" aria-label="Salvar rascunho">
-                                <i class="fa-solid fa-save" aria-hidden="true"></i> Salvar
+                            <button id="btn-save-form" class="btn-secondary text-sm flex items-center gap-2 px-4 py-2" aria-label="Salvar rascunho">
+                                <i class="fa-solid fa-save" aria-hidden="true"></i> <span class="hidden sm:inline">Salvar</span>
                             </button>
-                                <button id="btn-finalize-form" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-sm" aria-label="Finalizar e visualizar laudo">
-                                <i class="fa-solid fa-check" aria-hidden="true"></i> Finalizar
+                            <button id="btn-finalize-form" class="btn-primary text-sm flex items-center gap-2 px-4 py-2 shadow-md hover:shadow-lg transform active:scale-95 transition-all" aria-label="Finalizar e visualizar laudo">
+                                <i class="fa-solid fa-check" aria-hidden="true"></i> <span>Finalizar</span>
                             </button>
-                                <a href="#dashboard" class="btn-secondary text-sm flex items-center" aria-label="Voltar para o Dashboard">Voltar</a>
                         </div>
                     </div>
 
-                    <!-- Tabs Navigation -->
-                    <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-2 space-x-1 overflow-x-auto bg-gray-50 dark:bg-gray-800">
-                        <button class="tab-btn active" id="btn-tab-identificacao"><i class="fa-solid fa-id-card mr-2" aria-hidden="true"></i> Identificação</button>
-                        <button class="tab-btn inactive" id="btn-tab-historico"><i class="fa-solid fa-history mr-2" aria-hidden="true"></i> Histórico</button>
-                        <button class="tab-btn inactive" id="btn-tab-exame"><i class="fa-solid fa-user-md mr-2" aria-hidden="true"></i> Exame</button>
-                        <button class="tab-btn inactive" id="btn-tab-conclusao"><i class="fa-solid fa-gavel mr-2" aria-hidden="true"></i> Conclusão</button>
-                        <button class="tab-btn inactive" id="btn-tab-quesitos"><i class="fa-solid fa-question-circle mr-2" aria-hidden="true"></i> Quesitos</button>
+                    <!-- Modern Tabs -->
+                    <div class="px-4 sm:px-6 lg:px-8 overflow-x-auto no-scrollbar">
+                        <div class="flex gap-6 border-b border-gray-200 dark:border-gray-700 min-w-max">
+                            <button class="tab-btn active group" id="btn-tab-identificacao">
+                                <span class="tab-icon group-[.active]:bg-primary-100 group-[.active]:text-primary-600 dark:group-[.active]:bg-primary-900 dark:group-[.active]:text-primary-400"><i class="fa-solid fa-id-card"></i></span>
+                                Identificação
+                            </button>
+                            <button class="tab-btn inactive group" id="btn-tab-historico">
+                                <span class="tab-icon"><i class="fa-solid fa-history"></i></span>
+                                Histórico
+                            </button>
+                            <button class="tab-btn inactive group" id="btn-tab-exame">
+                                <span class="tab-icon"><i class="fa-solid fa-user-md"></i></span>
+                                Exame Clínico
+                            </button>
+                            <button class="tab-btn inactive group" id="btn-tab-conclusao">
+                                <span class="tab-icon"><i class="fa-solid fa-gavel"></i></span>
+                                Conclusão
+                            </button>
+                            <button class="tab-btn inactive group" id="btn-tab-quesitos">
+                                <span class="tab-icon"><i class="fa-solid fa-question-circle"></i></span>
+                                Quesitos
+                            </button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="p-6 md:p-8 bg-white dark:bg-gray-800">
+                <div class="px-4 sm:px-6 lg:px-8 space-y-8">
 
                         <!-- TAB 1: IDENTIFICAÇÃO -->
                         <div id="tab-identificacao" class="tab-content space-y-6">
@@ -657,7 +683,6 @@
                             </div>
                         </div>
 
-                    </div>
                 </div>
             </div>
 
