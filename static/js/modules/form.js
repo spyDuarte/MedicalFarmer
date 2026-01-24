@@ -45,11 +45,6 @@ export const FormController = {
         bind('btn-upload', () => this.handleFileUpload());
         bind('btn-save-template', () => this.saveAsTemplate());
 
-        // Tab Navigation
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.currentTarget.id.replace('btn-', '')));
-        });
-
         this.bindAnnotationEvents();
     },
 
@@ -88,7 +83,7 @@ export const FormController = {
         const pericia = id ? Storage.getPericia(id) : {};
 
         // Reset UI state
-        this.switchTab('tab-identificacao');
+        // this.switchTab('tab-identificacao'); // Removed
         this.populateTemplateSelector();
 
         // Use Binder to populate fields
@@ -176,23 +171,6 @@ export const FormController = {
     },
 
     // --- Logic Helpers ---
-
-    switchTab(tabId) {
-        if(!tabId) return;
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        const target = document.getElementById(tabId);
-        if(target) target.classList.remove('hidden');
-
-        document.querySelectorAll('.tab-btn').forEach(el => {
-            el.classList.remove('active');
-            el.classList.add('inactive');
-        });
-        const btn = document.getElementById(`btn-${tabId}`);
-        if(btn) {
-            btn.classList.remove('inactive');
-            btn.classList.add('active');
-        }
-    },
 
     calcAge() {
         const dobInput = document.getElementById('f-data_nascimento');

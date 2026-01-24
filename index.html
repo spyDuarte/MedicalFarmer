@@ -273,7 +273,7 @@
             </div>
 
             <!-- FORM VIEW -->
-            <div id="view-form" class="view-section hidden max-w-6xl mx-auto pb-20">
+            <div id="view-form" class="view-section hidden max-w-7xl mx-auto pb-20">
                 <!-- Sticky Header -->
                 <div class="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700 mb-6 transition-all duration-300">
                     <div class="px-4 py-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -305,38 +305,39 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Modern Tabs -->
-                    <div class="px-4 sm:px-6 lg:px-8 overflow-x-auto no-scrollbar">
-                        <div class="flex gap-6 border-b border-gray-200 dark:border-gray-700 min-w-max">
-                            <button class="tab-btn active group" id="btn-tab-identificacao">
-                                <span class="tab-icon group-[.active]:bg-primary-100 group-[.active]:text-primary-600 dark:group-[.active]:bg-primary-900 dark:group-[.active]:text-primary-400"><i class="fa-solid fa-id-card"></i></span>
-                                Identificação
-                            </button>
-                            <button class="tab-btn inactive group" id="btn-tab-historico">
-                                <span class="tab-icon"><i class="fa-solid fa-history"></i></span>
-                                Histórico
-                            </button>
-                            <button class="tab-btn inactive group" id="btn-tab-exame">
-                                <span class="tab-icon"><i class="fa-solid fa-user-md"></i></span>
-                                Exame Clínico
-                            </button>
-                            <button class="tab-btn inactive group" id="btn-tab-conclusao">
-                                <span class="tab-icon"><i class="fa-solid fa-gavel"></i></span>
-                                Conclusão
-                            </button>
-                            <button class="tab-btn inactive group" id="btn-tab-quesitos">
-                                <span class="tab-icon"><i class="fa-solid fa-question-circle"></i></span>
-                                Quesitos
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="px-4 sm:px-6 lg:px-8 space-y-8">
+                <div class="flex flex-col lg:flex-row gap-8 px-4 sm:px-6 lg:px-8">
 
-                        <!-- TAB 1: IDENTIFICAÇÃO -->
-                        <div id="tab-identificacao" class="tab-content space-y-6">
+                    <!-- Sticky TOC (Sidebar) -->
+                    <div class="hidden lg:block w-64 flex-shrink-0">
+                        <div class="sticky top-24 space-y-1" id="form-toc">
+                            <a href="#section-identificacao" class="toc-link block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-id-card w-6 text-center"></i> Identificação
+                            </a>
+                            <a href="#section-historico" class="toc-link block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-history w-6 text-center"></i> Histórico
+                            </a>
+                            <a href="#section-exame" class="toc-link block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-user-md w-6 text-center"></i> Exame Clínico
+                            </a>
+                            <a href="#section-conclusao" class="toc-link block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-gavel w-6 text-center"></i> Conclusão
+                            </a>
+                            <a href="#section-quesitos" class="toc-link block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-question-circle w-6 text-center"></i> Quesitos
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 space-y-12">
+                        <!-- SECTION 1: IDENTIFICAÇÃO -->
+                        <section id="section-identificacao" class="scroll-mt-24 space-y-6">
+                            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">1</div>
+                                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Identificação e Dados Gerais</h2>
+                            </div>
+
                             <div class="section-block">
                                 <h3 class="section-title">Dados Administrativos</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -502,10 +503,15 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <!-- TAB 2: HISTÓRICO -->
-                        <div id="tab-historico" class="tab-content hidden space-y-6">
+                        <!-- SECTION 2: HISTÓRICO -->
+                        <section id="section-historico" class="scroll-mt-24 space-y-6">
+                            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">2</div>
+                                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Histórico</h2>
+                            </div>
+
                             <div class="section-block">
                                 <h3 class="section-title">Histórico Ocupacional</h3>
                                 <div class="form-group mb-4">
@@ -549,10 +555,15 @@
                                 <label class="section-title block mb-2" for="f-historico_previdenciario">Histórico Previdenciário</label>
                                 <textarea id="f-historico_previdenciario" data-model="historicoPrevidenciario" class="form-textarea h-24" placeholder="Benefícios anteriores, B31/B91, datas..."></textarea>
                             </div>
-                        </div>
+                        </section>
 
-                        <!-- TAB 3: EXAME CLÍNICO -->
-                        <div id="tab-exame" class="tab-content hidden space-y-6">
+                        <!-- SECTION 3: EXAME CLÍNICO -->
+                        <section id="section-exame" class="scroll-mt-24 space-y-6">
+                            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">3</div>
+                                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Exame Clínico e Documentos</h2>
+                            </div>
+
                             <div class="section-block">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="section-title mb-0" for="macro-sel-exame_fisico">Exame Físico</label>
@@ -577,10 +588,15 @@
                                     <textarea id="f-exames_complementares" data-model="examesComplementares" class="form-textarea h-32" placeholder="Data - Tipo - Resultado..."></textarea>
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <!-- TAB 4: CONCLUSÃO FORENSE -->
-                        <div id="tab-conclusao" class="tab-content hidden space-y-6">
+                        <!-- SECTION 4: CONCLUSÃO -->
+                        <section id="section-conclusao" class="scroll-mt-24 space-y-6">
+                            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">4</div>
+                                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Conclusão Forense</h2>
+                            </div>
+
                             <div class="section-block">
                                 <label class="section-title block mb-2" for="f-discussao">Discussão Médico-Legal</label>
                                 <textarea id="f-discussao" data-model="discussao" class="form-textarea h-40" placeholder="Correlação entre fatos, exame físico e documentos..."></textarea>
@@ -658,17 +674,22 @@
                                 <label class="section-title block mb-2" for="f-bibliografia">Bibliografia / Referências</label>
                                 <textarea id="f-bibliografia" data-model="bibliografia" class="form-textarea h-24" placeholder="Livros, Diretrizes, Artigos..."></textarea>
                             </div>
-                        </div>
+                        </section>
 
-                        <!-- TAB 5: QUESITOS -->
-                        <div id="tab-quesitos" class="tab-content hidden space-y-6">
+                        <!-- SECTION 5: QUESITOS -->
+                        <section id="section-quesitos" class="scroll-mt-24 space-y-6">
+                            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">5</div>
+                                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Quesitos</h2>
+                            </div>
+
                             <div class="section-block">
                                 <label class="section-title block mb-2">Respostas aos Quesitos</label>
                                 <div id="q-quesitos" class="bg-white h-96 rounded border dark:border-gray-600"></div>
                             </div>
-                        </div>
-
-                </div>
+                        </section>
+                    </div> <!-- End of flex-1 -->
+                </div> <!-- End of flex-row -->
             </div>
 
             <!-- SETTINGS VIEW -->
