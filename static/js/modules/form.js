@@ -1,7 +1,7 @@
 import { Storage } from './storage.js';
 import { Mask, Validator, JSONUtils, Utils } from './utils.js';
 import { FileDB } from './db.js';
-import { CID10 } from '../cid_data.js';
+import { CID10 } from './cid_data.js';
 import { UI } from './ui.js';
 import { SpeechService } from './speech.js';
 import { ImageProcessor } from './image_processor.js';
@@ -49,6 +49,34 @@ export const FormController = {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.switchTab(e.currentTarget.id.replace('btn-', '')));
         });
+
+        this.bindAnnotationEvents();
+    },
+
+    bindAnnotationEvents() {
+        const bind = (id, fn) => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('click', fn);
+        };
+
+        bind('btn-annotate-pen', () => { this.currentTool = 'pen'; });
+        bind('btn-annotate-text', () => { this.currentTool = 'text'; });
+        bind('btn-annotate-clear', () => {
+             const canvas = document.getElementById('annotation-canvas');
+             const ctx = canvas.getContext('2d');
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             if(this.currentImage) ctx.drawImage(this.currentImage, 0, 0, canvas.width, canvas.height);
+        });
+        bind('btn-annotate-save', () => this.saveAnnotation());
+
+        // Modal Close
+        const closeAnnotation = () => {
+             const modal = document.getElementById('annotation-modal');
+             modal.classList.add('hidden');
+             UI.Modal.releaseFocus(modal);
+        };
+        bind('btn-close-annotation-x', closeAnnotation);
+        bind('btn-close-annotation-cancel', closeAnnotation);
     },
 
     /**
