@@ -246,12 +246,12 @@ export const DashboardController = {
      */
     getStatusBadge(status) {
         const classes = {
-            [STATUS.WAITING]: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-            [STATUS.SCHEDULED]: 'bg-blue-100 text-blue-700 border border-blue-200',
-            [STATUS.IN_PROGRESS]: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
-            [STATUS.DONE]: 'bg-green-100 text-green-700 border border-green-200'
+            [STATUS.WAITING]: 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20',
+            [STATUS.SCHEDULED]: 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10',
+            [STATUS.IN_PROGRESS]: 'bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-700/10',
+            [STATUS.DONE]: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
         };
-        const cls = classes[status] || 'bg-gray-100 text-gray-700 border border-gray-200';
+        const cls = classes[status] || 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10';
         return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}">${status}</span>`;
     },
 
