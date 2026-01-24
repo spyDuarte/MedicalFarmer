@@ -5,14 +5,19 @@ import { UI } from './ui.js';
 
 /**
  * Controller for the Dashboard View.
- * Handles chart rendering and table filtering.
+ * Handles chart rendering and table filtering/sorting.
  */
 export const DashboardController = {
     /** @type {Chart|null} */
     statusChart: null,
 
+    currentSort: {
+        field: 'createdAt',
+        direction: 'desc'
+    },
+
     /**
-     * Binds events for dashboard filters.
+     * Binds events for dashboard filters and sorting.
      */
     bindEvents() {
         const filters = ['status-filter', 'date-start', 'date-end'];
@@ -32,6 +37,24 @@ export const DashboardController = {
         if(btnExportCsv) {
             btnExportCsv.addEventListener('click', () => this.exportToCSV());
         }
+
+        // Bind Sort Headers
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', (e) => {
+                const field = e.currentTarget.dataset.sort;
+                this.handleSort(field);
+            });
+        });
+    },
+
+    handleSort(field) {
+        if (this.currentSort.field === field) {
+            this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort.field = field;
+            this.currentSort.direction = 'asc';
+        }
+        this.render();
     },
 
     /**
@@ -51,7 +74,7 @@ export const DashboardController = {
         const dateEndInput = document.getElementById('date-end');
         const dateEnd = dateEndInput ? dateEndInput.value : '';
 
-        return pericias.filter(p => {
+        let filtered = pericias.filter(p => {
              // Access camelCase properties
              const matchesSearch = !search ||
                  (p.numeroProcesso && p.numeroProcesso.toLowerCase().includes(search)) ||
@@ -78,7 +101,30 @@ export const DashboardController = {
              }
 
              return matchesSearch && matchesStatus && matchesDate;
-        }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        });
+
+        // Sort
+        filtered.sort((a, b) => {
+            let valA = a[this.currentSort.field];
+            let valB = b[this.currentSort.field];
+
+            // Handle dates
+            if (this.currentSort.field === 'dataPericia' || this.currentSort.field === 'createdAt') {
+                valA = valA ? new Date(valA).getTime() : 0;
+                valB = valB ? new Date(valB).getTime() : 0;
+            }
+            // Handle strings
+            else if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = (valB || '').toLowerCase();
+            }
+
+            if (valA < valB) return this.currentSort.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return this.currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return filtered;
     },
 
     /**
@@ -104,30 +150,49 @@ export const DashboardController = {
             if (stats[p.status] !== undefined) stats[p.status]++;
 
             const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors";
             tr.innerHTML = `
-                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                <td class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 text-sm">
                     ${this.getStatusBadge(p.status)}
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                    <p class="text-gray-900 dark:text-gray-100 font-bold">${p.numeroProcesso || '-'}</p>
-                    <p class="text-gray-600 dark:text-gray-400 text-xs">${p.nomeAutor || '-'}</p>
+                <td class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 text-sm">
+                    <p class="text-gray-900 dark:text-gray-100 font-semibold">${p.numeroProcesso || '-'}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-xs">${p.nomeAutor || 'Sem autor'}</p>
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200">
-                     ${p.dataPericia ? Format.date(p.dataPericia) : '<span class="italic text-gray-400">Não agendado</span>'}
+                <td class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300">
+                     ${p.dataPericia ? Format.date(p.dataPericia) : '<span class="text-gray-400 italic">--/--/--</span>'}
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                    <p class="font-mono text-gray-800 dark:text-gray-200">${Format.currency(p.valorHonorarios)}</p>
-                    ${p.statusPagamento === PAYMENT_STATUS.PAID
-                        ? `<span class="text-xs text-green-600 dark:text-green-400"><i class="fa-solid fa-check"></i> ${PAYMENT_STATUS.PAID}</span>`
-                        : `<span class="text-xs text-yellow-600 dark:text-yellow-400"><i class="fa-solid fa-clock"></i> ${PAYMENT_STATUS.PENDING}</span>`}
+                <td class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="font-mono text-gray-700 dark:text-gray-300 font-medium">${Format.currency(p.valorHonorarios)}</span>
+                        ${p.statusPagamento === PAYMENT_STATUS.PAID
+                            ? `<i class="fa-solid fa-check-circle text-green-500 ml-2" title="Pago"></i>`
+                            : `<i class="fa-regular fa-clock text-yellow-500 ml-2" title="Pendente"></i>`}
+                    </div>
                 </td>
-                <td class="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm flex gap-2">
-                    <a href="#editar/${p.id}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"><i class="fa-solid fa-pen-to-square fa-lg"></i></a>
-                    ${p.status === STATUS.DONE ? `<a href="#print/${p.id}" target="_blank" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"><i class="fa-solid fa-file-pdf fa-lg"></i></a>` : ''}
+                <td class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 text-sm text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="#editar/${p.id}" class="p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-colors" title="Editar">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        ${p.status === STATUS.DONE
+                            ? `<a href="#print/${p.id}" class="p-2 rounded-full hover:bg-green-50 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors" title="Imprimir" target="_blank">
+                                <i class="fa-solid fa-print"></i>
+                               </a>`
+                            : `<span class="p-2 w-8 inline-block"></span>`
+                        }
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+
+        // Update Sort Icons
+        document.querySelectorAll('.sortable i').forEach(i => i.className = 'fa-solid fa-sort text-gray-300 ml-1');
+        const activeTh = document.querySelector(`.sortable[data-sort="${this.currentSort.field}"] i`);
+        if(activeTh) {
+            activeTh.className = `fa-solid fa-sort-${this.currentSort.direction === 'asc' ? 'up' : 'down'} text-primary-500 ml-1`;
+        }
 
         const elPending = document.getElementById('total-pendente');
         if(elPending) elPending.innerText = Format.currency(totalPending);
@@ -159,15 +224,17 @@ export const DashboardController = {
                 datasets: [{
                     data: [stats[STATUS.WAITING], stats[STATUS.SCHEDULED], stats[STATUS.IN_PROGRESS], stats[STATUS.DONE]],
                     backgroundColor: ['#facc15', '#60a5fa', '#3b82f6', '#22c55e'],
-                    borderWidth: 0
+                    borderWidth: 0,
+                    hoverOffset: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'right', labels: { color: textColor } }
-                }
+                    legend: { position: 'right', labels: { color: textColor, usePointStyle: true, boxWidth: 8 } }
+                },
+                cutout: '70%'
             }
         });
     },
@@ -179,13 +246,13 @@ export const DashboardController = {
      */
     getStatusBadge(status) {
         const classes = {
-            [STATUS.WAITING]: 'bg-yellow-200 text-yellow-900',
-            [STATUS.SCHEDULED]: 'bg-blue-100 text-blue-900',
-            [STATUS.IN_PROGRESS]: 'bg-blue-200 text-blue-900',
-            [STATUS.DONE]: 'bg-green-200 text-green-900'
+            [STATUS.WAITING]: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
+            [STATUS.SCHEDULED]: 'bg-blue-100 text-blue-700 border border-blue-200',
+            [STATUS.IN_PROGRESS]: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+            [STATUS.DONE]: 'bg-green-100 text-green-700 border border-green-200'
         };
-        const cls = classes[status] || 'bg-gray-200 text-gray-900';
-        return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${status}</span>`;
+        const cls = classes[status] || 'bg-gray-100 text-gray-700 border border-gray-200';
+        return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}">${status}</span>`;
     },
 
     /**
