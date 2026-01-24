@@ -123,16 +123,25 @@
 .section-block {
     background-color: #ffffff;
     border: 1px solid #f3f4f6;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* deeper shadow */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    transition: box-shadow 0.3s;
+}
+
+.section-block:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
 }
 
 .dark .section-block {
     background-color: #1f2937; /* gray-800 */
     border-color: #374151; /* gray-700 */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dark .section-block:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 .section-title {
@@ -334,17 +343,22 @@
 
 /* Button Primary Utility */
 .btn-primary {
-    background-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: white;
     font-weight: 600;
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     transition: all 0.2s;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: none;
 }
 .btn-primary:hover {
-    background-color: var(--color-primary-dark);
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    filter: brightness(110%);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+}
+.btn-primary:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* Button Secondary Utility */
@@ -356,16 +370,23 @@
     padding: 0.5rem 1rem;
     transition: all 0.2s;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
 }
 
 .btn-secondary:hover {
     background-color: #e5e7eb; /* gray-200 */
     color: #111827; /* gray-900 */
+    border-color: #d1d5db;
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
 }
 
 .dark .btn-secondary {
     background-color: #374151; /* gray-700 */
     color: #e5e7eb; /* gray-200 */
+    border-color: #4b5563;
 }
 
 .dark .btn-secondary:hover {
