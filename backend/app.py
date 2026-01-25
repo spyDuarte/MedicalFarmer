@@ -24,10 +24,30 @@ class Pericia(db.Model):
     data_pericia = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='Aguardando', index=True) # Aguardando, Agendado, Em Andamento, Concluido
 
+    # Dados Pessoais e Processuais
+    tipo_acao = db.Column(db.String(50), nullable=True)
+    cpf = db.Column(db.String(14), nullable=True)
+    rg = db.Column(db.String(20), nullable=True)
+    data_nascimento = db.Column(db.DateTime, nullable=True)
+    escolaridade = db.Column(db.String(50), nullable=True)
+    profissao = db.Column(db.String(100), nullable=True)
+    estado_civil = db.Column(db.String(20), nullable=True)
+
+    # Endereco (JSON simplificado ou campos)
+    endereco_cep = db.Column(db.String(10), nullable=True)
+    endereco_cidade = db.Column(db.String(100), nullable=True)
+    endereco_uf = db.Column(db.String(2), nullable=True)
+
     # Dados do Laudo
-    anamnese = db.Column(db.Text, nullable=True)
+    objetivo = db.Column(db.Text, nullable=True)
+    metodologia = db.Column(db.Text, nullable=True)
+    anamnese = db.Column(db.Text, nullable=True) # HDA
+    antecedentes = db.Column(db.Text, nullable=True)
     exame_fisico = db.Column(db.Text, nullable=True)
+    discussao = db.Column(db.Text, nullable=True)
     conclusao = db.Column(db.Text, nullable=True)
+    quesitos = db.Column(db.Text, nullable=True)
+    bibliografia = db.Column(db.Text, nullable=True)
 
     # Financeiro
     valor_honorarios = db.Column(db.Float, default=0.0)
@@ -121,15 +141,39 @@ def editar_pericia(id):
     macros = Macro.query.all()
 
     if request.method == 'POST':
-        pericia.numero_processo = request.form['numero_processo']
-        pericia.nome_autor = request.form['nome_autor']
-        data_str = request.form.get('data_pericia')
-        if data_str:
-             pericia.data_pericia = datetime.strptime(data_str, '%Y-%m-%d')
+        pericia.numero_processo = request.form.get('numero_processo', pericia.numero_processo)
+        pericia.nome_autor = request.form.get('nome_autor', pericia.nome_autor)
+        pericia.tipo_acao = request.form.get('tipo_acao')
 
+        # Datas
+        data_pericia = request.form.get('data_pericia')
+        if data_pericia:
+             pericia.data_pericia = datetime.strptime(data_pericia, '%Y-%m-%d')
+
+        data_nasc = request.form.get('data_nascimento')
+        if data_nasc:
+            try:
+                pericia.data_nascimento = datetime.strptime(data_nasc, '%Y-%m-%d')
+            except:
+                pass
+
+        # Textos
+        pericia.objetivo = request.form.get('objetivo')
+        pericia.metodologia = request.form.get('metodologia')
         pericia.anamnese = request.form.get('anamnese')
+        pericia.antecedentes = request.form.get('antecedentes')
         pericia.exame_fisico = request.form.get('exame_fisico')
+        pericia.discussao = request.form.get('discussao')
         pericia.conclusao = request.form.get('conclusao')
+        pericia.quesitos = request.form.get('quesitos')
+        pericia.bibliografia = request.form.get('bibliografia')
+
+        # Outros campos
+        pericia.cpf = request.form.get('cpf')
+        pericia.rg = request.form.get('rg')
+        pericia.profissao = request.form.get('profissao')
+        pericia.endereco_cidade = request.form.get('endereco_cidade')
+        pericia.endereco_uf = request.form.get('endereco_uf')
 
         # Financeiro
         try:
